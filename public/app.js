@@ -682,6 +682,10 @@ async function doLogout() {
   await fetch('/api/logout', { method: 'POST' });
   currentUser = null;
   updateUserDisplay();
+  document.getElementById('deck-list').innerHTML = '';
+  document.querySelectorAll('main > section').forEach(s => s.classList.add('hidden'));
+  document.getElementById('page-home').classList.remove('hidden');
+  document.getElementById('nav-deck').style.display = 'none';
   showAuthModal();
 }
 
