@@ -623,6 +623,39 @@ function esc(str) {
 }
 
 // ── Auth ─────────────────────────────────────────────────────
+let authLang = 'en';
+
+const AUTH_TR = {
+  en: {
+    login: 'Log in', register: 'Create account',
+    username: 'Username', password: 'Password',
+    empty: 'Please fill in all fields.',
+    switch: '🇳🇱 Liever Nederlands?'
+  },
+  nl: {
+    login: 'Inloggen', register: 'Account aanmaken',
+    username: 'Gebruikersnaam', password: 'Wachtwoord',
+    empty: 'Vul alle velden in.',
+    switch: '🇬🇧 Prefer English?'
+  }
+};
+
+function toggleAuthLang() {
+  authLang = authLang === 'en' ? 'nl' : 'en';
+  applyAuthLang();
+}
+
+function applyAuthLang() {
+  const tr = AUTH_TR[authLang];
+  const isLogin = authMode === 'login';
+  document.getElementById('auth-tab-login').textContent = tr.login;
+  document.getElementById('auth-tab-register').textContent = tr.register;
+  document.getElementById('auth-username').placeholder = tr.username;
+  document.getElementById('auth-password').placeholder = tr.password;
+  document.getElementById('auth-submit-btn').textContent = isLogin ? tr.login : tr.register;
+  document.getElementById('auth-lang-switch').textContent = tr.switch;
+}
+
 function showAuthModal() {
   document.getElementById('modal-auth').classList.remove('hidden');
   document.body.style.overflow = 'hidden';
@@ -641,8 +674,8 @@ function showAuthTab(mode) {
   const isLogin = mode === 'login';
   document.getElementById('auth-tab-login').classList.toggle('active', isLogin);
   document.getElementById('auth-tab-register').classList.toggle('active', !isLogin);
-  document.getElementById('auth-submit-btn').textContent = isLogin ? 'Log in' : 'Create account';
   document.getElementById('auth-error').classList.add('hidden');
+  applyAuthLang();
   document.getElementById('auth-username').focus();
 }
 
@@ -652,7 +685,7 @@ async function submitAuth() {
   const errEl = document.getElementById('auth-error');
   errEl.classList.add('hidden');
   if (!username || !password) {
-    errEl.textContent = 'Please fill in all fields.';
+    errEl.textContent = AUTH_TR[authLang].empty;
     errEl.classList.remove('hidden');
     return;
   }

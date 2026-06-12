@@ -222,6 +222,19 @@ input, textarea { cursor: text !important; user-select: text !important; }
   font-weight: 600;
   cursor: pointer;
 }
+.auth-lang-switch {
+  display: block;
+  width: 100%;
+  margin-top: 0.75rem;
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 0.82rem;
+  cursor: pointer;
+  text-align: center;
+  padding: 0.25rem;
+}
+.auth-lang-switch:hover { color: var(--primary); }
 
 /* ── Topbar user ────────────────────────────────────────── */
 .topbar-user {
