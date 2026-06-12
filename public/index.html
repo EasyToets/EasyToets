@@ -43,11 +43,13 @@
       <button class="mobile-menu-btn" onclick="toggleSidebar()">☰</button>
       <h1 class="topbar-title" id="topbar-title">Mijn Decks</h1>
       <div class="topbar-actions" id="topbar-actions"></div>
+      <span class="topbar-user" id="topbar-user"></span>
       <div class="topbar-menu">
         <button class="menu-dots-btn" id="btn-topbar-menu" onclick="toggleTopbarMenu()">⋮</button>
         <div class="menu-dropdown hidden" id="menu-dropdown">
           <button id="menu-item-home" onclick="menuGoHome()" class="hidden">🏠 <span id="menu-label-home">Mijn Decks</span></button>
           <button id="menu-item-lang" onclick="showLangPicker(); closeTopbarMenu()">🌐 <span id="menu-label-lang">Taal wisselen</span></button>
+          <button id="menu-item-logout" onclick="doLogout()">🚪 <span id="menu-label-logout">Uitloggen</span></button>
         </div>
       </div>
     </header>
@@ -244,6 +246,21 @@
       <button class="btn accent" onclick="previewBulk()">Controleren</button>
       <button class="btn primary hidden" id="btn-bulk-import" onclick="importBulk()">Importeren</button>
     </div>
+  </div>
+</div>
+
+<!-- LOGIN / REGISTREREN -->
+<div id="modal-auth" class="modal-lang-overlay hidden">
+  <div class="modal-lang-box modal-auth-box">
+    <div class="modal-lang-logo">⚡ EasyToets</div>
+    <div class="auth-tabs">
+      <button class="auth-tab active" id="auth-tab-login" onclick="showAuthTab('login')">Inloggen</button>
+      <button class="auth-tab" id="auth-tab-register" onclick="showAuthTab('register')">Registreren</button>
+    </div>
+    <div id="auth-error" class="auth-error hidden"></div>
+    <input type="text" id="auth-username" placeholder="Gebruikersnaam" maxlength="40" autocomplete="username">
+    <input type="password" id="auth-password" placeholder="Wachtwoord" autocomplete="current-password">
+    <button class="btn primary auth-submit-btn" id="auth-submit-btn" onclick="submitAuth()">Inloggen</button>
   </div>
 </div>
 

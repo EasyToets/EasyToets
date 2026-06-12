@@ -1,3 +1,7 @@
+// ── Auth state ───────────────────────────────────────────────
+let currentUser = null;
+let authMode = 'login';
+
 // ── Language ─────────────────────────────────────────────────
 let currentLang = localStorage.getItem('et_lang') || null;
 
@@ -108,7 +112,11 @@ function setLang(lang) {
   localStorage.setItem('et_lang', lang);
   document.getElementById('modal-lang').classList.add('hidden');
   applyLang();
-  showPage('home');
+  if (currentUser) {
+    showPage('home');
+  } else {
+    showAuthModal();
+  }
 }
 
 function showLangPicker() {
@@ -614,10 +622,99 @@ function esc(str) {
     .replace(/"/g,'&quot;').replace(/`/g,'&#96;').replace(/'/g,'&#39;');
 }
 
-// ── Init ─────────────────────────────────────────────────────
-if (!currentLang) {
-  document.getElementById('modal-lang').classList.remove('hidden');
-} else {
-  applyLang();
+// ── Auth ─────────────────────────────────────────────────────
+function showAuthModal() {
+  document.getElementById('modal-auth').classList.remove('hidden');
+  document.body.style.overflow = 'hidden';
+  document.getElementById('auth-username').focus();
+}
+
+function hideAuthModal() {
+  document.getElementById('modal-auth').classList.add('hidden');
+  document.body.style.overflow = '';
+  document.getElementById('auth-error').classList.add('hidden');
+  document.getElementById('auth-error').textContent = '';
+}
+
+function showAuthTab(mode) {
+  authMode = mode;
+  const isLogin = mode === 'login';
+  document.getElementById('auth-tab-login').classList.toggle('active', isLogin);
+  document.getElementById('auth-tab-register').classList.toggle('active', !isLogin);
+  document.getElementById('auth-submit-btn').textContent = isLogin
+    ? (currentLang === 'en' ? 'Log in' : 'Inloggen')
+    : (currentLang === 'en' ? 'Create account' : 'Account aanmaken');
+  document.getElementById('auth-error').classList.add('hidden');
+  document.getElementById('auth-username').focus();
+}
+
+async function submitAuth() {
+  const username = document.getElementById('auth-username').value.trim();
+  const password = document.getElementById('auth-password').value;
+  const errEl = document.getElementById('auth-error');
+  errEl.classList.add('hidden');
+  if (!username || !password) {
+    errEl.textContent = currentLang === 'en' ? 'Please fill in all fields.' : 'Vul alle velden in.';
+    errEl.classList.remove('hidden');
+    return;
+  }
+  const res = await fetch('/api/' + authMode, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ username, password })
+  });
+  const data = await res.json();
+  if (!res.ok) {
+    errEl.textContent = data.error || 'Er is iets misgegaan.';
+    errEl.classList.remove('hidden');
+    return;
+  }
+  currentUser = { username: data.username };
+  document.getElementById('auth-password').value = '';
+  document.getElementById('auth-username').value = '';
+  hideAuthModal();
+  updateUserDisplay();
   showPage('home');
 }
+
+async function doLogout() {
+  closeTopbarMenu();
+  await fetch('/api/logout', { method: 'POST' });
+  currentUser = null;
+  updateUserDisplay();
+  showAuthModal();
+}
+
+function updateUserDisplay() {
+  const el = document.getElementById('topbar-user');
+  if (el) el.textContent = currentUser ? '👤 ' + currentUser.username : '';
+}
+
+document.getElementById('auth-username').addEventListener('keydown', e => {
+  if (e.key === 'Enter') document.getElementById('auth-password').focus();
+});
+document.getElementById('auth-password').addEventListener('keydown', e => {
+  if (e.key === 'Enter') submitAuth();
+});
+
+// ── Init ─────────────────────────────────────────────────────
+async function init() {
+  const meRes = await fetch('/api/me');
+  const meData = await meRes.json();
+  currentUser = meData.user;
+
+  if (!currentLang) {
+    document.getElementById('modal-lang').classList.remove('hidden');
+  } else {
+    applyLang();
+  }
+
+  if (!currentUser) {
+    showAuthModal();
+  } else {
+    updateUserDisplay();
+    if (currentLang) showPage('home');
+  }
+}
+
+init();
