@@ -180,26 +180,27 @@ input, textarea { cursor: text !important; user-select: text !important; }
 .modal-auth-box input:focus { outline: none; border-color: var(--primary); }
 .auth-tabs {
   display: flex;
-  gap: 0;
+  gap: 0.5rem;
   margin-bottom: 1.25rem;
-  border: 1.5px solid rgba(255,255,255,0.15);
-  border-radius: 8px;
-  overflow: hidden;
 }
 .auth-tab {
   flex: 1;
-  padding: 0.55rem;
-  background: rgba(255,255,255,0.05);
-  border: none;
-  color: rgba(255,255,255,0.6);
+  padding: 0.6rem;
+  background: rgba(255,255,255,0.12);
+  border: 1.5px solid rgba(255,255,255,0.25);
+  border-radius: 8px;
+  color: #fff;
   font-size: 0.9rem;
+  font-weight: 500;
   cursor: pointer;
-  transition: background 0.2s, color 0.2s;
+  transition: background 0.2s, border-color 0.2s;
 }
+.auth-tab:hover { background: rgba(255,255,255,0.2); }
 .auth-tab.active {
   background: var(--primary, #7c3aed);
+  border-color: var(--primary, #7c3aed);
   color: #fff;
-  font-weight: 600;
+  font-weight: 700;
 }
 .auth-error {
   background: rgba(220,38,38,0.15);
