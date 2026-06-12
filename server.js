@@ -58,17 +58,22 @@ app.get('/api/me', (req, res) => {
 });
 
 app.post('/api/register', async (req, res) => {
-  const { username, password } = req.body;
-  if (!username?.trim() || !password) return res.status(400).json({ error: 'Vul alle velden in' });
-  if (username.trim().length < 3) return res.status(400).json({ error: 'Gebruikersnaam moet minimaal 3 tekens zijn' });
-  if (password.length < 6) return res.status(400).json({ error: 'Wachtwoord moet minimaal 6 tekens zijn' });
-  const existing = await pool.query('SELECT id FROM users WHERE LOWER(username) = LOWER($1)', [username.trim()]);
-  if (existing.rows.length) return res.status(400).json({ error: 'Gebruikersnaam al in gebruik' });
-  const hash = bcrypt.hashSync(password, 10);
-  const result = await pool.query('INSERT INTO users (username, password_hash) VALUES ($1, $2) RETURNING id', [username.trim(), hash]);
-  req.session.userId = result.rows[0].id;
-  req.session.username = username.trim();
-  res.json({ ok: true, username: username.trim() });
+  try {
+    const { username, password } = req.body;
+    if (!username?.trim() || !password) return res.status(400).json({ error: 'Vul alle velden in' });
+    if (username.trim().length < 3) return res.status(400).json({ error: 'Gebruikersnaam moet minimaal 3 tekens zijn' });
+    if (password.length < 6) return res.status(400).json({ error: 'Wachtwoord moet minimaal 6 tekens zijn' });
+    const existing = await pool.query('SELECT id FROM users WHERE LOWER(username) = LOWER($1)', [username.trim()]);
+    if (existing.rows.length) return res.status(400).json({ error: 'Gebruikersnaam al in gebruik' });
+    const hash = bcrypt.hashSync(password, 10);
+    const result = await pool.query('INSERT INTO users (username, password_hash) VALUES ($1, $2) RETURNING id', [username.trim(), hash]);
+    req.session.userId = result.rows[0].id;
+    req.session.username = username.trim();
+    res.json({ ok: true, username: username.trim() });
+  } catch (e) {
+    console.error('register error:', e.message);
+    res.status(500).json({ error: 'Serverfout: ' + e.message });
+  }
 });
 
 app.post('/api/login', async (req, res) => {
