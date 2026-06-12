@@ -1,12 +1,15 @@
 const express = require('express');
-const Database = require('better-sqlite3');
+const { Pool } = require('pg');
 const bcrypt = require('bcryptjs');
 const session = require('express-session');
 const path = require('path');
 
 const app = express();
-const DB_PATH = process.env.DATABASE_PATH || 'data.db';
-const db = new Database(DB_PATH);
+
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: process.env.DATABASE_URL ? { rejectUnauthorized: false } : false
+});
 
 app.use(express.json());
 app.use(session({
@@ -18,30 +21,29 @@ app.use(session({
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Database setup
-db.exec(`
-  CREATE TABLE IF NOT EXISTS users (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    username TEXT UNIQUE NOT NULL,
-    password_hash TEXT NOT NULL,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-  );
-  CREATE TABLE IF NOT EXISTS decks (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    user_id INTEGER NOT NULL DEFAULT 0,
-    name TEXT NOT NULL,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-  );
-  CREATE TABLE IF NOT EXISTS cards (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    deck_id INTEGER NOT NULL,
-    question TEXT NOT NULL,
-    answer TEXT NOT NULL,
-    FOREIGN KEY (deck_id) REFERENCES decks(id) ON DELETE CASCADE
-  );
-`);
-
-// Voeg user_id kolom toe als die nog niet bestaat (migratie)
-try { db.exec('ALTER TABLE decks ADD COLUMN user_id INTEGER NOT NULL DEFAULT 0'); } catch {}
+async function initDb() {
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS users (
+      id SERIAL PRIMARY KEY,
+      username TEXT UNIQUE NOT NULL,
+      password_hash TEXT NOT NULL,
+      created_at TIMESTAMPTZ DEFAULT NOW()
+    );
+    CREATE TABLE IF NOT EXISTS decks (
+      id SERIAL PRIMARY KEY,
+      user_id INTEGER NOT NULL DEFAULT 0,
+      name TEXT NOT NULL,
+      created_at TIMESTAMPTZ DEFAULT NOW()
+    );
+    CREATE TABLE IF NOT EXISTS cards (
+      id SERIAL PRIMARY KEY,
+      deck_id INTEGER NOT NULL REFERENCES decks(id) ON DELETE CASCADE,
+      question TEXT NOT NULL,
+      answer TEXT NOT NULL
+    );
+  `);
+}
+initDb().catch(console.error);
 
 // ── Auth middleware ──────────────────────────────────────────
 function requireAuth(req, res, next) {
@@ -55,23 +57,24 @@ app.get('/api/me', (req, res) => {
   res.json({ user: { id: req.session.userId, username: req.session.username } });
 });
 
-app.post('/api/register', (req, res) => {
+app.post('/api/register', async (req, res) => {
   const { username, password } = req.body;
   if (!username?.trim() || !password) return res.status(400).json({ error: 'Vul alle velden in' });
   if (username.trim().length < 3) return res.status(400).json({ error: 'Gebruikersnaam moet minimaal 3 tekens zijn' });
   if (password.length < 6) return res.status(400).json({ error: 'Wachtwoord moet minimaal 6 tekens zijn' });
-  const existing = db.prepare('SELECT id FROM users WHERE LOWER(username) = LOWER(?)').get(username.trim());
-  if (existing) return res.status(400).json({ error: 'Gebruikersnaam al in gebruik' });
+  const existing = await pool.query('SELECT id FROM users WHERE LOWER(username) = LOWER($1)', [username.trim()]);
+  if (existing.rows.length) return res.status(400).json({ error: 'Gebruikersnaam al in gebruik' });
   const hash = bcrypt.hashSync(password, 10);
-  const result = db.prepare('INSERT INTO users (username, password_hash) VALUES (?, ?)').run(username.trim(), hash);
-  req.session.userId = result.lastInsertRowid;
+  const result = await pool.query('INSERT INTO users (username, password_hash) VALUES ($1, $2) RETURNING id', [username.trim(), hash]);
+  req.session.userId = result.rows[0].id;
   req.session.username = username.trim();
   res.json({ ok: true, username: username.trim() });
 });
 
-app.post('/api/login', (req, res) => {
+app.post('/api/login', async (req, res) => {
   const { username, password } = req.body;
-  const user = db.prepare('SELECT * FROM users WHERE LOWER(username) = LOWER(?)').get(username?.trim() || '');
+  const result = await pool.query('SELECT * FROM users WHERE LOWER(username) = LOWER($1)', [username?.trim() || '']);
+  const user = result.rows[0];
   if (!user || !bcrypt.compareSync(password, user.password_hash)) {
     return res.status(401).json({ error: 'Gebruikersnaam of wachtwoord onjuist' });
   }
@@ -86,49 +89,49 @@ app.post('/api/logout', (req, res) => {
 });
 
 // ── Decks ────────────────────────────────────────────────────
-app.get('/api/decks', requireAuth, (req, res) => {
-  const decks = db.prepare(`
-    SELECT d.*, COUNT(c.id) as card_count
+app.get('/api/decks', requireAuth, async (req, res) => {
+  const result = await pool.query(`
+    SELECT d.*, COUNT(c.id)::int as card_count
     FROM decks d LEFT JOIN cards c ON c.deck_id = d.id
-    WHERE d.user_id = ?
+    WHERE d.user_id = $1
     GROUP BY d.id ORDER BY d.created_at DESC
-  `).all(req.session.userId);
-  res.json(decks);
+  `, [req.session.userId]);
+  res.json(result.rows);
 });
 
-app.post('/api/decks', requireAuth, (req, res) => {
+app.post('/api/decks', requireAuth, async (req, res) => {
   const { name } = req.body;
   if (!name?.trim()) return res.status(400).json({ error: 'Naam is verplicht' });
-  const result = db.prepare('INSERT INTO decks (user_id, name) VALUES (?, ?)').run(req.session.userId, name.trim());
-  res.json({ id: result.lastInsertRowid, name: name.trim(), card_count: 0 });
+  const result = await pool.query('INSERT INTO decks (user_id, name) VALUES ($1, $2) RETURNING id', [req.session.userId, name.trim()]);
+  res.json({ id: result.rows[0].id, name: name.trim(), card_count: 0 });
 });
 
-app.delete('/api/decks/:id', requireAuth, (req, res) => {
-  db.prepare('DELETE FROM decks WHERE id = ? AND user_id = ?').run(req.params.id, req.session.userId);
+app.delete('/api/decks/:id', requireAuth, async (req, res) => {
+  await pool.query('DELETE FROM decks WHERE id = $1 AND user_id = $2', [req.params.id, req.session.userId]);
   res.json({ ok: true });
 });
 
 // ── Cards ────────────────────────────────────────────────────
-app.get('/api/decks/:id/cards', requireAuth, (req, res) => {
-  const cards = db.prepare('SELECT * FROM cards WHERE deck_id = ? ORDER BY id').all(req.params.id);
-  res.json(cards);
+app.get('/api/decks/:id/cards', requireAuth, async (req, res) => {
+  const result = await pool.query('SELECT * FROM cards WHERE deck_id = $1 ORDER BY id', [req.params.id]);
+  res.json(result.rows);
 });
 
-app.post('/api/decks/:id/cards', requireAuth, (req, res) => {
+app.post('/api/decks/:id/cards', requireAuth, async (req, res) => {
   const { question, answer } = req.body;
   if (!question?.trim() || !answer?.trim()) return res.status(400).json({ error: 'Vraag en antwoord zijn verplicht' });
-  const result = db.prepare('INSERT INTO cards (deck_id, question, answer) VALUES (?, ?, ?)').run(req.params.id, question.trim(), answer.trim());
-  res.json({ id: result.lastInsertRowid, deck_id: Number(req.params.id), question: question.trim(), answer: answer.trim() });
+  const result = await pool.query('INSERT INTO cards (deck_id, question, answer) VALUES ($1, $2, $3) RETURNING id', [req.params.id, question.trim(), answer.trim()]);
+  res.json({ id: result.rows[0].id, deck_id: Number(req.params.id), question: question.trim(), answer: answer.trim() });
 });
 
-app.put('/api/cards/:id', requireAuth, (req, res) => {
+app.put('/api/cards/:id', requireAuth, async (req, res) => {
   const { question, answer } = req.body;
-  db.prepare('UPDATE cards SET question = ?, answer = ? WHERE id = ?').run(question.trim(), answer.trim(), req.params.id);
+  await pool.query('UPDATE cards SET question = $1, answer = $2 WHERE id = $3', [question.trim(), answer.trim(), req.params.id]);
   res.json({ ok: true });
 });
 
-app.delete('/api/cards/:id', requireAuth, (req, res) => {
-  db.prepare('DELETE FROM cards WHERE id = ?').run(req.params.id);
+app.delete('/api/cards/:id', requireAuth, async (req, res) => {
+  await pool.query('DELETE FROM cards WHERE id = $1', [req.params.id]);
   res.json({ ok: true });
 });
 
