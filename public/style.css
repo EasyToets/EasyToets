@@ -186,16 +186,16 @@ input, textarea { cursor: text !important; user-select: text !important; }
 .auth-tab {
   flex: 1;
   padding: 0.6rem;
-  background: rgba(255,255,255,0.12);
-  border: 1.5px solid rgba(255,255,255,0.25);
+  background: var(--bg, #f5f3ff);
+  border: 1.5px solid var(--border, #e5e7eb);
   border-radius: 8px;
-  color: #fff;
+  color: var(--text-muted, #6b7280);
   font-size: 0.9rem;
   font-weight: 500;
   cursor: pointer;
-  transition: background 0.2s, border-color 0.2s;
+  transition: background 0.2s, border-color 0.2s, color 0.2s;
 }
-.auth-tab:hover { background: rgba(255,255,255,0.2); }
+.auth-tab:hover { border-color: var(--primary, #7c3aed); color: var(--primary, #7c3aed); }
 .auth-tab.active {
   background: var(--primary, #7c3aed);
   border-color: var(--primary, #7c3aed);
