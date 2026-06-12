@@ -641,9 +641,7 @@ function showAuthTab(mode) {
   const isLogin = mode === 'login';
   document.getElementById('auth-tab-login').classList.toggle('active', isLogin);
   document.getElementById('auth-tab-register').classList.toggle('active', !isLogin);
-  document.getElementById('auth-submit-btn').textContent = isLogin
-    ? (currentLang === 'en' ? 'Log in' : 'Inloggen')
-    : (currentLang === 'en' ? 'Create account' : 'Account aanmaken');
+  document.getElementById('auth-submit-btn').textContent = isLogin ? 'Log in' : 'Create account';
   document.getElementById('auth-error').classList.add('hidden');
   document.getElementById('auth-username').focus();
 }
@@ -654,7 +652,7 @@ async function submitAuth() {
   const errEl = document.getElementById('auth-error');
   errEl.classList.add('hidden');
   if (!username || !password) {
-    errEl.textContent = currentLang === 'en' ? 'Please fill in all fields.' : 'Vul alle velden in.';
+    errEl.textContent = 'Please fill in all fields.';
     errEl.classList.remove('hidden');
     return;
   }
