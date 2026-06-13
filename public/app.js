@@ -997,9 +997,10 @@ function applyAuthLang() {
   document.getElementById('auth-lang-switch').textContent = tr.switch;
 }
 
-function showAuthModal() {
+function showAuthModal(mode) {
   document.getElementById('modal-auth').classList.remove('hidden');
   document.body.style.overflow = 'hidden';
+  if (mode) showAuthTab(mode);
   document.getElementById('auth-username').focus();
 }
 
@@ -1116,10 +1117,10 @@ async function init() {
     if (darkBtn) darkBtn.textContent = document.documentElement.classList.contains('dark') ? '☀️' : '🌙';
     showPage('home');
     if (typeof loadSidebarPlans === 'function') loadSidebarPlans();
-    checkShareUrl();
   } else {
     showLanding();
   }
+  checkShareUrl();
 }
 
 init();
@@ -1368,16 +1369,36 @@ async function checkShareUrl() {
   if (!m) return;
   sharedDeckToken = m[1];
   const res = await fetch('/api/share/' + sharedDeckToken);
-  if (!res.ok) return;
+  if (!res.ok) {
+    document.getElementById('shared-deck-info').innerHTML = '<p style="color:var(--danger)">Dit deck bestaat niet of is niet meer gedeeld.</p>';
+    openModal('modal-shared-deck');
+    return;
+  }
   const { deck, cards } = await res.json();
   document.getElementById('shared-deck-info').innerHTML = `
-    <p><strong>${esc(deck.name)}</strong></p>
-    <p>${cards.length} kaartjes · gemaakt door <strong>${esc(deck.owner)}</strong></p>`;
+    <div class="shared-deck-preview">
+      <div class="shared-deck-name">${esc(deck.name)}</div>
+      <div class="shared-deck-meta">${cards.length} kaartjes · gemaakt door <strong>${esc(deck.owner)}</strong></div>
+    </div>`;
+  const copyBtn = document.getElementById('btn-copy-deck');
+  if (!currentUser) {
+    copyBtn.textContent = '🔐 Inloggen om te kopiëren';
+  } else {
+    copyBtn.textContent = '➕ Kopieer naar mijn decks';
+  }
+  if (!currentUser) hideLanding();
   openModal('modal-shared-deck');
 }
 
 async function copySharedDeck() {
-  if (!currentUser) { showAuthModal(); return; }
+  if (!currentUser) {
+    closeModal('modal-shared-deck');
+    showAuthModal('register');
+    return;
+  }
+  const btn = document.getElementById('btn-copy-deck');
+  btn.disabled = true;
+  btn.textContent = 'Bezig...';
   const res = await fetch('/api/share/' + sharedDeckToken + '/copy', { method: 'POST' });
   const data = await res.json();
   if (data.ok) {
@@ -1385,5 +1406,8 @@ async function copySharedDeck() {
     await loadDecks();
     showPage('home');
     history.replaceState(null, '', '/');
+  } else {
+    btn.disabled = false;
+    btn.textContent = '➕ Kopieer naar mijn decks';
   }
 }

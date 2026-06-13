@@ -1486,3 +1486,30 @@ main input, main textarea { cursor: text; user-select: text; }
   user-select: text;
 }
 .share-status { font-size: 0.88rem; color: var(--primary); font-weight: 600; min-height: 1.2rem; }
+
+.btn-share-app {
+  display: block;
+  width: 100%;
+  background: rgba(255,255,255,0.12);
+  border: 1px solid rgba(255,255,255,0.22);
+  border-radius: 12px;
+  color: white;
+  font-size: 0.88rem;
+  font-weight: 700;
+  padding: 0.6rem 1rem;
+  cursor: pointer;
+  text-align: center;
+  margin-bottom: 0.65rem;
+  transition: background 0.2s, transform 0.15s;
+  font-family: inherit;
+}
+.btn-share-app:hover { background: rgba(255,255,255,0.22); transform: translateY(-1px); }
+
+.shared-deck-preview {
+  background: var(--bg);
+  border-radius: 12px;
+  padding: 1rem 1.25rem;
+  margin: 0.5rem 0;
+}
+.shared-deck-name { font-size: 1.1rem; font-weight: 800; color: var(--text); margin-bottom: 0.3rem; }
+.shared-deck-meta { font-size: 0.87rem; color: var(--text-muted); }
