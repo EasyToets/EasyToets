@@ -502,6 +502,9 @@ let sessionMode = '';
 let sessionDeckId = null;
 let flipped = false;
 
+const fcSession  = { cards: [], index: 0, correct: 0, deckId: null };
+const qzSession  = { cards: [], index: 0, correct: 0, deckId: null };
+
 // ── Navigation ──────────────────────────────────────────────
 function showPage(page) {
   document.querySelectorAll('main > section').forEach(s => s.classList.add('hidden'));
@@ -720,26 +723,19 @@ async function saveCardEdit() {
 async function startFlashcards() {
   const empty = document.getElementById('fc-empty');
   const wrapper = document.getElementById('fc-wrapper');
-  if (sessionMode === 'flashcard' && sessionDeckId === currentDeckId && sessionIndex < sessionCards.length) {
-    empty.style.display = 'none';
-    wrapper.style.display = 'flex';
-    showFlashcard();
-    return;
+  if (fcSession.deckId === currentDeckId && fcSession.index < fcSession.cards.length) {
+    sessionCards = fcSession.cards; sessionIndex = fcSession.index; sessionCorrect = fcSession.correct;
+    sessionMode = 'flashcard'; sessionDeckId = currentDeckId;
+    empty.style.display = 'none'; wrapper.style.display = 'flex';
+    showFlashcard(); return;
   }
   const res = await fetch('/api/decks/' + currentDeckId + '/cards');
   const cards = await res.json();
-  if (cards.length === 0) {
-    empty.style.display = 'block';
-    wrapper.style.display = 'none';
-    return;
-  }
-  empty.style.display = 'none';
-  wrapper.style.display = 'flex';
-  sessionCards = shuffle([...cards]);
-  sessionIndex = 0;
-  sessionCorrect = 0;
-  sessionMode = 'flashcard';
-  sessionDeckId = currentDeckId;
+  if (cards.length === 0) { empty.style.display = 'block'; wrapper.style.display = 'none'; return; }
+  sessionCards = shuffle([...cards]); sessionIndex = 0; sessionCorrect = 0;
+  sessionMode = 'flashcard'; sessionDeckId = currentDeckId;
+  fcSession.deckId = currentDeckId; fcSession.cards = sessionCards; fcSession.index = 0; fcSession.correct = 0;
+  empty.style.display = 'none'; wrapper.style.display = 'flex';
   showFlashcard();
 }
 
@@ -765,7 +761,8 @@ function nextCard(correct) {
     showConfetti();
   }
   sessionIndex++;
-  if (sessionIndex >= sessionCards.length) return showResult();
+  fcSession.index = sessionIndex; fcSession.correct = sessionCorrect;
+  if (sessionIndex >= sessionCards.length) { fcSession.deckId = null; return showResult(); }
   showFlashcard();
 }
 
@@ -773,26 +770,19 @@ function nextCard(correct) {
 async function startQuiz() {
   const empty = document.getElementById('quiz-empty');
   const wrapper = document.getElementById('quiz-wrapper');
-  if (sessionMode === 'quiz' && sessionDeckId === currentDeckId && sessionIndex < sessionCards.length) {
-    empty.style.display = 'none';
-    wrapper.style.display = 'flex';
-    showQuizQuestion();
-    return;
+  if (qzSession.deckId === currentDeckId && qzSession.index < qzSession.cards.length) {
+    sessionCards = qzSession.cards; sessionIndex = qzSession.index; sessionCorrect = qzSession.correct;
+    sessionMode = 'quiz'; sessionDeckId = currentDeckId;
+    empty.style.display = 'none'; wrapper.style.display = 'flex';
+    showQuizQuestion(); return;
   }
   const res = await fetch('/api/decks/' + currentDeckId + '/cards');
   const cards = await res.json();
-  if (cards.length < 2) {
-    empty.style.display = 'block';
-    wrapper.style.display = 'none';
-    return;
-  }
-  empty.style.display = 'none';
-  wrapper.style.display = 'flex';
-  sessionCards = shuffle([...cards]);
-  sessionIndex = 0;
-  sessionCorrect = 0;
-  sessionMode = 'quiz';
-  sessionDeckId = currentDeckId;
+  if (cards.length < 2) { empty.style.display = 'block'; wrapper.style.display = 'none'; return; }
+  sessionCards = shuffle([...cards]); sessionIndex = 0; sessionCorrect = 0;
+  sessionMode = 'quiz'; sessionDeckId = currentDeckId;
+  qzSession.deckId = currentDeckId; qzSession.cards = sessionCards; qzSession.index = 0; qzSession.correct = 0;
+  empty.style.display = 'none'; wrapper.style.display = 'flex';
   showQuizQuestion();
 }
 
@@ -822,7 +812,8 @@ function answerQuiz(btn, chosen, correct) {
   else btn.classList.add('wrong');
   setTimeout(() => {
     sessionIndex++;
-    if (sessionIndex >= sessionCards.length) showResult();
+    qzSession.index = sessionIndex; qzSession.correct = sessionCorrect;
+    if (sessionIndex >= sessionCards.length) { qzSession.deckId = null; showResult(); }
     else showQuizQuestion();
   }, 1200);
 }
