@@ -180,6 +180,7 @@
         <button class="menu-dots-btn" id="btn-topbar-menu" onclick="toggleTopbarMenu()">⋮</button>
         <div class="menu-dropdown hidden" id="menu-dropdown">
           <button id="menu-item-home" onclick="menuGoHome()" class="hidden">🏠 <span id="menu-label-home">Mijn Decks</span></button>
+          <button onclick="shareApp(); closeTopbarMenu()">🔗 <span>App delen</span></button>
           <button id="menu-item-lang" onclick="showLangPicker(); closeTopbarMenu()">🌐 <span id="menu-label-lang">Taal wisselen</span></button>
           <button id="menu-item-logout" onclick="doLogout()">🚪 <span id="menu-label-logout">Uitloggen</span></button>
         </div>
@@ -558,6 +559,26 @@
       <button class="btn accent" onclick="previewBulk()">Controleren</button>
       <button class="btn primary hidden" id="btn-bulk-import" onclick="importBulk()">Importeren</button>
     </div>
+  </div>
+</div>
+
+<!-- MODAL: App delen -->
+<div id="modal-share-app" class="modal hidden">
+  <div class="modal-box">
+    <h3>🔗 Deel EasyToets</h3>
+    <p class="modal-hint">Help andere scholieren slim leren — deel de app!</p>
+    <div class="share-app-btns">
+      <button class="share-app-btn share-app-x" onclick="shareToX()">
+        <span class="share-app-icon">𝕏</span> Delen op X
+      </button>
+      <button class="share-app-btn share-app-wa" onclick="shareToWhatsApp()">
+        <span class="share-app-icon">💬</span> Delen via WhatsApp
+      </button>
+      <button class="share-app-btn share-app-copy" onclick="shareAppCopyLink()">
+        <span class="share-app-icon">📋</span> <span id="share-app-copy-label">Link kopiëren</span>
+      </button>
+    </div>
+    <button class="btn secondary" style="width:100%;margin-top:0.5rem" onclick="closeModal('modal-share-app')">Sluiten</button>
   </div>
 </div>
 

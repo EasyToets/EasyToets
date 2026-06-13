@@ -1228,6 +1228,31 @@ function installApp() {
   installPrompt.userChoice.then(() => { installPrompt = null; });
 }
 
+// ── App delen ─────────────────────────────────────────────────
+const APP_URL = 'https://easytoets.up.railway.app';
+const APP_TEXT = 'Leer slimmer met EasyToets — gratis flashcards, AI-hints en meer! 🚀';
+
+function shareApp() {
+  if (navigator.share) {
+    navigator.share({ title: 'EasyToets', text: APP_TEXT, url: APP_URL }).catch(() => {});
+  } else {
+    openModal('modal-share-app');
+  }
+}
+function shareToX() {
+  window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(APP_TEXT + '\n' + APP_URL)}`, '_blank');
+}
+function shareToWhatsApp() {
+  window.open(`https://wa.me/?text=${encodeURIComponent(APP_TEXT + '\n' + APP_URL)}`, '_blank');
+}
+function shareAppCopyLink() {
+  navigator.clipboard.writeText(APP_URL).then(() => {
+    const lbl = document.getElementById('share-app-copy-label');
+    lbl.textContent = '✅ Gekopieerd!';
+    setTimeout(() => lbl.textContent = 'Link kopiëren', 2000);
+  });
+}
+
 // ── Dark mode ─────────────────────────────────────────────────
 function toggleDark() {
   const isDark = document.documentElement.classList.toggle('dark');
