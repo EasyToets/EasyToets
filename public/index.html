@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>EasyToets</title>
   <link rel="stylesheet" href="style.css">
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#6c63ff">
 </head>
 <body>
 
@@ -22,6 +24,9 @@
       </button>
       <button class="nav-item" id="nav-help" onclick="showPage('help')">
         <span class="nav-icon">❓</span> <span id="nav-help-label">Uitleg</span>
+      </button>
+      <button class="nav-item" id="nav-install" onclick="installApp()" style="display:none">
+        <span class="nav-icon">⬇️</span> <span id="nav-install-label">Installeer app</span>
       </button>
       <button class="nav-item" id="nav-deck" onclick="showPage('deck')" style="display:none">
         <span class="nav-icon">🗂️</span> <span id="nav-deck-label">Deck</span>
@@ -281,5 +286,10 @@
 
 
 <script src="app.js"></script>
+<script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/sw.js');
+  }
+</script>
 </body>
 </html>

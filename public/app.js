@@ -753,3 +753,23 @@ async function init() {
 }
 
 init();
+
+// ── PWA installeren ───────────────────────────────────────────
+let installPrompt = null;
+
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  installPrompt = e;
+  document.getElementById('nav-install').style.display = '';
+});
+
+window.addEventListener('appinstalled', () => {
+  document.getElementById('nav-install').style.display = 'none';
+  installPrompt = null;
+});
+
+function installApp() {
+  if (!installPrompt) return;
+  installPrompt.prompt();
+  installPrompt.userChoice.then(() => { installPrompt = null; });
+}
