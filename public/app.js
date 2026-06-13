@@ -846,7 +846,6 @@ function showResult() {
   document.getElementById('result-emoji').textContent = emoji;
   document.getElementById('result-text').textContent  = t('result_text', sessionCorrect, sessionCards.length, pct);
   if (sessionMode === 'quiz') recordQuizStat(currentDeckName, sessionCorrect, sessionCards.length);
-  updateStreak();
   showPage('result');
 }
 
@@ -1032,7 +1031,7 @@ async function submitAuth() {
   hideAuthModal();
   hideLanding();
   updateUserDisplay();
-  renderStreak();
+  renderStreak(data.streak);
   showPage('home');
   if (typeof loadSidebarPlans === 'function') loadSidebarPlans();
 }
@@ -1090,7 +1089,7 @@ async function init() {
   if (currentUser) {
     if (currentLang) applyLang();
     updateUserDisplay();
-    renderStreak();
+    renderStreak(meData.user.streak);
     showPage('home');
     if (typeof loadSidebarPlans === 'function') loadSidebarPlans();
   } else {
@@ -1135,28 +1134,9 @@ function getMasteredCount(userId, deckId) {
 }
 
 // ── Streak ────────────────────────────────────────────────────
-function updateStreak() {
-  const today = new Date().toISOString().slice(0, 10);
-  const last  = localStorage.getItem('et_last_study');
-  let streak  = parseInt(localStorage.getItem('et_streak') || '0');
-  const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
-  if (last === today) {
-    // al geteld vandaag
-  } else if (last === yesterday) {
-    streak++;
-    localStorage.setItem('et_streak', streak);
-    localStorage.setItem('et_last_study', today);
-  } else {
-    streak = 1;
-    localStorage.setItem('et_streak', 1);
-    localStorage.setItem('et_last_study', today);
-  }
-  renderStreak();
-}
-function renderStreak() {
-  const streak = parseInt(localStorage.getItem('et_streak') || '0');
-  const badge  = document.getElementById('streak-badge');
-  if (!currentUser || streak < 1) { badge.classList.add('hidden'); return; }
+function renderStreak(streak) {
+  const badge = document.getElementById('streak-badge');
+  if (!currentUser || !streak || streak < 1) { badge.classList.add('hidden'); return; }
   badge.classList.remove('hidden');
   document.getElementById('streak-count').textContent = streak;
   document.getElementById('streak-label').textContent = streak === 1 ? t('streak_day') : t('streak_days');

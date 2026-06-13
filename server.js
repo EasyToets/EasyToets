@@ -41,8 +41,12 @@ async function initDb() {
       id SERIAL PRIMARY KEY,
       username TEXT UNIQUE NOT NULL,
       password_hash TEXT NOT NULL,
-      created_at TIMESTAMPTZ DEFAULT NOW()
+      created_at TIMESTAMPTZ DEFAULT NOW(),
+      streak INTEGER NOT NULL DEFAULT 0,
+      last_login_date TEXT
     );
+    ALTER TABLE users ADD COLUMN IF NOT EXISTS streak INTEGER NOT NULL DEFAULT 0;
+    ALTER TABLE users ADD COLUMN IF NOT EXISTS last_login_date TEXT;
     CREATE TABLE IF NOT EXISTS decks (
       id SERIAL PRIMARY KEY,
       user_id INTEGER NOT NULL DEFAULT 0,
@@ -66,9 +70,21 @@ function requireAuth(req, res, next) {
 }
 
 // ── Auth routes ──────────────────────────────────────────────
-app.get('/api/me', (req, res) => {
+async function checkinStreak(userId) {
+  const today = new Date().toISOString().slice(0, 10);
+  const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
+  const r = await pool.query('SELECT streak, last_login_date FROM users WHERE id=$1', [userId]);
+  const { streak, last_login_date } = r.rows[0];
+  if (last_login_date === today) return streak;
+  const newStreak = last_login_date === yesterday ? (streak || 0) + 1 : 1;
+  await pool.query('UPDATE users SET streak=$1, last_login_date=$2 WHERE id=$3', [newStreak, today, userId]);
+  return newStreak;
+}
+
+app.get('/api/me', async (req, res) => {
   if (!req.session.userId) return res.json({ user: null });
-  res.json({ user: { id: req.session.userId, username: req.session.username } });
+  const streak = await checkinStreak(req.session.userId);
+  res.json({ user: { id: req.session.userId, username: req.session.username, streak } });
 });
 
 app.post('/api/register', async (req, res) => {
@@ -99,7 +115,8 @@ app.post('/api/login', async (req, res) => {
   }
   req.session.userId = user.id;
   req.session.username = user.username;
-  res.json({ ok: true, username: user.username });
+  const streak = await checkinStreak(user.id);
+  res.json({ ok: true, username: user.username, streak });
 });
 
 app.post('/api/logout', (req, res) => {
