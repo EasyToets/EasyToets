@@ -247,6 +247,12 @@ function showPage(page) {
   const menuHome = document.getElementById('menu-item-home');
   if (menuHome) menuHome.classList.toggle('hidden', page === 'home');
 
+  if (page === 'stats') {
+    document.getElementById('nav-stats').classList.add('active');
+    setTopbar(currentLang === 'en' ? 'Statistics' : 'Statistieken', []);
+    renderStats();
+  }
+
   if (page === 'help') {
     document.getElementById('nav-help').classList.add('active');
     setTopbar(t('nav_help'), []);
@@ -318,16 +324,23 @@ async function loadDecks() {
     </div>`;
     return;
   }
-  el.innerHTML = decks.map(d => `
+  el.innerHTML = decks.map(d => {
+    const mastered = getMasteredCount(currentUser?.username, d.id);
+    const total    = d.card_count;
+    const pct      = total > 0 ? Math.round(mastered / total * 100) : 0;
+    const col      = pct >= 80 ? 'green' : pct >= 40 ? 'orange' : 'red';
+    const bar      = total > 0 ? `<div class="deck-progress"><div class="deck-progress-fill ${col}" style="width:${pct}%"></div></div>` : '';
+    return `
     <div class="deck-card">
       <h3>${esc(d.name)}</h3>
-      <p class="meta">${t('card_count', d.card_count)}</p>
+      <p class="meta">${t('card_count', d.card_count)}${total > 0 ? ` · ${pct}% beheerst` : ''}</p>
+      ${bar}
       <div class="card-actions">
         <button class="btn primary" onclick="openDeck(${d.id}, '${esc(d.name)}')">${t('btn_open')}</button>
         <button class="btn secondary" onclick="deleteDeck(${d.id}, event)">${t('btn_delete')}</button>
       </div>
-    </div>
-  `).join('');
+    </div>`;
+  }).join('');
 }
 
 async function createDeck() {
@@ -457,7 +470,11 @@ function flipCard() {
 }
 
 function nextCard(correct) {
-  if (correct) sessionCorrect++;
+  if (correct) {
+    sessionCorrect++;
+    markCardMastered(sessionCards[sessionIndex].id);
+    showConfetti();
+  }
   sessionIndex++;
   if (sessionIndex >= sessionCards.length) return showResult();
   showFlashcard();
@@ -503,7 +520,7 @@ function answerQuiz(btn, chosen, correct) {
     b.disabled = true;
     if (b.textContent === correct) b.classList.add('correct');
   });
-  if (chosen === correct) { btn.classList.add('correct'); sessionCorrect++; }
+  if (chosen === correct) { btn.classList.add('correct'); sessionCorrect++; showConfetti(); }
   else btn.classList.add('wrong');
   setTimeout(() => {
     sessionIndex++;
@@ -518,6 +535,8 @@ function showResult() {
   const emoji = pct >= 80 ? '🎉' : pct >= 50 ? '💪' : '📖';
   document.getElementById('result-emoji').textContent = emoji;
   document.getElementById('result-text').textContent  = t('result_text', sessionCorrect, sessionCards.length, pct);
+  if (sessionMode === 'quiz') recordQuizStat(currentDeckName, sessionCorrect, sessionCards.length);
+  updateStreak();
   showPage('result');
 }
 
@@ -705,6 +724,7 @@ async function submitAuth() {
   document.getElementById('auth-username').value = '';
   hideAuthModal();
   updateUserDisplay();
+  renderStreak();
   showPage('home');
 }
 
@@ -753,6 +773,111 @@ async function init() {
 }
 
 init();
+
+// ── Confetti ──────────────────────────────────────────────────
+function showConfetti() {
+  const colors = ['#7c3aed','#06b6d4','#059669','#f59e0b','#ec4899','#f97316'];
+  const container = document.getElementById('confetti-container');
+  for (let i = 0; i < 22; i++) {
+    const el = document.createElement('div');
+    el.className = 'confetti-piece';
+    el.style.left = (20 + Math.random() * 60) + '%';
+    el.style.top = (10 + Math.random() * 40) + '%';
+    el.style.background = colors[Math.floor(Math.random() * colors.length)];
+    el.style.animationDelay = (Math.random() * 0.3) + 's';
+    el.style.transform = `rotate(${Math.random()*360}deg)`;
+    container.appendChild(el);
+    setTimeout(() => el.remove(), 1200);
+  }
+}
+
+// ── Mastery (kaartjes beheerst) ───────────────────────────────
+function masteryKey() {
+  return 'et_mastered_' + (currentUser?.username || 'guest') + '_' + currentDeckId;
+}
+function getMastered() {
+  return new Set(JSON.parse(localStorage.getItem(masteryKey()) || '[]'));
+}
+function markCardMastered(cardId) {
+  const s = getMastered();
+  s.add(cardId);
+  localStorage.setItem(masteryKey(), JSON.stringify([...s]));
+}
+function getMasteredCount(userId, deckId) {
+  const key = 'et_mastered_' + (userId || 'guest') + '_' + deckId;
+  return JSON.parse(localStorage.getItem(key) || '[]').length;
+}
+
+// ── Streak ────────────────────────────────────────────────────
+function updateStreak() {
+  const today = new Date().toISOString().slice(0, 10);
+  const last  = localStorage.getItem('et_last_study');
+  let streak  = parseInt(localStorage.getItem('et_streak') || '0');
+  const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
+  if (last === today) {
+    // al geteld vandaag
+  } else if (last === yesterday) {
+    streak++;
+    localStorage.setItem('et_streak', streak);
+    localStorage.setItem('et_last_study', today);
+  } else {
+    streak = 1;
+    localStorage.setItem('et_streak', 1);
+    localStorage.setItem('et_last_study', today);
+  }
+  renderStreak();
+}
+function renderStreak() {
+  const streak = parseInt(localStorage.getItem('et_streak') || '0');
+  const badge  = document.getElementById('streak-badge');
+  if (!currentUser || streak < 1) { badge.classList.add('hidden'); return; }
+  badge.classList.remove('hidden');
+  document.getElementById('streak-count').textContent = streak;
+  document.getElementById('streak-label').textContent = currentLang === 'en'
+    ? (streak === 1 ? 'day streak' : 'days in a row')
+    : (streak === 1 ? 'dag op rij' : 'dagen op rij');
+}
+
+// ── Stats (quizscores opslaan) ────────────────────────────────
+function recordQuizStat(deckName, correct, total) {
+  const key  = 'et_stats_' + (currentUser?.username || 'guest');
+  const list = JSON.parse(localStorage.getItem(key) || '[]');
+  list.push({ deck: deckName, correct, total, pct: Math.round(correct / total * 100), date: new Date().toISOString().slice(0,10) });
+  if (list.length > 50) list.splice(0, list.length - 50);
+  localStorage.setItem(key, JSON.stringify(list));
+}
+function renderStats() {
+  const key  = 'et_stats_' + (currentUser?.username || 'guest');
+  const list = JSON.parse(localStorage.getItem(key) || '[]');
+
+  const sumEl   = document.getElementById('stats-summary');
+  const chartEl = document.getElementById('stats-chart');
+
+  if (list.length === 0) {
+    sumEl.innerHTML   = '';
+    chartEl.innerHTML = `<p class="stats-empty">${currentLang === 'en' ? 'No quiz results yet. Take a quiz first!' : 'Nog geen quizresultaten. Doe eerst een toets!'}</p>`;
+    return;
+  }
+
+  const avg = Math.round(list.reduce((s, r) => s + r.pct, 0) / list.length);
+  const best = Math.max(...list.map(r => r.pct));
+  sumEl.innerHTML = `
+    <div class="stats-card"><span class="stats-num">${list.length}</span><div class="stats-lbl">${currentLang === 'en' ? 'Quizzes taken' : 'Toetsen gemaakt'}</div></div>
+    <div class="stats-card"><span class="stats-num">${avg}%</span><div class="stats-lbl">${currentLang === 'en' ? 'Average score' : 'Gemiddelde score'}</div></div>
+    <div class="stats-card"><span class="stats-num">${best}%</span><div class="stats-lbl">${currentLang === 'en' ? 'Best score' : 'Beste score'}</div></div>
+  `;
+
+  const recent = list.slice(-20);
+  const maxPct = 100;
+  chartEl.innerHTML = recent.map(r => {
+    const h = Math.round((r.pct / maxPct) * 88);
+    const col = r.pct >= 80 ? 'green' : r.pct >= 50 ? 'orange' : 'red';
+    return `<div class="stats-bar-wrap">
+      <div class="stats-bar ${col}" style="height:${h}px" title="${r.deck}: ${r.pct}%"></div>
+      <span class="stats-bar-pct">${r.pct}%</span>
+    </div>`;
+  }).join('');
+}
 
 // ── PWA installeren ───────────────────────────────────────────
 let installPrompt = null;

@@ -18,9 +18,15 @@
       <span class="logo-icon">⚡</span>
       <span class="logo-text">EasyToets</span>
     </div>
+    <div class="streak-badge hidden" id="streak-badge">
+      <span>🔥</span> <span id="streak-count">0</span> <span id="streak-label">dagen op rij</span>
+    </div>
     <nav class="sidebar-nav">
       <button class="nav-item active" id="nav-home" onclick="showPage('home')">
         <span class="nav-icon">📚</span> Mijn Decks
+      </button>
+      <button class="nav-item" id="nav-stats" onclick="showPage('stats')">
+        <span class="nav-icon">📊</span> <span id="nav-stats-label">Statistieken</span>
       </button>
       <button class="nav-item" id="nav-help" onclick="showPage('help')">
         <span class="nav-icon">❓</span> <span id="nav-help-label">Uitleg</span>
@@ -195,9 +201,24 @@
         </div>
       </section>
 
+      <!-- STATISTIEKEN -->
+      <section id="page-stats" class="hidden">
+        <div class="stats-content">
+          <h2 id="stats-title">📊 Statistieken</h2>
+          <div id="stats-summary" class="stats-summary"></div>
+          <div id="stats-chart-wrap">
+            <p class="stats-chart-label" id="stats-chart-label">Recente quiz scores</p>
+            <div id="stats-chart" class="stats-chart"></div>
+          </div>
+        </div>
+      </section>
+
     </main>
   </div>
 </div>
+
+<!-- CONFETTI -->
+<div id="confetti-container" style="position:fixed;inset:0;pointer-events:none;z-index:9999;overflow:hidden"></div>
 
 <!-- MODAL: nieuw deck -->
 <div id="modal-new-deck" class="modal hidden">
