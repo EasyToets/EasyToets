@@ -499,6 +499,7 @@ let sessionCards = [];
 let sessionIndex = 0;
 let sessionCorrect = 0;
 let sessionMode = '';
+let sessionDeckId = null;
 let flipped = false;
 
 // ── Navigation ──────────────────────────────────────────────
@@ -717,10 +718,16 @@ async function saveCardEdit() {
 
 // ── Flashcards ───────────────────────────────────────────────
 async function startFlashcards() {
-  const res = await fetch('/api/decks/' + currentDeckId + '/cards');
-  const cards = await res.json();
   const empty = document.getElementById('fc-empty');
   const wrapper = document.getElementById('fc-wrapper');
+  if (sessionMode === 'flashcard' && sessionDeckId === currentDeckId && sessionIndex < sessionCards.length) {
+    empty.style.display = 'none';
+    wrapper.style.display = 'flex';
+    showFlashcard();
+    return;
+  }
+  const res = await fetch('/api/decks/' + currentDeckId + '/cards');
+  const cards = await res.json();
   if (cards.length === 0) {
     empty.style.display = 'block';
     wrapper.style.display = 'none';
@@ -732,6 +739,7 @@ async function startFlashcards() {
   sessionIndex = 0;
   sessionCorrect = 0;
   sessionMode = 'flashcard';
+  sessionDeckId = currentDeckId;
   showFlashcard();
 }
 
@@ -763,10 +771,16 @@ function nextCard(correct) {
 
 // ── Quiz ─────────────────────────────────────────────────────
 async function startQuiz() {
-  const res = await fetch('/api/decks/' + currentDeckId + '/cards');
-  const cards = await res.json();
   const empty = document.getElementById('quiz-empty');
   const wrapper = document.getElementById('quiz-wrapper');
+  if (sessionMode === 'quiz' && sessionDeckId === currentDeckId && sessionIndex < sessionCards.length) {
+    empty.style.display = 'none';
+    wrapper.style.display = 'flex';
+    showQuizQuestion();
+    return;
+  }
+  const res = await fetch('/api/decks/' + currentDeckId + '/cards');
+  const cards = await res.json();
   if (cards.length < 2) {
     empty.style.display = 'block';
     wrapper.style.display = 'none';
@@ -778,6 +792,7 @@ async function startQuiz() {
   sessionIndex = 0;
   sessionCorrect = 0;
   sessionMode = 'quiz';
+  sessionDeckId = currentDeckId;
   showQuizQuestion();
 }
 
