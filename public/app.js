@@ -527,6 +527,19 @@ function showPage(page) {
     document.getElementById('help-en').classList.toggle('hidden', currentLang !== 'en');
   }
 
+  if (page === 'ai') {
+    document.getElementById('nav-ai').classList.add('active');
+    setTopbar('✨ AI Tools', []);
+    const hasDeck = !!currentDeckId;
+    document.getElementById('page-ai').querySelectorAll('.ai-tool-card').forEach(c => {
+      c.classList.toggle('ai-tool-disabled', !hasDeck);
+    });
+    const intro = document.querySelector('.ai-tools-intro');
+    if (intro) intro.textContent = hasDeck
+      ? `Actief deck: ${currentDeckName}`
+      : 'Selecteer eerst een deck via Mijn Decks, dan kun je de AI tools gebruiken.';
+  }
+
   if (page === 'home') {
     document.getElementById('nav-home').classList.add('active');
     document.getElementById('nav-deck').style.display = 'none';

@@ -99,6 +99,9 @@
       <button class="nav-item" id="nav-help" onclick="showPage('help')">
         <span class="nav-icon">❓</span> <span id="nav-help-label">Uitleg</span>
       </button>
+      <button class="nav-item" id="nav-ai" onclick="showPage('ai')">
+        <span class="nav-icon">✨</span> <span>AI Tools</span>
+      </button>
       <button class="nav-item" id="nav-install" onclick="installApp()" style="display:none">
         <span class="nav-icon">⬇️</span> <span id="nav-install-label">Installeer app</span>
       </button>
@@ -195,6 +198,50 @@
         </div>
       </section>
 
+      <!-- AI TOOLS -->
+      <section id="page-ai" class="hidden">
+        <div class="ai-tools-page">
+          <h2>✨ AI Tools</h2>
+          <p class="ai-tools-intro">Selecteer eerst een deck, dan kun je de AI tools gebruiken.</p>
+
+          <div class="ai-tool-card" id="aitool-generate" onclick="requireDeckThen('modal-ai')">
+            <div class="ai-tool-icon">✨</div>
+            <div class="ai-tool-info">
+              <strong>Kaartjes genereren</strong>
+              <span>Plak een tekst en de AI maakt automatisch flashcards</span>
+            </div>
+            <div class="ai-tool-arrow">→</div>
+          </div>
+
+          <div class="ai-tool-card" id="aitool-plan" onclick="requireDeckThen('studyplan')">
+            <div class="ai-tool-icon">📅</div>
+            <div class="ai-tool-info">
+              <strong>Studieplan</strong>
+              <span>Vul je toetsdatum in — AI maakt een dagelijks schema</span>
+            </div>
+            <div class="ai-tool-arrow">→</div>
+          </div>
+
+          <div class="ai-tool-card" id="aitool-hint" onclick="requireDeckThen('flashcard')">
+            <div class="ai-tool-icon">💡</div>
+            <div class="ai-tool-info">
+              <strong>Oefenen met hints</strong>
+              <span>Oefen met kaartjes en vraag een AI-hint als je vastloopt</span>
+            </div>
+            <div class="ai-tool-arrow">→</div>
+          </div>
+
+          <div class="ai-tool-card" id="aitool-explain" onclick="requireDeckThen('cards')">
+            <div class="ai-tool-icon">🔍</div>
+            <div class="ai-tool-info">
+              <strong>Uitleg per kaartje</strong>
+              <span>Klik op ✨ Uitleg bij een kaartje voor een diepere uitleg</span>
+            </div>
+            <div class="ai-tool-arrow">→</div>
+          </div>
+        </div>
+      </section>
+
       <!-- HOME -->
       <section id="page-home">
         <div id="deck-list" class="deck-grid"></div>
@@ -216,10 +263,6 @@
 
         <!-- Tab: kaartjes beheren -->
         <div id="tab-content-cards">
-          <div class="ai-bar">
-            <button class="btn ai-btn" onclick="openModal('modal-ai')">✨ AI kaartjes genereren</button>
-            <button class="btn ai-btn" onclick="openStudyPlan()">📅 Studieplan</button>
-          </div>
           <div id="card-list" class="card-grid"></div>
         </div>
 
@@ -337,28 +380,34 @@
 
 <!-- MODAL: AI uitleg -->
 <div id="modal-explain" class="modal hidden">
-  <div class="modal-box">
-    <h3>✨ AI Uitleg</h3>
-    <div id="explain-card-preview" class="explain-card-preview"></div>
-    <div id="explain-content" class="explain-content"></div>
-    <div class="btn-group">
-      <button class="btn secondary" onclick="closeModal('modal-explain')">Sluiten</button>
+  <div class="modal-box ai-modal-box">
+    <div class="ai-modal-header">
+      <span>✨ Uitleg</span>
+      <button class="ai-modal-close" onclick="closeModal('modal-explain')">✕</button>
+    </div>
+    <div class="ai-modal-body">
+      <div id="explain-card-preview" class="explain-card-preview"></div>
+      <div id="explain-content" class="explain-content"></div>
     </div>
   </div>
 </div>
 
 <!-- MODAL: Studieplan -->
 <div id="modal-studyplan" class="modal hidden">
-  <div class="modal-box">
-    <h3>📅 Studieplan maken</h3>
-    <p class="modal-hint">Vul je toetsdatum in en de AI maakt een persoonlijk studieplan op basis van dit deck.</p>
-    <label class="plan-label">Toetsdatum</label>
-    <input type="date" id="input-exam-date">
-    <div id="plan-result" class="plan-result hidden"></div>
-    <div id="plan-error" class="ai-error hidden"></div>
-    <div class="btn-group">
-      <button class="btn secondary" onclick="closeModal('modal-studyplan')">Sluiten</button>
-      <button class="btn ai-btn" id="btn-generate-plan" onclick="generateStudyPlan()">📅 Maak plan</button>
+  <div class="modal-box ai-modal-box">
+    <div class="ai-modal-header">
+      <span>📅 Studieplan</span>
+      <button class="ai-modal-close" onclick="closeModal('modal-studyplan')">✕</button>
+    </div>
+    <div class="ai-modal-body">
+      <p class="modal-hint">Kies je toetsdatum — de AI maakt een persoonlijk schema voor dit deck.</p>
+      <div class="plan-date-row">
+        <label class="plan-label">Toetsdatum</label>
+        <input type="date" id="input-exam-date">
+        <button class="btn ai-btn" id="btn-generate-plan" onclick="generateStudyPlan()">Maak plan →</button>
+      </div>
+      <div id="plan-error" class="ai-error hidden"></div>
+      <div id="plan-result" class="plan-days hidden"></div>
     </div>
   </div>
 </div>
@@ -519,15 +568,27 @@
     btn.disabled = false;
   }
 
+  // ── Deck vereist ──────────────────────────────────────────
+  function requireDeckThen(action) {
+    if (!currentDeckId) {
+      showPage('home');
+      return;
+    }
+    if (action === 'modal-ai') { openModal('modal-ai'); }
+    else if (action === 'studyplan') { openStudyPlan(); }
+    else if (action === 'flashcard') { showPage('deck'); switchTab('flashcard'); }
+    else if (action === 'cards') { showPage('deck'); switchTab('cards'); }
+  }
+
   // ── Studieplan ────────────────────────────────────────────
   function openStudyPlan() {
     document.getElementById('plan-result').classList.add('hidden');
     document.getElementById('plan-error').classList.add('hidden');
-    document.getElementById('btn-generate-plan').textContent = '📅 Maak plan';
-    document.getElementById('btn-generate-plan').disabled = false;
-    const today = new Date();
-    today.setDate(today.getDate() + 7);
-    document.getElementById('input-exam-date').value = today.toISOString().split('T')[0];
+    const btn = document.getElementById('btn-generate-plan');
+    btn.textContent = 'Maak plan →';
+    btn.disabled = false;
+    const d = new Date(); d.setDate(d.getDate() + 7);
+    document.getElementById('input-exam-date').value = d.toISOString().split('T')[0];
     openModal('modal-studyplan');
   }
 
@@ -551,13 +612,21 @@
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Fout');
-      result.innerHTML = data.plan.split('\n').map(l => l ? `<p>${l}</p>` : '').join('');
+      result.innerHTML = data.days.map(d => `
+        <div class="plan-day">
+          <div class="plan-day-date">${d.day}</div>
+          <div class="plan-day-body">
+            <strong>${d.activity}</strong>
+            <span>${d.tip}</span>
+            <span class="plan-day-cards">📚 ${d.cards} kaartjes</span>
+          </div>
+        </div>`).join('');
       result.classList.remove('hidden');
     } catch(e) {
       error.textContent = 'Fout: ' + e.message;
       error.classList.remove('hidden');
     }
-    btn.textContent = '📅 Maak plan';
+    btn.textContent = 'Maak plan →';
     btn.disabled = false;
   }
 

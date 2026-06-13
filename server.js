@@ -246,12 +246,15 @@ app.post('/api/study-plan', requireAuth, async (req, res) => {
       headers: { 'x-api-key': apiKey, 'anthropic-version': '2023-06-01', 'content-type': 'application/json' },
       body: JSON.stringify({
         model: 'claude-haiku-4-5-20251001',
-        max_tokens: 600,
-        messages: [{ role: 'user', content: `Maak een studieplan voor een scholier. Vandaag is ${today}, de toets is op ${examDate}. Het deck heet "${deckName}" en heeft ${cardCount} kaartjes.\n\nMaak een realistisch dagelijks studieplan tot aan de toetsdatum. Geef per dag aan hoeveel kaartjes te leren en welke activiteit (eerste kennismaking, herhaling, toetsen). Houd het kort en motiverend. Gebruik bullet points per dag. Max 10 regels.` }]
+        max_tokens: 800,
+        messages: [{ role: 'user', content: `Maak een studieplan als JSON array. Vandaag: ${today}, toets: ${examDate}, deck: "${deckName}", ${cardCount} kaartjes.\n\nGeef alleen een JSON array terug, geen tekst eromheen. Formaat:\n[{"date":"YYYY-MM-DD","day":"Ma 9 jun","activity":"Eerste kennismaking","tip":"Lees alle kaartjes rustig door","cards":10}]\n\nMax 7 dagen, verspreid tot de toetsdatum. Activiteiten: Eerste kennismaking / Herhaling / Intensief oefenen / Toets simulatie / Laatste herhaling. Tips moeten kort en motiverend zijn (max 8 woorden).` }]
       })
     });
     const data = await response.json();
-    res.json({ plan: data.content?.[0]?.text || 'Geen plan beschikbaar' });
+    const raw = data.content?.[0]?.text || '[]';
+    const match = raw.match(/\[[\s\S]*\]/);
+    if (!match) return res.status(500).json({ error: 'AI gaf geen geldig plan terug' });
+    res.json({ days: JSON.parse(match[0]) });
   } catch(e) {
     res.status(500).json({ error: e.message });
   }
