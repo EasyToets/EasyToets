@@ -149,11 +149,6 @@ app.delete('/api/cards/:id', requireAuth, async (req, res) => {
   res.json({ ok: true });
 });
 
-// ── Debug ────────────────────────────────────────────────────
-app.get('/api/debug-env', (req, res) => {
-  res.json({ hasKey: !!process.env.ANTHROPIC_API_KEY, keyStart: process.env.ANTHROPIC_API_KEY?.slice(0, 10) || 'leeg' });
-});
-
 // ── AI Flashcard Generator ───────────────────────────────────
 app.post('/api/generate-cards', requireAuth, async (req, res) => {
   const { text } = req.body;
