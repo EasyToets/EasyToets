@@ -662,12 +662,18 @@ async function loadCards() {
       <p class="card-q">${esc(c.question)}</p>
       <p class="card-a">${esc(c.answer)}</p>
       <div class="card-actions">
+        <button class="btn ai-btn-small" data-explain-id="${c.id}">✨ Uitleg</button>
         <button class="btn secondary" data-edit-id="${c.id}">${t('btn_edit')}</button>
         <button class="btn danger" data-delete-id="${c.id}">${t('btn_delete')}</button>
       </div>
     </div>
   `).join('');
 
+  el.querySelectorAll('[data-explain-id]').forEach(btn => {
+    const id = Number(btn.dataset.explainId);
+    const card = cards.find(c => c.id === id);
+    btn.addEventListener('click', () => explainCard(card, cards));
+  });
   el.querySelectorAll('[data-edit-id]').forEach(btn => {
     const id = Number(btn.dataset.editId);
     const card = cards.find(c => c.id === id);
@@ -746,6 +752,8 @@ function showFlashcard() {
   document.getElementById('fc-counter').textContent  = `${sessionIndex + 1} / ${sessionCards.length}`;
   document.getElementById('fc-progress').style.width = ((sessionIndex + 1) / sessionCards.length * 100) + '%';
   document.getElementById('flashcard-inner').classList.remove('flipped');
+  const hintBox = document.getElementById('hint-box');
+  if (hintBox) { hintBox.classList.add('hidden'); hintBox.textContent = ''; }
   flipped = false;
 }
 

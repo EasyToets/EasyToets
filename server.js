@@ -184,6 +184,79 @@ app.post('/api/generate-cards', requireAuth, async (req, res) => {
   }
 });
 
+// ── AI: Uitleg per kaartje ───────────────────────────────────
+app.post('/api/explain-card', requireAuth, async (req, res) => {
+  const { question, answer, deckCards } = req.body;
+  if (!question || !answer) return res.status(400).json({ error: 'Geen kaartje meegegeven' });
+  const apiKey = process.env.ANTHROPIC_API_KEY;
+  if (!apiKey) return res.status(500).json({ error: 'AI niet geconfigureerd' });
+  try {
+    const context = deckCards?.length
+      ? `\n\nAndere begrippen uit dit deck: ${deckCards.slice(0,10).map(c => c.question).join(', ')}`
+      : '';
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'x-api-key': apiKey, 'anthropic-version': '2023-06-01', 'content-type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 512,
+        messages: [{ role: 'user', content: `Leg het volgende begrip duidelijk uit voor een scholier. Geef een heldere uitleg van 3-5 zinnen, gebruik eventueel een voorbeeld.\n\nBegrip: ${question}\nAntwoord: ${answer}${context}` }]
+      })
+    });
+    const data = await response.json();
+    res.json({ explanation: data.content?.[0]?.text || 'Geen uitleg beschikbaar' });
+  } catch(e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// ── AI: Hint tijdens oefenen ─────────────────────────────────
+app.post('/api/hint-card', requireAuth, async (req, res) => {
+  const { question, answer } = req.body;
+  if (!question || !answer) return res.status(400).json({ error: 'Geen kaartje meegegeven' });
+  const apiKey = process.env.ANTHROPIC_API_KEY;
+  if (!apiKey) return res.status(500).json({ error: 'AI niet geconfigureerd' });
+  try {
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'x-api-key': apiKey, 'anthropic-version': '2023-06-01', 'content-type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 150,
+        messages: [{ role: 'user', content: `Geef een hint voor dit flashcard zonder het antwoord te verklappen. De hint moet de leerling in de goede richting sturen.\n\nVraag: ${question}\nAntwoord (niet verklappen): ${answer}\n\nGeef alleen de hint, geen uitleg eromheen.` }]
+      })
+    });
+    const data = await response.json();
+    res.json({ hint: data.content?.[0]?.text || 'Geen hint beschikbaar' });
+  } catch(e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// ── AI: Studieplan ───────────────────────────────────────────
+app.post('/api/study-plan', requireAuth, async (req, res) => {
+  const { examDate, deckName, cardCount } = req.body;
+  if (!examDate || !cardCount) return res.status(400).json({ error: 'Ontbrekende gegevens' });
+  const apiKey = process.env.ANTHROPIC_API_KEY;
+  if (!apiKey) return res.status(500).json({ error: 'AI niet geconfigureerd' });
+  try {
+    const today = new Date().toISOString().split('T')[0];
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'x-api-key': apiKey, 'anthropic-version': '2023-06-01', 'content-type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 600,
+        messages: [{ role: 'user', content: `Maak een studieplan voor een scholier. Vandaag is ${today}, de toets is op ${examDate}. Het deck heet "${deckName}" en heeft ${cardCount} kaartjes.\n\nMaak een realistisch dagelijks studieplan tot aan de toetsdatum. Geef per dag aan hoeveel kaartjes te leren en welke activiteit (eerste kennismaking, herhaling, toetsen). Houd het kort en motiverend. Gebruik bullet points per dag. Max 10 regels.` }]
+      })
+    });
+    const data = await response.json();
+    res.json({ plan: data.content?.[0]?.text || 'Geen plan beschikbaar' });
+  } catch(e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
 // ── Admin stats ──────────────────────────────────────────────
 app.get('/api/admin/stats', async (req, res) => {
   const adminKey = process.env.ADMIN_KEY;

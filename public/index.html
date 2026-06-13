@@ -218,6 +218,7 @@
         <div id="tab-content-cards">
           <div class="ai-bar">
             <button class="btn ai-btn" onclick="openModal('modal-ai')">✨ AI kaartjes genereren</button>
+            <button class="btn ai-btn" onclick="openStudyPlan()">📅 Studieplan</button>
           </div>
           <div id="card-list" class="card-grid"></div>
         </div>
@@ -236,6 +237,10 @@
                 </div>
                 <div class="flashcard-back"><p id="fc-answer"></p></div>
               </div>
+            </div>
+            <div class="fc-hint-row">
+              <button class="btn hint-btn" id="btn-hint" onclick="getHint()">💡 Hint</button>
+              <div id="hint-box" class="hint-box hidden"></div>
             </div>
             <div class="fc-buttons">
               <button class="btn danger" onclick="nextCard(false)">✗ Nog oefenen</button>
@@ -326,6 +331,34 @@
     <div class="btn-group">
       <button class="btn secondary" onclick="closeModal('modal-edit-card')">Annuleren</button>
       <button class="btn primary" onclick="saveCardEdit()">Opslaan</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: AI uitleg -->
+<div id="modal-explain" class="modal hidden">
+  <div class="modal-box">
+    <h3>✨ AI Uitleg</h3>
+    <div id="explain-card-preview" class="explain-card-preview"></div>
+    <div id="explain-content" class="explain-content"></div>
+    <div class="btn-group">
+      <button class="btn secondary" onclick="closeModal('modal-explain')">Sluiten</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Studieplan -->
+<div id="modal-studyplan" class="modal hidden">
+  <div class="modal-box">
+    <h3>📅 Studieplan maken</h3>
+    <p class="modal-hint">Vul je toetsdatum in en de AI maakt een persoonlijk studieplan op basis van dit deck.</p>
+    <label class="plan-label">Toetsdatum</label>
+    <input type="date" id="input-exam-date">
+    <div id="plan-result" class="plan-result hidden"></div>
+    <div id="plan-error" class="ai-error hidden"></div>
+    <div class="btn-group">
+      <button class="btn secondary" onclick="closeModal('modal-studyplan')">Sluiten</button>
+      <button class="btn ai-btn" id="btn-generate-plan" onclick="generateStudyPlan()">📅 Maak plan</button>
     </div>
   </div>
 </div>
@@ -436,6 +469,95 @@
       error.classList.remove('hidden');
     }
     btn.textContent = '✨ Genereren';
+    btn.disabled = false;
+  }
+
+  // ── AI Uitleg per kaartje ─────────────────────────────────
+  async function explainCard(card, allCards) {
+    document.getElementById('explain-card-preview').innerHTML =
+      `<strong>${card.question}</strong><span>${card.answer}</span>`;
+    document.getElementById('explain-content').innerHTML = '<div class="ai-loading">✨ AI legt uit...</div>';
+    openModal('modal-explain');
+    try {
+      const res = await fetch('/api/explain-card', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ question: card.question, answer: card.answer, deckCards: allCards })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Fout');
+      document.getElementById('explain-content').innerHTML = `<p>${data.explanation}</p>`;
+    } catch(e) {
+      document.getElementById('explain-content').innerHTML = `<p class="ai-error">Fout: ${e.message}</p>`;
+    }
+  }
+
+  // ── AI Hint tijdens oefenen ───────────────────────────────
+  async function getHint() {
+    const card = sessionCards[sessionIndex];
+    if (!card) return;
+    const btn = document.getElementById('btn-hint');
+    const box = document.getElementById('hint-box');
+    btn.disabled = true;
+    btn.textContent = '⏳';
+    box.classList.add('hidden');
+    try {
+      const res = await fetch('/api/hint-card', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ question: card.question, answer: card.answer })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Fout');
+      box.textContent = '💡 ' + data.hint;
+      box.classList.remove('hidden');
+    } catch(e) {
+      box.textContent = 'Fout: ' + e.message;
+      box.classList.remove('hidden');
+    }
+    btn.textContent = '💡 Hint';
+    btn.disabled = false;
+  }
+
+  // ── Studieplan ────────────────────────────────────────────
+  function openStudyPlan() {
+    document.getElementById('plan-result').classList.add('hidden');
+    document.getElementById('plan-error').classList.add('hidden');
+    document.getElementById('btn-generate-plan').textContent = '📅 Maak plan';
+    document.getElementById('btn-generate-plan').disabled = false;
+    const today = new Date();
+    today.setDate(today.getDate() + 7);
+    document.getElementById('input-exam-date').value = today.toISOString().split('T')[0];
+    openModal('modal-studyplan');
+  }
+
+  async function generateStudyPlan() {
+    const examDate = document.getElementById('input-exam-date').value;
+    if (!examDate) return;
+    const btn = document.getElementById('btn-generate-plan');
+    const result = document.getElementById('plan-result');
+    const error = document.getElementById('plan-error');
+    btn.textContent = '⏳ Bezig...';
+    btn.disabled = true;
+    result.classList.add('hidden');
+    error.classList.add('hidden');
+    try {
+      const cardsRes = await fetch('/api/decks/' + currentDeckId + '/cards');
+      const cards = await cardsRes.json();
+      const res = await fetch('/api/study-plan', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ examDate, deckName: currentDeckName, cardCount: cards.length })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Fout');
+      result.innerHTML = data.plan.split('\n').map(l => l ? `<p>${l}</p>` : '').join('');
+      result.classList.remove('hidden');
+    } catch(e) {
+      error.textContent = 'Fout: ' + e.message;
+      error.classList.remove('hidden');
+    }
+    btn.textContent = '📅 Maak plan';
     btn.disabled = false;
   }
 

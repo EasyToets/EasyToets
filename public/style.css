@@ -918,10 +918,31 @@ main input, main textarea { cursor: text; user-select: text; }
 .bulk-row:last-child { border-bottom: none; }
 .bulk-q { font-weight: 600; flex: 1; }
 .bulk-a { flex: 1; color: var(--text-muted); }
-.ai-bar { margin-bottom: 1rem; }
+.ai-bar { margin-bottom: 1rem; display: flex; gap: 0.5rem; flex-wrap: wrap; }
 .ai-btn { background: linear-gradient(135deg, #6c63ff, #a78bfa); color: #fff; border: none; }
 .ai-btn:hover { opacity: 0.9; }
+.ai-btn-small { background: linear-gradient(135deg, #6c63ff, #a78bfa); color: #fff; border: none; font-size: 0.78rem; padding: 0.25rem 0.6rem; border-radius: 6px; cursor: pointer; }
+.ai-btn-small:hover { opacity: 0.85; }
 .ai-error { color: var(--danger); font-size: 0.875rem; padding: 0.5rem 0; }
+.ai-loading { color: var(--text-muted); font-style: italic; padding: 1rem 0; }
+
+/* ── Hint ─────────────────────────────────────────────────── */
+.fc-hint-row { display: flex; flex-direction: column; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem; }
+.hint-btn { background: #f0f0ff; color: #6c63ff; border: 1px solid #c4b5fd; font-size: 0.85rem; padding: 0.35rem 1rem; }
+.hint-btn:hover { background: #e5e0ff; }
+.hint-box { background: #fffbeb; border: 1px solid #fcd34d; border-radius: 10px; padding: 0.75rem 1rem; font-size: 0.9rem; max-width: 400px; text-align: center; }
+
+/* ── Uitleg modal ─────────────────────────────────────────── */
+.explain-card-preview { background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 0.75rem 1rem; margin-bottom: 1rem; display: flex; flex-direction: column; gap: 0.25rem; }
+.explain-card-preview strong { font-size: 1rem; }
+.explain-card-preview span { color: var(--text-muted); font-size: 0.9rem; }
+.explain-content { font-size: 0.95rem; line-height: 1.6; min-height: 60px; }
+.explain-content p { margin: 0; }
+
+/* ── Studieplan modal ─────────────────────────────────────── */
+.plan-label { display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.35rem; color: var(--text-muted); }
+.plan-result { background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 1rem; margin-top: 1rem; font-size: 0.9rem; line-height: 1.7; }
+.plan-result p { margin: 0.1rem 0; }
 
 /* ── Empty state ─────────────────────────────────────────── */
 .empty-state {
