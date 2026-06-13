@@ -212,8 +212,20 @@
             </div>
           </div>
           <div class="help-card">
-            <h3>🔄 Oefenen</h3>
+            <h3>🔄 Oefenen (flashcards)</h3>
             <p>Bekijk de voorkant van het kaartje, klik om om te draaien en geef aan of je het antwoord wist. Kaartjes die je niet wist komen terug.</p>
+            <div class="help-kb-row">
+              <span><span class="kb-badge">Spatie</span> kaartje omdraaien</span>
+              <span><span class="kb-badge">→</span> wist ik het</span>
+              <span><span class="kb-badge">←</span> nog oefenen</span>
+            </div>
+          </div>
+          <div class="help-card">
+            <h3>✍️ Schrijven</h3>
+            <p>Typ het antwoord zelf in. Bewezen effectiever dan alleen omdraaien — je hersenen werken harder als je actief moet ophalen. Kleine typfouten worden automatisch vergeven.</p>
+            <div class="help-kb-row">
+              <span><span class="kb-badge">Enter</span> controleren / volgend kaartje</span>
+            </div>
           </div>
           <div class="help-card">
             <h3>📝 Toets</h3>
@@ -262,8 +274,20 @@
             </div>
           </div>
           <div class="help-card">
-            <h3>🔄 Practice</h3>
+            <h3>🔄 Practice (flashcards)</h3>
             <p>See the front of the card, click to flip it and mark whether you knew the answer. Cards you didn't know will come back.</p>
+            <div class="help-kb-row">
+              <span><span class="kb-badge">Space</span> flip card</span>
+              <span><span class="kb-badge">→</span> got it</span>
+              <span><span class="kb-badge">←</span> still learning</span>
+            </div>
+          </div>
+          <div class="help-card">
+            <h3>✍️ Write</h3>
+            <p>Type the answer yourself. Proven more effective than just flipping — your brain works harder when actively recalling. Small typos are automatically forgiven.</p>
+            <div class="help-kb-row">
+              <span><span class="kb-badge">Enter</span> check / next card</span>
+            </div>
           </div>
           <div class="help-card">
             <h3>📝 Quiz</h3>
@@ -342,6 +366,9 @@
           <button class="mode-tab" id="tab-quiz" onclick="switchTab('quiz')">
             <span>📝</span> Toets
           </button>
+          <button class="mode-tab" id="tab-write" onclick="switchTab('write')">
+            <span>✍️</span> <span id="tab-write-label">Schrijven</span>
+          </button>
         </div>
 
         <!-- Tab: kaartjes beheren -->
@@ -371,6 +398,34 @@
             <div class="fc-buttons">
               <button class="btn danger" onclick="nextCard(false)">✗ Nog oefenen</button>
               <button class="btn success" onclick="nextCard(true)">✓ Wist ik het</button>
+            </div>
+            <div class="kb-hints-row" id="fc-kb-hints">
+              <span class="kb-hint-item"><span class="kb-badge">Spatie</span> omdraaien</span>
+              <span class="kb-hint-sep">·</span>
+              <span class="kb-hint-item"><span class="kb-badge">←</span> fout &nbsp;<span class="kb-badge">→</span> goed</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab: schrijfmodus -->
+        <div id="tab-content-write" class="hidden">
+          <div class="empty-state" id="write-empty" style="display:none"><div class="empty-icon">✍️</div><p id="write-empty-text">Voeg eerst kaartjes toe om te oefenen.</p></div>
+          <div class="write-wrapper" id="write-wrapper">
+            <div class="progress-bar"><div id="write-progress"></div></div>
+            <p id="write-counter" class="counter"></p>
+            <div class="write-card">
+              <div class="kb-hints-row write-kb-hint">
+                <span class="kb-hint-item"><span class="kb-badge">Enter</span> <span id="write-kb-label">controleren / volgende</span></span>
+              </div>
+              <h3 id="write-question"></h3>
+              <div class="write-input-row">
+                <input type="text" id="write-answer-input" class="write-input" placeholder="Typ je antwoord..." autocomplete="off" autocorrect="off" spellcheck="false">
+                <button class="btn primary" id="write-check-btn" onclick="checkWriteAnswer()"><span id="write-check-label">Controleren</span></button>
+              </div>
+              <div id="write-feedback" class="write-feedback hidden"></div>
+            </div>
+            <div class="write-next-row hidden" id="write-next-row">
+              <button class="btn primary" onclick="nextWriteCard()"><span id="write-next-label">Volgende →</span></button>
             </div>
           </div>
         </div>

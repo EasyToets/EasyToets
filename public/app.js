@@ -62,6 +62,8 @@ const TR = {
     bulk_col_a:           'Antwoord',
     bulk_no_sep:          '⚠ Geen scheidingsteken gevonden',
     bulk_import_btn:      (n) => `Importeren (${n} kaartje${n !== 1 ? 's' : ''})`,
+    tab_write:            'Schrijven',
+    empty_write:          'Voeg eerst kaartjes toe om te oefenen.',
   },
   de: {
     tagline:              'Intelligenter lernen,<br>nicht härter.',
@@ -119,6 +121,8 @@ const TR = {
     bulk_col_a:           'Antwort',
     bulk_no_sep:          '⚠ Kein Trennzeichen gefunden',
     bulk_import_btn:      (n) => `Importieren (${n} Karte${n !== 1 ? 'n' : ''})`,
+    tab_write:            'Schreiben',
+    empty_write:          'Füge zuerst Karten hinzu.',
   },
   fr: {
     tagline:              'Apprendre plus vite,<br>pas plus dur.',
@@ -176,6 +180,8 @@ const TR = {
     bulk_col_a:           'Réponse',
     bulk_no_sep:          '⚠ Aucun séparateur trouvé',
     bulk_import_btn:      (n) => `Importer (${n} carte${n !== 1 ? 's' : ''})`,
+    tab_write:            'Écrire',
+    empty_write:          'Ajoute des cartes pour commencer.',
   },
   es: {
     tagline:              'Aprende más listo,<br>no más duro.',
@@ -233,6 +239,8 @@ const TR = {
     bulk_col_a:           'Respuesta',
     bulk_no_sep:          '⚠ No se encontró separador',
     bulk_import_btn:      (n) => `Importar (${n} tarjeta${n !== 1 ? 's' : ''})`,
+    tab_write:            'Escribir',
+    empty_write:          'Añade tarjetas primero para practicar.',
   },
   pt: {
     tagline:              'Aprenda mais rápido,<br>não mais difícil.',
@@ -290,6 +298,8 @@ const TR = {
     bulk_col_a:           'Resposta',
     bulk_no_sep:          '⚠ Nenhum separador encontrado',
     bulk_import_btn:      (n) => `Importar (${n} cartão${n !== 1 ? 'ões' : ''})`,
+    tab_write:            'Escrever',
+    empty_write:          'Adicione cartões primeiro para praticar.',
   },
   en: {
     tagline:              'Learn smarter,<br>not harder.',
@@ -347,6 +357,8 @@ const TR = {
     bulk_col_a:           'Answer',
     bulk_no_sep:          '⚠ No separator found',
     bulk_import_btn:      (n) => `Import (${n} card${n !== 1 ? 's' : ''})`,
+    tab_write:            'Write',
+    empty_write:          'Add some cards first to start practising.',
   }
 };
 
@@ -407,6 +419,10 @@ function applyLang() {
   document.getElementById('tab-cards').innerHTML     = '<span>🃏</span> ' + t('tab_cards');
   document.getElementById('tab-flashcard').innerHTML = '<span>🔄</span> ' + t('tab_flashcard');
   document.getElementById('tab-quiz').innerHTML      = '<span>📝</span> ' + t('tab_quiz');
+  const tabWriteLabel = document.getElementById('tab-write-label');
+  if (tabWriteLabel) tabWriteLabel.textContent = t('tab_write');
+  const writeEmptyText = document.getElementById('write-empty-text');
+  if (writeEmptyText) writeEmptyText.textContent = t('empty_write');
 
   // Flashcard
   const hint = document.querySelector('.hint');
@@ -588,7 +604,7 @@ function toggleSidebar() {
 
 // ── Tabs ─────────────────────────────────────────────────────
 function switchTab(tab) {
-  ['cards', 'flashcard', 'quiz'].forEach(name => {
+  ['cards', 'flashcard', 'quiz', 'write'].forEach(name => {
     document.getElementById('tab-content-' + name).classList.add('hidden');
     document.getElementById('tab-' + name).classList.remove('active');
   });
@@ -598,6 +614,7 @@ function switchTab(tab) {
   if (tab === 'cards')     loadCards();
   if (tab === 'flashcard') startFlashcards();
   if (tab === 'quiz')      startQuiz();
+  if (tab === 'write')     startWriteMode();
 }
 
 // ── Decks ────────────────────────────────────────────────────
@@ -867,8 +884,136 @@ function showResult() {
 
 function retrySession() {
   showPage('deck');
-  switchTab(sessionMode === 'flashcard' ? 'flashcard' : 'quiz');
+  switchTab(sessionMode === 'flashcard' ? 'flashcard' : sessionMode === 'write' ? 'write' : 'quiz');
 }
+
+// ── Schrijfmodus ─────────────────────────────────────────────
+let writeSession = { cards: [], index: 0, correct: 0, deckId: null, answered: false };
+
+async function startWriteMode() {
+  const empty   = document.getElementById('write-empty');
+  const wrapper = document.getElementById('write-wrapper');
+  if (writeSession.deckId === currentDeckId && writeSession.index < writeSession.cards.length) {
+    empty.style.display = 'none'; wrapper.style.display = 'flex';
+    showWriteCard(); return;
+  }
+  const res   = await fetch('/api/decks/' + currentDeckId + '/cards');
+  const cards = await res.json();
+  if (cards.length === 0) { empty.style.display = 'block'; wrapper.style.display = 'none'; return; }
+  writeSession = { cards: shuffle([...cards]), index: 0, correct: 0, deckId: currentDeckId, answered: false };
+  empty.style.display = 'none'; wrapper.style.display = 'flex';
+  showWriteCard();
+}
+
+function showWriteCard() {
+  const card = writeSession.cards[writeSession.index];
+  document.getElementById('write-question').textContent   = card.question;
+  document.getElementById('write-counter').textContent    = `${writeSession.index + 1} / ${writeSession.cards.length}`;
+  document.getElementById('write-progress').style.width  = ((writeSession.index + 1) / writeSession.cards.length * 100) + '%';
+  const inp = document.getElementById('write-answer-input');
+  inp.value = ''; inp.disabled = false;
+  document.getElementById('write-feedback').className    = 'write-feedback hidden';
+  document.getElementById('write-feedback').innerHTML    = '';
+  document.getElementById('write-next-row').classList.add('hidden');
+  document.getElementById('write-check-btn').classList.remove('hidden');
+  writeSession.answered = false;
+  setTimeout(() => inp.focus(), 50);
+}
+
+function normalizeAns(s) {
+  return s.toLowerCase().trim().replace(/[^\w\s]/g, '').replace(/\s+/g, ' ');
+}
+
+function levenshtein(a, b) {
+  const m = a.length, n = b.length;
+  const dp = Array.from({ length: m + 1 }, (_, i) =>
+    Array.from({ length: n + 1 }, (_, j) => i === 0 ? j : j === 0 ? i : 0)
+  );
+  for (let i = 1; i <= m; i++)
+    for (let j = 1; j <= n; j++)
+      dp[i][j] = a[i-1] === b[j-1] ? dp[i-1][j-1] : 1 + Math.min(dp[i-1][j], dp[i][j-1], dp[i-1][j-1]);
+  return dp[m][n];
+}
+
+function checkWriteAnswer() {
+  if (writeSession.answered) return;
+  const card      = writeSession.cards[writeSession.index];
+  const userNorm  = normalizeAns(document.getElementById('write-answer-input').value);
+  const corrNorm  = normalizeAns(card.answer);
+  const exact     = userNorm === corrNorm;
+  const maxDist   = Math.max(1, Math.floor(corrNorm.length * 0.2));
+  const almost    = !exact && levenshtein(userNorm, corrNorm) <= maxDist;
+  const isCorrect = exact || almost;
+
+  const fb = document.getElementById('write-feedback');
+  fb.classList.remove('hidden');
+  if (exact) {
+    fb.className = 'write-feedback write-correct';
+    fb.innerHTML = `✓ Correct!`;
+    writeSession.correct++;
+    showConfetti();
+  } else if (almost) {
+    fb.className = 'write-feedback write-almost';
+    fb.innerHTML = `~ Bijna goed! Juiste antwoord: <strong>${esc(card.answer)}</strong>`;
+    writeSession.correct++;
+  } else {
+    fb.className = 'write-feedback write-wrong';
+    fb.innerHTML = `✗ Fout. Juiste antwoord: <strong>${esc(card.answer)}</strong>`;
+  }
+
+  writeSession.answered = true;
+  document.getElementById('write-answer-input').disabled = true;
+  document.getElementById('write-check-btn').classList.add('hidden');
+  document.getElementById('write-next-row').classList.remove('hidden');
+
+  reviewCard(card.id, isCorrect);
+  if (isCorrect) markCardMastered(card.id);
+}
+
+function nextWriteCard() {
+  writeSession.index++;
+  if (writeSession.index >= writeSession.cards.length) {
+    sessionCorrect  = writeSession.correct;
+    sessionCards    = writeSession.cards;
+    sessionMode     = 'write';
+    writeSession.deckId = null;
+    showResult();
+  } else {
+    showWriteCard();
+  }
+}
+
+// ── Toetsenbordinvoer ─────────────────────────────────────────
+document.addEventListener('keydown', function(e) {
+  const tag = e.target.tagName;
+  if (tag === 'TEXTAREA') return;
+
+  // Enter in schrijfmodus invoerveld
+  if (tag === 'INPUT' && e.target.id === 'write-answer-input') {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      if (!writeSession.answered) checkWriteAnswer();
+      else nextWriteCard();
+    }
+    return;
+  }
+  if (tag === 'INPUT') return;
+
+  // Flashcard sneltoetsen (alleen als flashcard tab actief is)
+  const fcTab = document.getElementById('tab-content-flashcard');
+  if (!fcTab || fcTab.classList.contains('hidden')) return;
+
+  if (e.key === ' ' || e.key === 'Spacebar') {
+    e.preventDefault();
+    flipCard();
+  } else if (flipped && (e.key === 'ArrowRight' || e.key === 'Enter')) {
+    e.preventDefault();
+    nextCard(true);
+  } else if (flipped && (e.key === 'ArrowLeft' || e.key === 'Backspace')) {
+    e.preventDefault();
+    nextCard(false);
+  }
+});
 
 // ── Bulk import ──────────────────────────────────────────────
 let parsedBulkCards = [];

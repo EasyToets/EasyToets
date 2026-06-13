@@ -972,6 +972,107 @@ main input, main textarea { cursor: text; user-select: text; }
 .ai-modal-close:hover { background: var(--bg); color: var(--text); }
 .ai-modal-body { padding: 1.25rem; overflow-y: auto; flex: 1; }
 
+/* ── Toetsenbord hints ───────────────────────────────────── */
+.kb-hints-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  margin-top: 0.75rem;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+.kb-hint-item { display: flex; align-items: center; gap: 0.3rem; }
+.kb-hint-sep { color: var(--border); }
+.kb-badge {
+  display: inline-block;
+  padding: 0.15rem 0.45rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  box-shadow: 0 1px 0 var(--border);
+  font-family: monospace;
+}
+.help-kb-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-top: 0.75rem;
+  padding: 0.6rem 0.9rem;
+  background: var(--bg);
+  border-radius: 8px;
+  font-size: 0.82rem;
+  color: var(--text-muted);
+}
+
+/* ── Schrijfmodus ────────────────────────────────────────── */
+.write-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  padding-top: 0.5rem;
+  width: 100%;
+}
+.write-card {
+  width: 100%;
+  max-width: 640px;
+  background: var(--surface);
+  border-radius: var(--radius);
+  padding: 2rem 2rem 1.5rem;
+  box-shadow: var(--shadow-md);
+}
+.write-kb-hint { justify-content: flex-start; margin-top: 0; margin-bottom: 1rem; }
+.write-card h3 {
+  font-size: 1.3rem;
+  font-weight: 700;
+  margin-bottom: 1.5rem;
+  color: var(--text);
+  line-height: 1.4;
+}
+.write-input-row {
+  display: flex;
+  gap: 0.75rem;
+  align-items: stretch;
+}
+.write-input {
+  flex: 1;
+  padding: 0.75rem 1rem;
+  border: 2px solid var(--border);
+  border-radius: 10px;
+  font-size: 1rem;
+  font-family: inherit;
+  background: var(--bg);
+  color: var(--text);
+  transition: border-color 0.18s;
+  outline: none;
+}
+.write-input:focus { border-color: var(--primary); }
+.write-input:disabled { opacity: 0.6; }
+.write-feedback {
+  margin-top: 1rem;
+  padding: 0.75rem 1rem;
+  border-radius: 10px;
+  font-size: 0.95rem;
+  font-weight: 500;
+  line-height: 1.5;
+}
+.write-correct { background: #d1fae5; color: #065f46; border: 1px solid #6ee7b7; }
+.write-almost  { background: #fef3c7; color: #92400e; border: 1px solid #fcd34d; }
+.write-wrong   { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
+.write-next-row {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  max-width: 640px;
+}
+.write-next-row button { min-width: 160px; }
+
 /* ── Hint ─────────────────────────────────────────────────── */
 .fc-hint-row { display: flex; flex-direction: column; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem; }
 .hint-btn { background: #f0f0ff; color: #6c63ff; border: 1px solid #c4b5fd; font-size: 0.85rem; padding: 0.35rem 1rem; }
@@ -1424,6 +1525,10 @@ main input, main textarea { cursor: text; user-select: text; }
   border-color: var(--border);
 }
 :root.dark .flashcard-back p { color: var(--text); }
+:root.dark .write-card { background: var(--surface); }
+:root.dark .write-input { background: var(--bg); color: var(--text); border-color: var(--border); }
+:root.dark .help-kb-row { background: var(--bg); }
+:root.dark .kb-badge { background: var(--bg); border-color: var(--border); color: var(--text-muted); }
 
 /* ── Dark toggle button ──────────────────────────────────────── */
 .sidebar-footer-row {
