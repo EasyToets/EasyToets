@@ -1006,10 +1006,10 @@ document.addEventListener('keydown', function(e) {
   if (e.key === ' ' || e.key === 'Spacebar') {
     e.preventDefault();
     flipCard();
-  } else if (flipped && (e.key === 'ArrowRight' || e.key === 'Enter')) {
+  } else if (e.key === 'ArrowRight') {
     e.preventDefault();
     nextCard(true);
-  } else if (flipped && (e.key === 'ArrowLeft' || e.key === 'Backspace')) {
+  } else if (e.key === 'ArrowLeft') {
     e.preventDefault();
     nextCard(false);
   }
