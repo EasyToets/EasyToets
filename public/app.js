@@ -14,6 +14,16 @@ const TR = {
     tab_flashcard:        'Oefenen',
     tab_quiz:             'Toets',
     nav_help:             'Uitleg',
+    nav_stats:            'Statistieken',
+    stats_title:          '📊 Statistieken',
+    stats_chart_label:    'Recente quizscores',
+    stats_quizzes:        'Toetsen gemaakt',
+    stats_avg:            'Gemiddelde score',
+    stats_best:           'Beste score',
+    stats_empty:          'Nog geen quizresultaten. Doe eerst een toets!',
+    mastered:             'beheerst',
+    streak_day:           'dag op rij',
+    streak_days:          'dagen op rij',
     btn_new_deck:         '+ Nieuw deck',
     btn_new_card:         '+ Kaartje',
     btn_bulk:             'Bulk import',
@@ -61,6 +71,16 @@ const TR = {
     tab_flashcard:        'Practice',
     tab_quiz:             'Quiz',
     nav_help:             'Help',
+    nav_stats:            'Statistics',
+    stats_title:          '📊 Statistics',
+    stats_chart_label:    'Recent quiz scores',
+    stats_quizzes:        'Quizzes taken',
+    stats_avg:            'Average score',
+    stats_best:           'Best score',
+    stats_empty:          'No quiz results yet. Take a quiz first!',
+    mastered:             'mastered',
+    streak_day:           'day streak',
+    streak_days:          'days in a row',
     btn_new_deck:         '+ New deck',
     btn_new_card:         '+ Card',
     btn_bulk:             'Bulk import',
@@ -223,10 +243,21 @@ function applyLang() {
   if (lt) lt.textContent = '🌐 ' + (currentLang || 'NL').toUpperCase();
   const navHelpLabel = document.getElementById('nav-help-label');
   if (navHelpLabel) navHelpLabel.textContent = t('nav_help');
+  const navStatsLabel = document.getElementById('nav-stats-label');
+  if (navStatsLabel) navStatsLabel.textContent = t('nav_stats');
   const mlh = document.getElementById('menu-label-home');
   if (mlh) mlh.textContent = t('nav_home');
   const mll = document.getElementById('menu-label-lang');
   if (mll) mll.textContent = currentLang === 'en' ? 'Switch language' : 'Taal wisselen';
+
+  // Stats page
+  const statsTitle = document.getElementById('stats-title');
+  if (statsTitle) statsTitle.textContent = t('stats_title');
+  const statsChartLabel = document.getElementById('stats-chart-label');
+  if (statsChartLabel) statsChartLabel.textContent = t('stats_chart_label');
+
+  // Streak
+  renderStreak();
 }
 
 // ── State ────────────────────────────────────────────────────
@@ -249,7 +280,7 @@ function showPage(page) {
 
   if (page === 'stats') {
     document.getElementById('nav-stats').classList.add('active');
-    setTopbar(currentLang === 'en' ? 'Statistics' : 'Statistieken', []);
+    setTopbar(t('nav_stats'), []);
     renderStats();
   }
 
@@ -333,7 +364,7 @@ async function loadDecks() {
     return `
     <div class="deck-card">
       <h3>${esc(d.name)}</h3>
-      <p class="meta">${t('card_count', d.card_count)}${total > 0 ? ` · ${pct}% beheerst` : ''}</p>
+      <p class="meta">${t('card_count', d.card_count)}${total > 0 ? ` · ${pct}% ${t('mastered')}` : ''}</p>
       ${bar}
       <div class="card-actions">
         <button class="btn primary" onclick="openDeck(${d.id}, '${esc(d.name)}')">${t('btn_open')}</button>
@@ -842,9 +873,7 @@ function renderStreak() {
   if (!currentUser || streak < 1) { badge.classList.add('hidden'); return; }
   badge.classList.remove('hidden');
   document.getElementById('streak-count').textContent = streak;
-  document.getElementById('streak-label').textContent = currentLang === 'en'
-    ? (streak === 1 ? 'day streak' : 'days in a row')
-    : (streak === 1 ? 'dag op rij' : 'dagen op rij');
+  document.getElementById('streak-label').textContent = streak === 1 ? t('streak_day') : t('streak_days');
 }
 
 // ── Stats (quizscores opslaan) ────────────────────────────────
@@ -864,16 +893,16 @@ function renderStats() {
 
   if (list.length === 0) {
     sumEl.innerHTML   = '';
-    chartEl.innerHTML = `<p class="stats-empty">${currentLang === 'en' ? 'No quiz results yet. Take a quiz first!' : 'Nog geen quizresultaten. Doe eerst een toets!'}</p>`;
+    chartEl.innerHTML = `<p class="stats-empty">${t('stats_empty')}</p>`;
     return;
   }
 
   const avg = Math.round(list.reduce((s, r) => s + r.pct, 0) / list.length);
   const best = Math.max(...list.map(r => r.pct));
   sumEl.innerHTML = `
-    <div class="stats-card"><span class="stats-num">${list.length}</span><div class="stats-lbl">${currentLang === 'en' ? 'Quizzes taken' : 'Toetsen gemaakt'}</div></div>
-    <div class="stats-card"><span class="stats-num">${avg}%</span><div class="stats-lbl">${currentLang === 'en' ? 'Average score' : 'Gemiddelde score'}</div></div>
-    <div class="stats-card"><span class="stats-num">${best}%</span><div class="stats-lbl">${currentLang === 'en' ? 'Best score' : 'Beste score'}</div></div>
+    <div class="stats-card"><span class="stats-num">${list.length}</span><div class="stats-lbl">${t('stats_quizzes')}</div></div>
+    <div class="stats-card"><span class="stats-num">${avg}%</span><div class="stats-lbl">${t('stats_avg')}</div></div>
+    <div class="stats-card"><span class="stats-num">${best}%</span><div class="stats-lbl">${t('stats_best')}</div></div>
   `;
 
   const recent = list.slice(-20);
