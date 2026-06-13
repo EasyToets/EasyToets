@@ -1252,7 +1252,7 @@ main input, main textarea { cursor: text; user-select: text; }
 .landing-cta-secondary:hover { color: white; }
 
 /* floating preview cards */
-.landing-hero-visual { flex: 1; max-width: 380px; position: relative; height: 280px; }
+.landing-hero-visual { flex: 1; max-width: 420px; position: relative; height: 480px; }
 .landing-card-preview { position: relative; width: 100%; height: 100%; }
 .lp-card {
   position: absolute;
@@ -1266,17 +1266,30 @@ main input, main textarea { cursor: text; user-select: text; }
   gap: 0.5rem;
   box-shadow: 0 8px 32px rgba(0,0,0,0.2);
 }
-.lp-card-1 { top: 0; left: 10%; width: 75%; animation: lp-float1 4s ease-in-out infinite; }
-.lp-card-2 { bottom: 20px; right: 0; width: 65%; animation: lp-float2 4s ease-in-out infinite 0.8s; }
-.lp-card-3 { bottom: 0; left: 0; width: 55%; animation: lp-float3 4s ease-in-out infinite 1.6s; }
+.lp-card-1 { top: 0; left: 5%; width: 72%; animation: lp-float1 4s ease-in-out infinite; }
+.lp-card-2 { top: 90px; right: 0; width: 58%; animation: lp-float2 4s ease-in-out infinite 0.8s; }
+.lp-card-3 { top: 200px; left: 0; width: 52%; animation: lp-float3 4s ease-in-out infinite 1.6s; }
+.lp-card-4 { top: 185px; right: 2%; width: 54%; animation: lp-float1 4.5s ease-in-out infinite 1.2s; }
+.lp-card-5 { top: 310px; left: 8%; width: 62%; animation: lp-float2 5s ease-in-out infinite 0.4s; }
+.lp-card-6 { top: 315px; right: 0; width: 56%; animation: lp-float3 4.2s ease-in-out infinite 2s; }
 @keyframes lp-float1 { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
 @keyframes lp-float2 { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
 @keyframes lp-float3 { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
 .lp-card-q { font-weight: 700; font-size: 0.95rem; }
 .lp-card-a { font-size: 0.85rem; color: rgba(255,255,255,0.7); }
-.lp-card-tag { font-size: 0.75rem; color: rgba(255,255,255,0.6); }
+.lp-card-tag { font-size: 0.75rem; color: rgba(255,255,255,0.6); background: rgba(255,255,255,0.1); padding: 0.2rem 0.5rem; border-radius: 99px; width: fit-content; }
+.lp-label { font-size: 0.78rem; font-weight: 800; color: rgba(255,255,255,0.8); text-transform: uppercase; letter-spacing: 0.06em; }
 .lp-streak { font-size: 0.9rem; font-weight: 700; }
 .lp-score { font-size: 1.6rem; font-weight: 900; color: #86efac; }
+.lp-lb-row { font-size: 0.82rem; font-weight: 600; display: flex; justify-content: space-between; padding: 0.15rem 0; }
+.lp-lb-me { color: #c4b5fd; }
+.lp-lb-score { color: #fbbf24; }
+.lp-progress-bars { display: flex; flex-direction: column; gap: 0.4rem; margin-top: 0.25rem; }
+.lp-bar-row { display: flex; align-items: center; gap: 0.5rem; font-size: 0.75rem; color: rgba(255,255,255,0.7); }
+.lp-bar-row span { width: 70px; flex-shrink: 0; }
+.lp-bar { flex: 1; height: 6px; background: rgba(255,255,255,0.15); border-radius: 99px; overflow: hidden; }
+.lp-bar-fill { height: 100%; border-radius: 99px; transition: width 0.5s; }
+.landing-card-preview { position: relative; width: 100%; height: 480px; }
 
 /* features */
 .landing-features {
