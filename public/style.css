@@ -983,6 +983,21 @@ main input, main textarea { cursor: text; user-select: text; }
 .ai-tool-info span { font-size: 0.82rem; color: var(--text-muted); }
 .ai-tool-arrow { font-size: 1.1rem; color: var(--text-muted); }
 
+/* ── Bestand upload ───────────────────────────────────────── */
+.file-drop-zone { border: 2px dashed var(--border); border-radius: 12px; padding: 2rem 1rem; text-align: center; cursor: pointer; transition: border-color 0.15s, background 0.15s; margin-bottom: 1rem; }
+.file-drop-zone:hover, .file-drop-active { border-color: #6c63ff; background: rgba(108,99,255,0.05); }
+.file-drop-icon { font-size: 2rem; margin-bottom: 0.5rem; }
+.file-drop-text { font-weight: 600; font-size: 0.95rem; }
+.file-drop-sub { font-size: 0.8rem; color: var(--text-muted); margin-top: 0.25rem; }
+.file-selected { margin-bottom: 0.75rem; }
+.file-chip { display: inline-flex; align-items: center; gap: 0.5rem; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 0.4rem 0.75rem; font-size: 0.875rem; font-weight: 600; }
+.file-size { color: var(--text-muted); font-weight: 400; }
+.file-action-row { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 0.75rem; }
+.file-result-cards { border: 1px solid var(--border); border-radius: 10px; overflow: hidden; max-height: 260px; overflow-y: auto; margin-bottom: 0.75rem; }
+.file-summary { font-size: 0.92rem; line-height: 1.65; background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 1rem; }
+.file-summary p, .file-summary li { margin: 0.2rem 0; }
+.file-summary strong { color: var(--text); }
+
 /* ── Empty state ─────────────────────────────────────────── */
 .empty-state {
   text-align: center;

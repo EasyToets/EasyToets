@@ -17,6 +17,9 @@
     "canvas": "^3.2.3",
     "express": "^5.2.1",
     "express-session": "^1.19.0",
+    "mammoth": "^1.12.0",
+    "multer": "^2.1.1",
+    "pdf-parse": "^2.4.5",
     "pg": "^8.21.0"
   }
 }

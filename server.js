@@ -3,6 +3,11 @@ const { Pool } = require('pg');
 const bcrypt = require('bcryptjs');
 const session = require('express-session');
 const path = require('path');
+const multer = require('multer');
+const pdfParse = require('pdf-parse');
+const mammoth = require('mammoth');
+
+const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 10 * 1024 * 1024 } });
 
 const app = express();
 
@@ -190,6 +195,63 @@ app.post('/api/generate-cards', requireAuth, async (req, res) => {
   } catch (e) {
     console.error('generate-cards error:', e.message);
     res.status(500).json({ error: 'AI fout: ' + e.message });
+  }
+});
+
+// ── AI: Bestand uploaden & verwerken ─────────────────────────
+app.post('/api/process-file', requireAuth, upload.single('file'), async (req, res) => {
+  const { action } = req.body; // 'flashcards' of 'summary'
+  const file = req.file;
+  if (!file) return res.status(400).json({ error: 'Geen bestand meegegeven' });
+  const apiKey = process.env.ANTHROPIC_API_KEY;
+  if (!apiKey) return res.status(500).json({ error: 'AI niet geconfigureerd' });
+
+  try {
+    // Tekst extraheren uit bestand
+    let text = '';
+    const mime = file.mimetype;
+    if (mime === 'application/pdf') {
+      const parsed = await pdfParse(file.buffer);
+      text = parsed.text;
+    } else if (mime === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
+      const result = await mammoth.extractRawText({ buffer: file.buffer });
+      text = result.value;
+    } else if (mime.startsWith('text/')) {
+      text = file.buffer.toString('utf-8');
+    } else {
+      return res.status(400).json({ error: 'Bestandstype niet ondersteund. Gebruik PDF, Word of tekst.' });
+    }
+
+    if (!text.trim()) return res.status(400).json({ error: 'Geen tekst gevonden in bestand' });
+    if (text.length > 20000) text = text.slice(0, 20000);
+
+    let prompt, responseKey;
+    if (action === 'flashcards') {
+      prompt = `Maak flashcards van de volgende tekst. Geef alleen een JSON array terug, geen uitleg. Formaat: [{"question":"...","answer":"..."}]. Maximaal 20 kaartjes, focus op de belangrijkste begrippen.\n\nTekst:\n${text}`;
+      responseKey = 'cards';
+    } else {
+      prompt = `Maak een duidelijke samenvatting van de volgende tekst voor een scholier. Gebruik kopjes en bullet points. Max 300 woorden.\n\nTekst:\n${text}`;
+      responseKey = 'summary';
+    }
+
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'x-api-key': apiKey, 'anthropic-version': '2023-06-01', 'content-type': 'application/json' },
+      body: JSON.stringify({ model: 'claude-haiku-4-5-20251001', max_tokens: 2048, messages: [{ role: 'user', content: prompt }] })
+    });
+    const data = await response.json();
+    const raw = data.content?.[0]?.text || '';
+
+    if (action === 'flashcards') {
+      const match = raw.match(/\[[\s\S]*\]/);
+      if (!match) return res.status(500).json({ error: 'AI gaf geen geldige kaartjes terug' });
+      return res.json({ cards: JSON.parse(match[0]) });
+    } else {
+      return res.json({ summary: raw });
+    }
+  } catch(e) {
+    console.error('process-file error:', e.message);
+    res.status(500).json({ error: e.message });
   }
 });
 
