@@ -535,15 +535,24 @@
       if (!plans.length) { container.classList.add('hidden'); return; }
       container.classList.remove('hidden');
       list.innerHTML = plans.map(p => `
-        <button class="sidebar-plan-item" data-deck-id="${p.deckId}" data-deck-name="${p.deckName}">
-          <span class="sp-name">${p.deckName}</span>
-          <span class="sp-date">${p.examDate}</span>
-        </button>`).join('');
+        <div class="sidebar-plan-row">
+          <button class="sidebar-plan-item" data-deck-id="${p.deckId}" data-deck-name="${p.deckName}">
+            <span class="sp-name">${p.deckName}</span>
+            <span class="sp-date">${p.examDate}</span>
+          </button>
+          <button class="sp-delete" data-deck-id="${p.deckId}" title="Verwijderen">✕</button>
+        </div>`).join('');
       list.querySelectorAll('.sidebar-plan-item').forEach(btn => {
         btn.addEventListener('click', () => {
           currentDeckId = Number(btn.dataset.deckId);
           currentDeckName = btn.dataset.deckName;
           openStudyPlan();
+        });
+      });
+      list.querySelectorAll('.sp-delete').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          await fetch('/api/decks/' + btn.dataset.deckId + '/study-plan', { method: 'DELETE' });
+          loadSidebarPlans();
         });
       });
     } catch(e) {}

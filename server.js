@@ -289,6 +289,11 @@ app.get('/api/study-plans', requireAuth, async (req, res) => {
   })));
 });
 
+app.delete('/api/decks/:id/study-plan', requireAuth, async (req, res) => {
+  await pool.query('DELETE FROM study_plans WHERE user_id=$1 AND deck_id=$2', [req.session.userId, req.params.id]);
+  res.json({ ok: true });
+});
+
 app.get('/api/decks/:id/study-plan', requireAuth, async (req, res) => {
   const result = await pool.query(
     'SELECT * FROM study_plans WHERE user_id=$1 AND deck_id=$2',

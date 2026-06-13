@@ -965,6 +965,10 @@ main input, main textarea { cursor: text; user-select: text; }
 .sidebar-plan-item:hover { background: rgba(108,99,255,0.15); }
 .sp-name { font-size: 0.85rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .sp-date { font-size: 0.75rem; color: #a78bfa; }
+.sidebar-plan-row { display: flex; align-items: center; gap: 0.25rem; }
+.sidebar-plan-row .sidebar-plan-item { flex: 1; }
+.sp-delete { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 0.75rem; padding: 0.3rem 0.4rem; border-radius: 6px; flex-shrink: 0; }
+.sp-delete:hover { background: rgba(239,68,68,0.12); color: var(--danger); }
 
 /* ── AI Tools pagina ──────────────────────────────────────── */
 .ai-tools-page { max-width: 560px; }
