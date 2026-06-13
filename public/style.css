@@ -959,16 +959,16 @@ main input, main textarea { cursor: text; user-select: text; }
 .plan-exam-label { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.75rem; }
 
 /* ── Sidebar planningen ───────────────────────────────────── */
-.sidebar-plans { margin: 0.75rem 0.75rem 0; background: rgba(108,99,255,0.1); border: 1px solid rgba(108,99,255,0.25); border-radius: 10px; padding: 0.6rem 0.5rem 0.4rem; }
-.sidebar-plans-label { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #a78bfa; padding: 0 0.5rem 0.4rem; }
-.sidebar-plan-item { display: flex; flex-direction: column; gap: 0.1rem; width: 100%; background: none; border: none; text-align: left; padding: 0.45rem 0.75rem; border-radius: 8px; cursor: pointer; color: var(--text); }
-.sidebar-plan-item:hover { background: rgba(108,99,255,0.15); }
-.sp-name { font-size: 0.85rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.sp-date { font-size: 0.75rem; color: #a78bfa; }
-.sidebar-plan-row { display: flex; align-items: center; gap: 0.25rem; }
-.sidebar-plan-row .sidebar-plan-item { flex: 1; }
-.sp-delete { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 0.75rem; padding: 0.3rem 0.4rem; border-radius: 6px; flex-shrink: 0; }
-.sp-delete:hover { background: rgba(239,68,68,0.12); color: var(--danger); }
+.sidebar-plans { margin: 1rem 0.75rem 0; border-radius: 12px; overflow: hidden; border: 1.5px solid #7c3aed; background: linear-gradient(135deg, #4c1d95 0%, #3b1069 100%); }
+.sidebar-plans-label { font-size: 0.7rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; color: #c4b5fd; padding: 0.6rem 0.85rem 0.4rem; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; gap: 0.4rem; }
+.sidebar-plan-row { display: flex; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.07); }
+.sidebar-plan-row:last-child { border-bottom: none; }
+.sidebar-plan-item { display: flex; flex-direction: column; gap: 0.15rem; flex: 1; background: none; border: none; text-align: left; padding: 0.55rem 0.85rem; cursor: pointer; color: #fff; }
+.sidebar-plan-item:hover { background: rgba(255,255,255,0.08); }
+.sp-name { font-size: 0.86rem; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #fff; }
+.sp-date { font-size: 0.74rem; color: #c4b5fd; font-weight: 500; }
+.sp-delete { background: none; border: none; color: rgba(255,255,255,0.35); cursor: pointer; font-size: 0.75rem; padding: 0.4rem 0.6rem; flex-shrink: 0; }
+.sp-delete:hover { color: #f87171; background: rgba(239,68,68,0.2); }
 
 /* ── AI Tools pagina ──────────────────────────────────────── */
 .ai-tools-page { max-width: 560px; }
