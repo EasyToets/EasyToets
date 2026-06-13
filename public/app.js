@@ -386,11 +386,20 @@ async function loadCards() {
       <p class="card-q">${esc(c.question)}</p>
       <p class="card-a">${esc(c.answer)}</p>
       <div class="card-actions">
-        <button class="btn secondary" onclick="openEditCard(${c.id}, \`${esc(c.question)}\`, \`${esc(c.answer)}\`)">${t('btn_edit')}</button>
-        <button class="btn danger" onclick="deleteCard(${c.id})">${t('btn_delete')}</button>
+        <button class="btn secondary" data-edit-id="${c.id}">${t('btn_edit')}</button>
+        <button class="btn danger" data-delete-id="${c.id}">${t('btn_delete')}</button>
       </div>
     </div>
   `).join('');
+
+  el.querySelectorAll('[data-edit-id]').forEach(btn => {
+    const id = Number(btn.dataset.editId);
+    const card = cards.find(c => c.id === id);
+    btn.addEventListener('click', () => openEditCard(card.id, card.question, card.answer));
+  });
+  el.querySelectorAll('[data-delete-id]').forEach(btn => {
+    btn.addEventListener('click', () => deleteCard(Number(btn.dataset.deleteId)));
+  });
 }
 
 async function createCard() {

@@ -706,16 +706,16 @@ main input, main textarea { cursor: text; user-select: text; }
 .flashcard-front p { font-size: 1.35rem; font-weight: 700; line-height: 1.4; }
 .flashcard-front .hint { margin-top: 1.3rem; font-size: 0.78rem; color: rgba(255,255,255,0.5); }
 .flashcard-back {
-  background: linear-gradient(155deg, #0c4a6e 0%, #0369a1 50%, #06b6d4 100%);
+  background: linear-gradient(155deg, #4c1d95 0%, #7c3aed 50%, #a78bfa 100%);
   color: white;
   transform: rotateY(180deg);
-  box-shadow: 0 8px 32px rgba(6,182,212,0.3);
+  box-shadow: 0 8px 32px rgba(91,33,182,0.35);
 }
 .flashcard-back::after {
   content: '';
   position: absolute;
   inset: 0;
-  background: radial-gradient(ellipse at 70% 20%, rgba(255,255,255,0.1) 0%, transparent 60%);
+  background: radial-gradient(ellipse at 70% 80%, rgba(255,255,255,0.12) 0%, transparent 60%);
   border-radius: inherit;
   pointer-events: none;
 }
