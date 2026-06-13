@@ -1016,6 +1016,7 @@ function showAuthTab(mode) {
   document.getElementById('auth-tab-login').classList.toggle('active', isLogin);
   document.getElementById('auth-tab-register').classList.toggle('active', !isLogin);
   document.getElementById('auth-error').classList.add('hidden');
+  document.getElementById('auth-username-hint').classList.toggle('hidden', isLogin);
   applyAuthLang();
   document.getElementById('auth-username').focus();
 }
@@ -1025,6 +1026,11 @@ async function submitAuth() {
   const password = document.getElementById('auth-password').value;
   const errEl = document.getElementById('auth-error');
   errEl.classList.add('hidden');
+  if (authMode === 'register' && username.includes('@')) {
+    errEl.textContent = 'Gebruik geen emailadres als gebruikersnaam — kies een bijnaam.';
+    errEl.classList.remove('hidden');
+    return;
+  }
   if (!username || !password) {
     errEl.textContent = AUTH_TR[authLang].empty;
     errEl.classList.remove('hidden');

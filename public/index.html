@@ -562,8 +562,9 @@
       <button class="auth-tab" id="auth-tab-register" onclick="showAuthTab('register')">Create account</button>
     </div>
     <div id="auth-error" class="auth-error hidden"></div>
-    <input type="text" id="auth-username" placeholder="Username" maxlength="40" autocomplete="username">
-    <input type="password" id="auth-password" placeholder="Password" autocomplete="current-password">
+    <input type="text" id="auth-username" placeholder="Gebruikersnaam (bijv. Jan123)" maxlength="40" autocomplete="username">
+    <div id="auth-username-hint" class="auth-field-hint hidden">Zichtbaar op het leaderboard — gebruik geen emailadres.</div>
+    <input type="password" id="auth-password" placeholder="Wachtwoord" autocomplete="current-password">
     <button class="btn primary auth-submit-btn" id="auth-submit-btn" onclick="submitAuth()">Log in</button>
     <button class="auth-lang-switch" id="auth-lang-switch" onclick="toggleAuthLang()">🇳🇱 Liever Nederlands?</button>
   </div>

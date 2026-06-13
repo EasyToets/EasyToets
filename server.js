@@ -115,6 +115,7 @@ app.post('/api/register', async (req, res) => {
     const { username, password } = req.body;
     if (!username?.trim() || !password) return res.status(400).json({ error: 'Vul alle velden in' });
     if (username.trim().length < 3) return res.status(400).json({ error: 'Gebruikersnaam moet minimaal 3 tekens zijn' });
+    if (username.includes('@')) return res.status(400).json({ error: 'Gebruik geen emailadres als gebruikersnaam — kies een bijnaam.' });
     if (password.length < 6) return res.status(400).json({ error: 'Wachtwoord moet minimaal 6 tekens zijn' });
     const existing = await pool.query('SELECT id FROM users WHERE LOWER(username) = LOWER($1)', [username.trim()]);
     if (existing.rows.length) return res.status(400).json({ error: 'Gebruikersnaam al in gebruik' });
