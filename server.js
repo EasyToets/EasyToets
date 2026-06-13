@@ -276,6 +276,19 @@ app.post('/api/study-plan', requireAuth, async (req, res) => {
   }
 });
 
+app.get('/api/study-plans', requireAuth, async (req, res) => {
+  const result = await pool.query(
+    `SELECT sp.*, d.name as deck_name FROM study_plans sp
+     JOIN decks d ON d.id = sp.deck_id
+     WHERE sp.user_id = $1 ORDER BY sp.created_at DESC`,
+    [req.session.userId]
+  );
+  res.json(result.rows.map(r => ({
+    deckId: r.deck_id, deckName: r.deck_name,
+    examDate: r.exam_date, days: JSON.parse(r.plan_json), createdAt: r.created_at
+  })));
+});
+
 app.get('/api/decks/:id/study-plan', requireAuth, async (req, res) => {
   const result = await pool.query(
     'SELECT * FROM study_plans WHERE user_id=$1 AND deck_id=$2',

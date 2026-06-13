@@ -109,6 +109,10 @@
         <span class="nav-icon">🗂️</span> <span id="nav-deck-label">Deck</span>
       </button>
     </nav>
+    <div id="sidebar-plans" class="sidebar-plans hidden">
+      <div class="sidebar-plans-label">📅 Planningen</div>
+      <div id="sidebar-plans-list"></div>
+    </div>
     <div class="sidebar-footer">
       <button class="lang-toggle" id="lang-toggle" onclick="showLangPicker()">🌐 NL</button>
       <p>Leer slimmer,<br>niet harder.</p>
@@ -521,6 +525,30 @@
     btn.disabled = false;
   }
 
+  // ── Sidebar planningen ───────────────────────────────────
+  async function loadSidebarPlans() {
+    try {
+      const res = await fetch('/api/study-plans');
+      const plans = await res.json();
+      const container = document.getElementById('sidebar-plans');
+      const list = document.getElementById('sidebar-plans-list');
+      if (!plans.length) { container.classList.add('hidden'); return; }
+      container.classList.remove('hidden');
+      list.innerHTML = plans.map(p => `
+        <button class="sidebar-plan-item" data-deck-id="${p.deckId}" data-deck-name="${p.deckName}">
+          <span class="sp-name">${p.deckName}</span>
+          <span class="sp-date">${p.examDate}</span>
+        </button>`).join('');
+      list.querySelectorAll('.sidebar-plan-item').forEach(btn => {
+        btn.addEventListener('click', () => {
+          currentDeckId = Number(btn.dataset.deckId);
+          currentDeckName = btn.dataset.deckName;
+          openStudyPlan();
+        });
+      });
+    } catch(e) {}
+  }
+
   // ── Markdown → HTML ──────────────────────────────────────
   function mdToHtml(text) {
     return text
@@ -651,6 +679,7 @@
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Fout');
       renderPlanDays(data.days, examDate);
+      loadSidebarPlans();
     } catch(e) {
       error.textContent = 'Fout: ' + e.message;
       error.classList.remove('hidden');

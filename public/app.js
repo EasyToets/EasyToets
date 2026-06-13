@@ -1034,6 +1034,7 @@ async function submitAuth() {
   updateUserDisplay();
   renderStreak();
   showPage('home');
+  if (typeof loadSidebarPlans === 'function') loadSidebarPlans();
 }
 
 async function doLogout() {
@@ -1091,6 +1092,7 @@ async function init() {
     updateUserDisplay();
     renderStreak();
     showPage('home');
+    if (typeof loadSidebarPlans === 'function') loadSidebarPlans();
   } else {
     showLanding();
   }
