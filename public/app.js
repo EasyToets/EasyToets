@@ -571,8 +571,9 @@ function switchTab(tab) {
   document.getElementById('tab-content-' + tab).classList.remove('hidden');
   document.getElementById('tab-' + tab).classList.add('active');
 
+  if (tab === 'cards')     loadCards();
   if (tab === 'flashcard') startFlashcards();
-  if (tab === 'quiz') startQuiz();
+  if (tab === 'quiz')      startQuiz();
 }
 
 // ── Decks ────────────────────────────────────────────────────
@@ -599,11 +600,19 @@ async function loadDecks() {
       <p class="meta">${t('card_count', d.card_count)}${total > 0 ? ` · ${pct}% ${t('mastered')}` : ''}</p>
       ${bar}
       <div class="card-actions">
-        <button class="btn primary" onclick="openDeck(${d.id}, '${esc(d.name)}')">${t('btn_open')}</button>
-        <button class="btn secondary" onclick="deleteDeck(${d.id}, event)">${t('btn_delete')}</button>
+        <button class="btn primary" data-open-id="${d.id}">${t('btn_open')}</button>
+        <button class="btn secondary" data-del-id="${d.id}">${t('btn_delete')}</button>
       </div>
     </div>`;
   }).join('');
+
+  el.querySelectorAll('[data-open-id]').forEach(btn => {
+    const deck = decks.find(d => d.id === Number(btn.dataset.openId));
+    btn.addEventListener('click', () => openDeck(deck.id, deck.name));
+  });
+  el.querySelectorAll('[data-del-id]').forEach(btn => {
+    btn.addEventListener('click', (e) => deleteDeck(Number(btn.dataset.delId), e));
+  });
 }
 
 async function createDeck() {
@@ -782,17 +791,19 @@ function showQuizQuestion() {
   document.getElementById('quiz-counter').textContent   = `${sessionIndex + 1} / ${sessionCards.length}`;
   document.getElementById('quiz-progress').style.width  = ((sessionIndex + 1) / sessionCards.length * 100) + '%';
 
-  document.getElementById('quiz-options').innerHTML = options.map(opt => `
-    <button class="quiz-option" onclick="answerQuiz(this, '${esc(opt)}', '${esc(card.answer)}')">${esc(opt)}</button>
-  `).join('');
+  const optEl = document.getElementById('quiz-options');
+  optEl.innerHTML = options.map(opt => `<button class="quiz-option">${esc(opt)}</button>`).join('');
+  optEl.querySelectorAll('.quiz-option').forEach(btn => {
+    btn.addEventListener('click', () => answerQuiz(btn, btn.textContent, card.answer));
+  });
 }
 
 function answerQuiz(btn, chosen, correct) {
   document.querySelectorAll('.quiz-option').forEach(b => {
     b.disabled = true;
-    if (b.textContent === correct) b.classList.add('correct');
+    if (b.textContent.trim() === correct.trim()) b.classList.add('correct');
   });
-  if (chosen === correct) { btn.classList.add('correct'); sessionCorrect++; showConfetti(); }
+  if (chosen.trim() === correct.trim()) { btn.classList.add('correct'); sessionCorrect++; showConfetti(); }
   else btn.classList.add('wrong');
   setTimeout(() => {
     sessionIndex++;
