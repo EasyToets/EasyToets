@@ -364,6 +364,9 @@ function setLang(lang) {
   if (currentUser) {
     showPage('home');
   } else {
+    const mode = window._pendingAuthMode || 'login';
+    window._pendingAuthMode = null;
+    showAuthTab(mode);
     showAuthModal();
   }
 }
@@ -985,6 +988,7 @@ async function submitAuth() {
   document.getElementById('auth-password').value = '';
   document.getElementById('auth-username').value = '';
   hideAuthModal();
+  hideLanding();
   updateUserDisplay();
   renderStreak();
   showPage('home');
@@ -1014,23 +1018,39 @@ document.getElementById('auth-password').addEventListener('keydown', e => {
   if (e.key === 'Enter') submitAuth();
 });
 
+// ── Landing ───────────────────────────────────────────────────
+function showLanding() {
+  document.getElementById('landing').classList.remove('hidden');
+  document.querySelector('.layout').style.display = 'none';
+}
+function hideLanding() {
+  document.getElementById('landing').classList.add('hidden');
+  document.querySelector('.layout').style.display = '';
+}
+function showAuthFromLanding(mode) {
+  hideLanding();
+  if (!currentLang) {
+    window._pendingAuthMode = mode || 'login';
+    document.getElementById('modal-lang').classList.remove('hidden');
+  } else {
+    if (mode) showAuthTab(mode);
+    showAuthModal();
+  }
+}
+
 // ── Init ─────────────────────────────────────────────────────
 async function init() {
   const meRes = await fetch('/api/me');
   const meData = await meRes.json();
   currentUser = meData.user;
 
-  if (!currentLang) {
-    document.getElementById('modal-lang').classList.remove('hidden');
-  } else {
-    applyLang();
-  }
-
-  if (!currentUser) {
-    showAuthModal();
-  } else {
+  if (currentUser) {
+    if (currentLang) applyLang();
     updateUserDisplay();
-    if (currentLang) showPage('home');
+    renderStreak();
+    showPage('home');
+  } else {
+    showLanding();
   }
 }
 
