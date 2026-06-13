@@ -4,6 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>EasyToets</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
   <link rel="manifest" href="/manifest.json">
   <meta name="theme-color" content="#6c63ff">
@@ -102,6 +104,9 @@
       <button class="nav-item" id="nav-ai" onclick="showPage('ai')">
         <span class="nav-icon">✨</span> <span>AI Tools</span>
       </button>
+      <button class="nav-item" id="nav-leaderboard" onclick="showPage('leaderboard')">
+        <span class="nav-icon">🏆</span> <span>Leaderboard</span>
+      </button>
       <button class="nav-item" id="nav-install" onclick="installApp()" style="display:none">
         <span class="nav-icon">⬇️</span> <span id="nav-install-label">Installeer app</span>
       </button>
@@ -114,7 +119,10 @@
       <div id="sidebar-plans-list"></div>
     </div>
     <div class="sidebar-footer">
-      <button class="lang-toggle" id="lang-toggle" onclick="showLangPicker()">🌐 NL</button>
+      <div class="sidebar-footer-row">
+        <button class="lang-toggle" id="lang-toggle" onclick="showLangPicker()">🌐 NL</button>
+        <button class="dark-toggle" id="dark-toggle" onclick="toggleDark()" title="Dark mode">🌙</button>
+      </div>
       <p>Leer slimmer,<br>niet harder.</p>
       <p class="kofi-tekst">Vind je EasyToets heel fijn? Je mag altijd een donatie achterlaten als je wil. 😊</p>
       <a href="https://ko-fi.com/easytoets" target="_blank" class="btn-kofi">☕ Doneer via Ko-fi</a>
@@ -364,7 +372,17 @@
             <p class="stats-chart-label" id="stats-chart-label">Recente quiz scores</p>
             <div id="stats-chart" class="stats-chart"></div>
           </div>
+          <div id="hard-cards-wrap" class="hard-cards-wrap hidden">
+            <h3 class="hard-cards-title">🔴 Moeilijkste kaartjes</h3>
+            <div id="hard-cards-list"></div>
+          </div>
         </div>
+      </section>
+
+      <section id="page-leaderboard" class="hidden">
+        <h2 class="page-title">🏆 Leaderboard</h2>
+        <p class="page-sub">Wie heeft de langste streak en hoogste quizscore?</p>
+        <div id="leaderboard-list" class="leaderboard-list"></div>
       </section>
 
     </main>
@@ -501,6 +519,36 @@
       <button class="btn secondary" onclick="closeModal('modal-bulk')">Annuleren</button>
       <button class="btn accent" onclick="previewBulk()">Controleren</button>
       <button class="btn primary hidden" id="btn-bulk-import" onclick="importBulk()">Importeren</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Deck delen -->
+<div id="modal-share" class="modal hidden">
+  <div class="modal-box">
+    <h3>🔗 Deck delen</h3>
+    <p class="modal-hint">Maak een publieke link waarmee anderen dit deck kunnen kopiëren.</p>
+    <div id="share-link-wrap" class="share-link-wrap hidden">
+      <input id="share-link-input" type="text" readonly onclick="this.select()" class="share-link-input">
+      <button class="btn primary" onclick="copyShareLink()">📋 Kopieer link</button>
+    </div>
+    <div id="share-status" class="share-status"></div>
+    <div class="btn-group" style="margin-top:1rem">
+      <button class="btn primary" id="btn-share-enable" onclick="enableShare()">🔓 Publiek maken</button>
+      <button class="btn danger hidden" id="btn-share-disable" onclick="disableShare()">🔒 Delen stoppen</button>
+      <button class="btn secondary" onclick="closeModal('modal-share')">Sluiten</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Gedeeld deck kopiëren -->
+<div id="modal-shared-deck" class="modal hidden">
+  <div class="modal-box">
+    <h3>📥 Gedeeld deck</h3>
+    <div id="shared-deck-info"></div>
+    <div class="btn-group" style="margin-top:1rem">
+      <button class="btn primary" id="btn-copy-deck" onclick="copySharedDeck()">➕ Kopieer naar mijn decks</button>
+      <button class="btn secondary" onclick="closeModal('modal-shared-deck')">Sluiten</button>
     </div>
   </div>
 </div>

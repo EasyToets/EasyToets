@@ -518,6 +518,13 @@ function showPage(page) {
     document.getElementById('nav-stats').classList.add('active');
     setTopbar(t('nav_stats'), []);
     renderStats();
+    loadHardCards();
+  }
+
+  if (page === 'leaderboard') {
+    document.getElementById('nav-leaderboard').classList.add('active');
+    setTopbar('🏆 Leaderboard', []);
+    loadLeaderboard();
   }
 
   if (page === 'help') {
@@ -619,6 +626,7 @@ async function loadDecks() {
       <div class="card-actions">
         <button class="btn primary" data-open-id="${d.id}">${t('btn_open')}</button>
         <button class="btn secondary" data-del-id="${d.id}">${t('btn_delete')}</button>
+        <button class="btn accent" data-share-id="${d.id}" title="Deel dit deck">🔗</button>
       </div>
     </div>`;
   }).join('');
@@ -629,6 +637,9 @@ async function loadDecks() {
   });
   el.querySelectorAll('[data-del-id]').forEach(btn => {
     btn.addEventListener('click', (e) => deleteDeck(Number(btn.dataset.delId), e));
+  });
+  el.querySelectorAll('[data-share-id]').forEach(btn => {
+    btn.addEventListener('click', (e) => { e.stopPropagation(); openShareModal(Number(btn.dataset.shareId)); });
   });
 }
 
@@ -776,9 +787,11 @@ function flipCard() {
 }
 
 function nextCard(correct) {
+  const card = sessionCards[sessionIndex];
+  reviewCard(card.id, correct);
   if (correct) {
     sessionCorrect++;
-    markCardMastered(sessionCards[sessionIndex].id);
+    markCardMastered(card.id);
     showConfetti();
   }
   sessionIndex++;
@@ -845,7 +858,10 @@ function showResult() {
   const emoji = pct >= 80 ? '🎉' : pct >= 50 ? '💪' : '📖';
   document.getElementById('result-emoji').textContent = emoji;
   document.getElementById('result-text').textContent  = t('result_text', sessionCorrect, sessionCards.length, pct);
-  if (sessionMode === 'quiz') recordQuizStat(currentDeckName, sessionCorrect, sessionCards.length);
+  if (sessionMode === 'quiz') {
+    recordQuizStat(currentDeckName, sessionCorrect, sessionCards.length);
+    recordQuizStatServer(currentDeckId, currentDeckName, sessionCorrect, sessionCards.length);
+  }
   showPage('result');
 }
 
@@ -1090,8 +1106,11 @@ async function init() {
     if (currentLang) applyLang();
     updateUserDisplay();
     renderStreak(meData.user.streak);
+    const darkBtn = document.getElementById('dark-toggle');
+    if (darkBtn) darkBtn.textContent = document.documentElement.classList.contains('dark') ? '☀️' : '🌙';
     showPage('home');
     if (typeof loadSidebarPlans === 'function') loadSidebarPlans();
+    checkShareUrl();
   } else {
     showLanding();
   }
@@ -1201,4 +1220,139 @@ function installApp() {
   if (!installPrompt) return;
   installPrompt.prompt();
   installPrompt.userChoice.then(() => { installPrompt = null; });
+}
+
+// ── Dark mode ─────────────────────────────────────────────────
+function toggleDark() {
+  const isDark = document.documentElement.classList.toggle('dark');
+  localStorage.setItem('et_dark', isDark ? '1' : '0');
+  document.getElementById('dark-toggle').textContent = isDark ? '☀️' : '🌙';
+}
+(function initDark() {
+  if (localStorage.getItem('et_dark') === '1') {
+    document.documentElement.classList.add('dark');
+    document.addEventListener('DOMContentLoaded', () => {
+      const btn = document.getElementById('dark-toggle');
+      if (btn) btn.textContent = '☀️';
+    });
+  }
+})();
+
+// ── Leaderboard ───────────────────────────────────────────────
+async function loadLeaderboard() {
+  const res = await fetch('/api/leaderboard');
+  const rows = await res.json();
+  const me = currentUser?.username;
+  document.getElementById('leaderboard-list').innerHTML = rows.map((r, i) => {
+    const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `${i+1}.`;
+    const isMe = r.username === me;
+    return `<div class="lb-row${isMe ? ' lb-me' : ''}">
+      <span class="lb-rank">${medal}</span>
+      <span class="lb-name">${esc(r.username)}${isMe ? ' <span class="lb-you">(jij)</span>' : ''}</span>
+      <span class="lb-streak">🔥 ${r.streak}</span>
+      <span class="lb-score">${r.quiz_count} toetsen · ${r.avg_pct}% gem.</span>
+    </div>`;
+  }).join('') || '<p class="stats-empty">Nog geen gegevens.</p>';
+}
+
+// ── Stats uitbreiden met moeilijke kaartjes ───────────────────
+async function loadHardCards() {
+  const res = await fetch('/api/quiz-stats/hard-cards');
+  if (!res.ok) return;
+  const cards = await res.json();
+  const wrap = document.getElementById('hard-cards-wrap');
+  const list = document.getElementById('hard-cards-list');
+  if (!cards.length) { wrap.classList.add('hidden'); return; }
+  wrap.classList.remove('hidden');
+  list.innerHTML = cards.map(c => `
+    <div class="hard-card-row">
+      <div class="hard-card-q">${esc(c.question)}</div>
+      <div class="hard-card-a">${esc(c.answer)}</div>
+      <div class="hard-card-meta">${esc(c.deck_name)} · ease: ${parseFloat(c.ease).toFixed(1)}</div>
+    </div>`).join('');
+}
+
+// ── Quiz stats naar server sturen ─────────────────────────────
+async function recordQuizStatServer(deckId, deckName, correct, total) {
+  if (!currentUser) return;
+  await fetch('/api/quiz-stats', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ deck_id: deckId, deck_name: deckName, correct, total })
+  });
+}
+
+// ── Spaced repetition: kaartje beoordelen ────────────────────
+async function reviewCard(cardId, correct) {
+  if (!currentUser || !cardId) return;
+  await fetch(`/api/cards/${cardId}/review`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ correct })
+  });
+}
+
+// ── Deck delen ────────────────────────────────────────────────
+let shareCurrentDeckId = null;
+
+function openShareModal(deckId) {
+  shareCurrentDeckId = deckId;
+  document.getElementById('share-link-wrap').classList.add('hidden');
+  document.getElementById('share-status').textContent = '';
+  document.getElementById('btn-share-enable').classList.remove('hidden');
+  document.getElementById('btn-share-disable').classList.add('hidden');
+  openModal('modal-share');
+}
+
+async function enableShare() {
+  const res = await fetch(`/api/decks/${shareCurrentDeckId}/share`, { method: 'POST' });
+  const data = await res.json();
+  const link = location.origin + '/share/' + data.token;
+  document.getElementById('share-link-input').value = link;
+  document.getElementById('share-link-wrap').classList.remove('hidden');
+  document.getElementById('btn-share-enable').classList.add('hidden');
+  document.getElementById('btn-share-disable').classList.remove('hidden');
+  document.getElementById('share-status').textContent = '✅ Deck is nu publiek';
+}
+
+async function disableShare() {
+  await fetch(`/api/decks/${shareCurrentDeckId}/unshare`, { method: 'POST' });
+  document.getElementById('share-link-wrap').classList.add('hidden');
+  document.getElementById('btn-share-enable').classList.remove('hidden');
+  document.getElementById('btn-share-disable').classList.add('hidden');
+  document.getElementById('share-status').textContent = '🔒 Delen gestopt';
+}
+
+function copyShareLink() {
+  const val = document.getElementById('share-link-input').value;
+  navigator.clipboard.writeText(val).then(() => {
+    document.getElementById('share-status').textContent = '✅ Link gekopieerd!';
+  });
+}
+
+// ── Gedeeld deck via URL openen (/share/TOKEN) ────────────────
+let sharedDeckToken = null;
+async function checkShareUrl() {
+  const m = location.pathname.match(/^\/share\/([a-f0-9]+)$/);
+  if (!m) return;
+  sharedDeckToken = m[1];
+  const res = await fetch('/api/share/' + sharedDeckToken);
+  if (!res.ok) return;
+  const { deck, cards } = await res.json();
+  document.getElementById('shared-deck-info').innerHTML = `
+    <p><strong>${esc(deck.name)}</strong></p>
+    <p>${cards.length} kaartjes · gemaakt door <strong>${esc(deck.owner)}</strong></p>`;
+  openModal('modal-shared-deck');
+}
+
+async function copySharedDeck() {
+  if (!currentUser) { showAuthModal(); return; }
+  const res = await fetch('/api/share/' + sharedDeckToken + '/copy', { method: 'POST' });
+  const data = await res.json();
+  if (data.ok) {
+    closeModal('modal-shared-deck');
+    await loadDecks();
+    showPage('home');
+    history.replaceState(null, '', '/');
+  }
 }

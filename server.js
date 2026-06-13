@@ -24,6 +24,7 @@ app.use(session({
   cookie: { maxAge: 7 * 24 * 60 * 60 * 1000 }
 }));
 app.use(express.static(path.join(__dirname, 'public')));
+app.get('/share/:token', (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
 
 // Database setup
 async function initDb() {
@@ -59,6 +60,28 @@ async function initDb() {
       question TEXT NOT NULL,
       answer TEXT NOT NULL
     );
+    CREATE TABLE IF NOT EXISTS card_reviews (
+      id SERIAL PRIMARY KEY,
+      user_id INTEGER NOT NULL,
+      card_id INTEGER NOT NULL REFERENCES cards(id) ON DELETE CASCADE,
+      ease REAL NOT NULL DEFAULT 2.5,
+      interval_days INTEGER NOT NULL DEFAULT 1,
+      next_review DATE NOT NULL DEFAULT CURRENT_DATE,
+      reps INTEGER NOT NULL DEFAULT 0,
+      UNIQUE(user_id, card_id)
+    );
+    CREATE TABLE IF NOT EXISTS quiz_stats (
+      id SERIAL PRIMARY KEY,
+      user_id INTEGER NOT NULL,
+      deck_id INTEGER,
+      deck_name TEXT,
+      correct INTEGER NOT NULL,
+      total INTEGER NOT NULL,
+      pct INTEGER NOT NULL,
+      created_at TIMESTAMPTZ DEFAULT NOW()
+    );
+    ALTER TABLE decks ADD COLUMN IF NOT EXISTS is_public BOOLEAN NOT NULL DEFAULT FALSE;
+    ALTER TABLE decks ADD COLUMN IF NOT EXISTS share_token TEXT;
   `);
 }
 initDb().catch(console.error);
@@ -401,6 +424,148 @@ app.get('/api/admin/stats', async (req, res) => {
     kaartjes: cards.rows[0].total,
     recente_gebruikers: recent.rows
   });
+});
+
+// ── Spaced repetition ────────────────────────────────────────
+app.post('/api/cards/:id/review', requireAuth, async (req, res) => {
+  const { correct } = req.body; // true/false
+  const cardId = parseInt(req.params.id);
+  const userId = req.session.userId;
+  const r = await pool.query('SELECT * FROM card_reviews WHERE user_id=$1 AND card_id=$2', [userId, cardId]);
+  let { ease = 2.5, interval_days = 1, reps = 0 } = r.rows[0] || {};
+  if (correct) {
+    reps++;
+    if (reps === 1) interval_days = 1;
+    else if (reps === 2) interval_days = 3;
+    else interval_days = Math.round(interval_days * ease);
+    ease = Math.max(1.3, ease + 0.1);
+  } else {
+    reps = 0;
+    interval_days = 1;
+    ease = Math.max(1.3, ease - 0.2);
+  }
+  const next = new Date(Date.now() + interval_days * 86400000).toISOString().slice(0, 10);
+  await pool.query(`
+    INSERT INTO card_reviews (user_id, card_id, ease, interval_days, next_review, reps)
+    VALUES ($1,$2,$3,$4,$5,$6)
+    ON CONFLICT (user_id, card_id) DO UPDATE SET ease=$3, interval_days=$4, next_review=$5, reps=$6
+  `, [userId, cardId, ease, interval_days, next, reps]);
+  res.json({ ok: true, interval_days });
+});
+
+app.get('/api/decks/:id/due-cards', requireAuth, async (req, res) => {
+  const userId = req.session.userId;
+  const deckId = parseInt(req.params.id);
+  const result = await pool.query(`
+    SELECT c.*, COALESCE(cr.next_review, CURRENT_DATE) as next_review,
+           COALESCE(cr.reps, 0) as reps, COALESCE(cr.ease, 2.5) as ease
+    FROM cards c
+    LEFT JOIN card_reviews cr ON cr.card_id = c.id AND cr.user_id = $1
+    WHERE c.deck_id = $2
+    ORDER BY COALESCE(cr.next_review, CURRENT_DATE) ASC
+  `, [userId, deckId]);
+  const today = new Date().toISOString().slice(0, 10);
+  const due = result.rows.filter(c => c.next_review <= today);
+  const notDue = result.rows.filter(c => c.next_review > today);
+  res.json({ due, notDue, all: result.rows });
+});
+
+// ── Quiz stats (server-side) ──────────────────────────────────
+app.post('/api/quiz-stats', requireAuth, async (req, res) => {
+  const { deck_id, deck_name, correct, total } = req.body;
+  const pct = Math.round(correct / total * 100);
+  await pool.query(
+    'INSERT INTO quiz_stats (user_id, deck_id, deck_name, correct, total, pct) VALUES ($1,$2,$3,$4,$5,$6)',
+    [req.session.userId, deck_id || null, deck_name, correct, total, pct]
+  );
+  res.json({ ok: true });
+});
+
+app.get('/api/quiz-stats', requireAuth, async (req, res) => {
+  const result = await pool.query(
+    'SELECT * FROM quiz_stats WHERE user_id=$1 ORDER BY created_at DESC LIMIT 100',
+    [req.session.userId]
+  );
+  res.json(result.rows);
+});
+
+app.get('/api/quiz-stats/hard-cards', requireAuth, async (req, res) => {
+  const result = await pool.query(`
+    SELECT c.question, c.answer, d.name as deck_name,
+           COALESCE(cr.reps, 0) as reps,
+           COALESCE(cr.ease, 2.5) as ease,
+           COALESCE(cr.interval_days, 1) as interval_days
+    FROM cards c
+    JOIN decks d ON d.id = c.deck_id
+    LEFT JOIN card_reviews cr ON cr.card_id = c.id AND cr.user_id = $1
+    WHERE d.user_id = $1
+    ORDER BY COALESCE(cr.ease, 2.5) ASC
+    LIMIT 10
+  `, [req.session.userId]);
+  res.json(result.rows);
+});
+
+// ── Leaderboard ───────────────────────────────────────────────
+app.get('/api/leaderboard', requireAuth, async (req, res) => {
+  const result = await pool.query(`
+    SELECT u.username, u.streak,
+           COUNT(qs.id)::int as quiz_count,
+           COALESCE(ROUND(AVG(qs.pct)), 0)::int as avg_pct
+    FROM users u
+    LEFT JOIN quiz_stats qs ON qs.user_id = u.id
+    GROUP BY u.id, u.username, u.streak
+    ORDER BY u.streak DESC, avg_pct DESC
+    LIMIT 20
+  `);
+  res.json(result.rows);
+});
+
+// ── Deck delen ────────────────────────────────────────────────
+app.post('/api/decks/:id/share', requireAuth, async (req, res) => {
+  const deckId = parseInt(req.params.id);
+  const token = require('crypto').randomBytes(8).toString('hex');
+  const r = await pool.query(
+    'UPDATE decks SET is_public=TRUE, share_token=$1 WHERE id=$2 AND user_id=$3 RETURNING share_token',
+    [token, deckId, req.session.userId]
+  );
+  if (!r.rows.length) return res.status(404).json({ error: 'Deck niet gevonden' });
+  res.json({ token: r.rows[0].share_token });
+});
+
+app.post('/api/decks/:id/unshare', requireAuth, async (req, res) => {
+  await pool.query('UPDATE decks SET is_public=FALSE, share_token=NULL WHERE id=$1 AND user_id=$2',
+    [parseInt(req.params.id), req.session.userId]);
+  res.json({ ok: true });
+});
+
+app.get('/api/share/:token', async (req, res) => {
+  const r = await pool.query(
+    `SELECT d.id, d.name, u.username as owner,
+            COUNT(c.id)::int as card_count, d.share_token
+     FROM decks d JOIN users u ON u.id=d.user_id
+     LEFT JOIN cards c ON c.deck_id=d.id
+     WHERE d.share_token=$1 AND d.is_public=TRUE
+     GROUP BY d.id, d.name, u.username, d.share_token`, [req.params.token]);
+  if (!r.rows.length) return res.status(404).json({ error: 'Deck niet gevonden of niet gedeeld' });
+  const cards = await pool.query('SELECT question, answer FROM cards WHERE deck_id=$1', [r.rows[0].id]);
+  res.json({ deck: r.rows[0], cards: cards.rows });
+});
+
+app.post('/api/share/:token/copy', requireAuth, async (req, res) => {
+  const r = await pool.query(
+    'SELECT d.* FROM decks d WHERE share_token=$1 AND is_public=TRUE', [req.params.token]);
+  if (!r.rows.length) return res.status(404).json({ error: 'Niet gevonden' });
+  const deck = r.rows[0];
+  const cards = await pool.query('SELECT question, answer FROM cards WHERE deck_id=$1', [deck.id]);
+  const newDeck = await pool.query(
+    'INSERT INTO decks (user_id, name) VALUES ($1, $2) RETURNING id',
+    [req.session.userId, deck.name + ' (kopie)']);
+  const newId = newDeck.rows[0].id;
+  for (const c of cards.rows) {
+    await pool.query('INSERT INTO cards (deck_id, question, answer) VALUES ($1,$2,$3)',
+      [newId, c.question, c.answer]);
+  }
+  res.json({ ok: true, deck_id: newId });
 });
 
 const PORT = process.env.PORT || 3000;
