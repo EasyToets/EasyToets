@@ -521,6 +521,19 @@
     btn.disabled = false;
   }
 
+  // ── Markdown → HTML ──────────────────────────────────────
+  function mdToHtml(text) {
+    return text
+      .replace(/#{1,6}\s?(.+)/g, '<strong>$1</strong>')
+      .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+      .replace(/\*(.+?)\*/g, '<em>$1</em>')
+      .replace(/^\s*[-•]\s+(.+)/gm, '<li>$1</li>')
+      .replace(/(<li>.*<\/li>)/gs, '<ul>$1</ul>')
+      .split('\n').filter(l => l.trim()).map(l =>
+        l.startsWith('<') ? l : `<p>${l}</p>`
+      ).join('');
+  }
+
   // ── AI Uitleg per kaartje ─────────────────────────────────
   async function explainCard(card, allCards) {
     document.getElementById('explain-card-preview').innerHTML =
@@ -535,7 +548,7 @@
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Fout');
-      document.getElementById('explain-content').innerHTML = `<p>${data.explanation}</p>`;
+      document.getElementById('explain-content').innerHTML = mdToHtml(data.explanation);
     } catch(e) {
       document.getElementById('explain-content').innerHTML = `<p class="ai-error">Fout: ${e.message}</p>`;
     }
@@ -582,6 +595,7 @@
 
   // ── Studieplan ────────────────────────────────────────────
   function openStudyPlan() {
+    if (!currentDeckId) { showPage('home'); return; }
     document.getElementById('plan-result').classList.add('hidden');
     document.getElementById('plan-error').classList.add('hidden');
     const btn = document.getElementById('btn-generate-plan');
@@ -589,6 +603,7 @@
     btn.disabled = false;
     const d = new Date(); d.setDate(d.getDate() + 7);
     document.getElementById('input-exam-date').value = d.toISOString().split('T')[0];
+    document.getElementById('modal-studyplan').querySelector('.ai-modal-body').scrollTop = 0;
     openModal('modal-studyplan');
   }
 
