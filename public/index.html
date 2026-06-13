@@ -216,6 +216,9 @@
 
         <!-- Tab: kaartjes beheren -->
         <div id="tab-content-cards">
+          <div class="ai-bar">
+            <button class="btn ai-btn" onclick="openModal('modal-ai')">✨ AI kaartjes genereren</button>
+          </div>
           <div id="card-list" class="card-grid"></div>
         </div>
 
@@ -327,6 +330,22 @@
   </div>
 </div>
 
+<!-- MODAL: AI genereren -->
+<div id="modal-ai" class="modal hidden">
+  <div class="modal-box modal-bulk-box">
+    <h3>✨ AI kaartjes genereren</h3>
+    <p class="modal-hint">Plak een stuk tekst (samenvatting, aantekeningen, hoofdstuk) en de AI maakt er automatisch flashcards van.</p>
+    <textarea id="input-ai" placeholder="Plak hier je tekst..." rows="10"></textarea>
+    <div id="ai-preview" class="bulk-preview hidden"></div>
+    <div id="ai-error" class="ai-error hidden"></div>
+    <div class="btn-group">
+      <button class="btn secondary" onclick="closeModal('modal-ai')">Annuleren</button>
+      <button class="btn ai-btn" id="btn-ai-generate" onclick="generateAICards()">✨ Genereren</button>
+      <button class="btn primary hidden" id="btn-ai-import" onclick="importAICards()">Importeren</button>
+    </div>
+  </div>
+</div>
+
 <!-- MODAL: bulk import -->
 <div id="modal-bulk" class="modal hidden">
   <div class="modal-box modal-bulk-box">
@@ -382,6 +401,57 @@
 <script>
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('/sw.js');
+  }
+
+  var aiCards = [];
+
+  async function generateAICards() {
+    var text = document.getElementById('input-ai').value.trim();
+    if (!text) return;
+    var btn = document.getElementById('btn-ai-generate');
+    var preview = document.getElementById('ai-preview');
+    var error = document.getElementById('ai-error');
+    var importBtn = document.getElementById('btn-ai-import');
+    btn.textContent = '⏳ Bezig...';
+    btn.disabled = true;
+    preview.classList.add('hidden');
+    error.classList.add('hidden');
+    importBtn.classList.add('hidden');
+    try {
+      var res = await fetch('/api/generate-cards', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text })
+      });
+      var data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Fout');
+      aiCards = data.cards;
+      preview.innerHTML = aiCards.map((c, i) =>
+        `<div class="bulk-row"><span class="bulk-q">${i+1}. ${c.question}</span><span class="bulk-a">${c.answer}</span></div>`
+      ).join('');
+      preview.classList.remove('hidden');
+      importBtn.classList.remove('hidden');
+    } catch(e) {
+      error.textContent = 'Fout: ' + e.message;
+      error.classList.remove('hidden');
+    }
+    btn.textContent = '✨ Genereren';
+    btn.disabled = false;
+  }
+
+  async function importAICards() {
+    if (!aiCards.length || !currentDeckId) return;
+    await fetch('/api/decks/' + currentDeckId + '/cards/bulk', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ cards: aiCards })
+    });
+    closeModal('modal-ai');
+    document.getElementById('input-ai').value = '';
+    document.getElementById('ai-preview').classList.add('hidden');
+    document.getElementById('btn-ai-import').classList.add('hidden');
+    aiCards = [];
+    loadCards(currentDeckId);
   }
 </script>
 </body>

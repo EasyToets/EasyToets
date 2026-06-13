@@ -149,6 +149,41 @@ app.delete('/api/cards/:id', requireAuth, async (req, res) => {
   res.json({ ok: true });
 });
 
+// ── AI Flashcard Generator ───────────────────────────────────
+app.post('/api/generate-cards', requireAuth, async (req, res) => {
+  const { text } = req.body;
+  if (!text?.trim()) return res.status(400).json({ error: 'Geen tekst meegegeven' });
+  const apiKey = process.env.ANTHROPIC_API_KEY;
+  if (!apiKey) return res.status(500).json({ error: 'AI niet geconfigureerd' });
+  try {
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'content-type': 'application/json'
+      },
+      body: JSON.stringify({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 1024,
+        messages: [{
+          role: 'user',
+          content: `Maak flashcards van de volgende tekst. Geef alleen een JSON array terug, geen uitleg. Formaat: [{"question":"...","answer":"..."}]. Maximaal 15 kaartjes, focus op de belangrijkste begrippen.\n\nTekst:\n${text.trim()}`
+        }]
+      })
+    });
+    const data = await response.json();
+    const raw = data.content?.[0]?.text || '';
+    const match = raw.match(/\[[\s\S]*\]/);
+    if (!match) return res.status(500).json({ error: 'AI gaf geen geldige kaartjes terug' });
+    const cards = JSON.parse(match[0]);
+    res.json({ cards });
+  } catch (e) {
+    console.error('generate-cards error:', e.message);
+    res.status(500).json({ error: 'AI fout: ' + e.message });
+  }
+});
+
 // ── Admin stats ──────────────────────────────────────────────
 app.get('/api/admin/stats', async (req, res) => {
   const adminKey = process.env.ADMIN_KEY;

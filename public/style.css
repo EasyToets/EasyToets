@@ -914,6 +914,14 @@ main input, main textarea { cursor: text; user-select: text; }
 .bulk-preview td { padding: 0.5rem 0.75rem; border-bottom: 1px solid var(--border); vertical-align: top; }
 .bulk-preview tr:last-child td { border-bottom: none; }
 .bulk-preview tr.error td { color: var(--danger); background: #fff5f5; }
+.bulk-row { display: flex; gap: 1rem; padding: 0.5rem 0.75rem; border-bottom: 1px solid var(--border); font-size: 0.85rem; }
+.bulk-row:last-child { border-bottom: none; }
+.bulk-q { font-weight: 600; flex: 1; }
+.bulk-a { flex: 1; color: var(--text-muted); }
+.ai-bar { margin-bottom: 1rem; }
+.ai-btn { background: linear-gradient(135deg, #6c63ff, #a78bfa); color: #fff; border: none; }
+.ai-btn:hover { opacity: 0.9; }
+.ai-error { color: var(--danger); font-size: 0.875rem; padding: 0.5rem 0; }
 
 /* ── Empty state ─────────────────────────────────────────── */
 .empty-state {
