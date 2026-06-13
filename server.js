@@ -129,6 +129,15 @@ app.post('/api/decks/:id/cards', requireAuth, async (req, res) => {
   res.json({ id: result.rows[0].id, deck_id: Number(req.params.id), question: question.trim(), answer: answer.trim() });
 });
 
+app.post('/api/decks/:id/cards/bulk', requireAuth, async (req, res) => {
+  const { cards } = req.body;
+  if (!Array.isArray(cards) || cards.length === 0) return res.status(400).json({ error: 'Geen kaartjes' });
+  const values = cards.flatMap(c => [req.params.id, c.question.trim(), c.answer.trim()]);
+  const placeholders = cards.map((_, i) => `($${i*3+1}, $${i*3+2}, $${i*3+3})`).join(', ');
+  await pool.query(`INSERT INTO cards (deck_id, question, answer) VALUES ${placeholders}`, values);
+  res.json({ ok: true, count: cards.length });
+});
+
 app.put('/api/cards/:id', requireAuth, async (req, res) => {
   const { question, answer } = req.body;
   await pool.query('UPDATE cards SET question = $1, answer = $2 WHERE id = $3', [question.trim(), answer.trim(), req.params.id]);
@@ -138,6 +147,26 @@ app.put('/api/cards/:id', requireAuth, async (req, res) => {
 app.delete('/api/cards/:id', requireAuth, async (req, res) => {
   await pool.query('DELETE FROM cards WHERE id = $1', [req.params.id]);
   res.json({ ok: true });
+});
+
+// ── Admin stats ──────────────────────────────────────────────
+app.get('/api/admin/stats', async (req, res) => {
+  const adminKey = process.env.ADMIN_KEY;
+  if (!adminKey || req.headers['x-admin-key'] !== adminKey) {
+    return res.status(401).json({ error: 'Geen toegang' });
+  }
+  const users = await pool.query('SELECT COUNT(*)::int as total, MIN(created_at) as eerste, MAX(created_at) as laatste FROM users');
+  const recent = await pool.query('SELECT username, created_at FROM users ORDER BY created_at DESC LIMIT 10');
+  const decks = await pool.query('SELECT COUNT(*)::int as total FROM decks');
+  const cards = await pool.query('SELECT COUNT(*)::int as total FROM cards');
+  res.json({
+    gebruikers: users.rows[0].total,
+    eerste_registratie: users.rows[0].eerste,
+    laatste_registratie: users.rows[0].laatste,
+    decks: decks.rows[0].total,
+    kaartjes: cards.rows[0].total,
+    recente_gebruikers: recent.rows
+  });
 });
 
 const PORT = process.env.PORT || 3000;

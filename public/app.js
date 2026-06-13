@@ -873,16 +873,20 @@ function previewBulk() {
 }
 
 async function importBulk() {
-  for (const card of parsedBulkCards.filter(c => c.ok)) {
-    await fetch('/api/decks/' + currentDeckId + '/cards', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ question: card.question, answer: card.answer })
-    });
-  }
+  const cards = parsedBulkCards.filter(c => c.ok);
+  if (!cards.length) return;
+  const btn = document.getElementById('btn-bulk-import');
+  btn.disabled = true;
+  btn.textContent = '⏳ Bezig...';
+  await fetch('/api/decks/' + currentDeckId + '/cards/bulk', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ cards })
+  });
+  btn.disabled = false;
   document.getElementById('input-bulk').value = '';
   document.getElementById('bulk-preview').classList.add('hidden');
-  document.getElementById('btn-bulk-import').classList.add('hidden');
+  btn.classList.add('hidden');
   parsedBulkCards = [];
   closeModal('modal-bulk');
   loadCards();
