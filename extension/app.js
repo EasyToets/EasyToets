@@ -1,3 +1,16 @@
+// ── Analytics ────────────────────────────────────────────────
+var GA_ID     = 'G-FJM2N2BYGN';
+var GA_SECRET = '';
+var ga_client = localStorage.getItem('et_ga_cid') || (function() { var id = Math.random().toString(36).slice(2) + '.' + Date.now(); localStorage.setItem('et_ga_cid', id); return id; })();
+function trackEvent(name, params) {
+  try {
+    fetch('https://www.google-analytics.com/mp/collect?measurement_id=' + GA_ID + '&api_secret=' + GA_SECRET, {
+      method: 'POST',
+      body: JSON.stringify({ client_id: ga_client, events: [{ name: name, params: params || {} }] })
+    });
+  } catch(e) {}
+}
+
 // ── Language ─────────────────────────────────────────────────
 var currentLang = localStorage.getItem('et_lang') || null;
 
@@ -596,12 +609,12 @@ document.addEventListener('DOMContentLoaded', function() {
   document.getElementById('btn-menu').addEventListener('click', function() { document.getElementById('sidebar').classList.toggle('open'); });
 
   document.getElementById('tab-cards').addEventListener('click',     function() { switchTab('cards'); });
-  document.getElementById('tab-flashcard').addEventListener('click', function() { switchTab('flashcard'); });
-  document.getElementById('tab-quiz').addEventListener('click',      function() { switchTab('quiz'); });
+  document.getElementById('tab-flashcard').addEventListener('click', function() { switchTab('flashcard'); trackEvent('oefenen_gestart'); });
+  document.getElementById('tab-quiz').addEventListener('click',      function() { switchTab('quiz'); trackEvent('toets_gestart'); });
 
   document.getElementById('flashcard').addEventListener('click', function() { document.getElementById('flashcard-inner').classList.toggle('flipped'); });
-  document.getElementById('btn-correct').addEventListener('click', function() { sessionCorrect++; sessionIndex++; if (sessionIndex >= sessionCards.length) showResult(); else showFlashcard(); });
-  document.getElementById('btn-wrong').addEventListener('click',   function() { sessionIndex++; if (sessionIndex >= sessionCards.length) showResult(); else showFlashcard(); });
+  document.getElementById('btn-correct').addEventListener('click', function() { trackEvent('kaartje_correct'); sessionCorrect++; sessionIndex++; if (sessionIndex >= sessionCards.length) showResult(); else showFlashcard(); });
+  document.getElementById('btn-wrong').addEventListener('click',   function() { trackEvent('kaartje_fout'); sessionIndex++; if (sessionIndex >= sessionCards.length) showResult(); else showFlashcard(); });
 
   document.getElementById('btn-back-to-cards').addEventListener('click', function() { showPage('deck'); switchTab('cards'); });
   document.getElementById('btn-retry').addEventListener('click', function() { showPage('deck'); switchTab(sessionMode === 'flashcard' ? 'flashcard' : 'quiz'); });
