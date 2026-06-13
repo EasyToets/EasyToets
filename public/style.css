@@ -956,6 +956,7 @@ main input, main textarea { cursor: text; user-select: text; }
 .plan-day-body strong { font-size: 0.9rem; }
 .plan-day-body span { font-size: 0.82rem; color: var(--text-muted); }
 .plan-day-cards { color: #6c63ff !important; font-weight: 600; }
+.plan-exam-label { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.75rem; }
 
 /* ── AI Tools pagina ──────────────────────────────────────── */
 .ai-tools-page { max-width: 560px; }

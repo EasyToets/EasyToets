@@ -594,7 +594,7 @@
   }
 
   // ── Studieplan ────────────────────────────────────────────
-  function openStudyPlan() {
+  async function openStudyPlan() {
     if (!currentDeckId) { showPage('home'); return; }
     document.getElementById('plan-result').classList.add('hidden');
     document.getElementById('plan-error').classList.add('hidden');
@@ -603,31 +603,23 @@
     btn.disabled = false;
     const d = new Date(); d.setDate(d.getDate() + 7);
     document.getElementById('input-exam-date').value = d.toISOString().split('T')[0];
-    document.getElementById('modal-studyplan').querySelector('.ai-modal-body').scrollTop = 0;
     openModal('modal-studyplan');
+    // Laad opgeslagen plan
+    try {
+      const res = await fetch('/api/decks/' + currentDeckId + '/study-plan');
+      const data = await res.json();
+      if (data.plan) {
+        document.getElementById('input-exam-date').value = data.plan.examDate;
+        renderPlanDays(data.plan.days, data.plan.examDate);
+      }
+    } catch(e) {}
+    document.getElementById('modal-studyplan').querySelector('.ai-modal-body').scrollTop = 0;
   }
 
-  async function generateStudyPlan() {
-    const examDate = document.getElementById('input-exam-date').value;
-    if (!examDate) return;
-    const btn = document.getElementById('btn-generate-plan');
+  function renderPlanDays(days, examDate) {
     const result = document.getElementById('plan-result');
-    const error = document.getElementById('plan-error');
-    btn.textContent = '⏳ Bezig...';
-    btn.disabled = true;
-    result.classList.add('hidden');
-    error.classList.add('hidden');
-    try {
-      const cardsRes = await fetch('/api/decks/' + currentDeckId + '/cards');
-      const cards = await cardsRes.json();
-      const res = await fetch('/api/study-plan', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ examDate, deckName: currentDeckName, cardCount: cards.length })
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Fout');
-      result.innerHTML = data.days.map(d => `
+    result.innerHTML = `<p class="plan-exam-label">📅 Toets op <strong>${examDate}</strong></p>` +
+      days.map(d => `
         <div class="plan-day">
           <div class="plan-day-date">${d.day}</div>
           <div class="plan-day-body">
@@ -636,7 +628,29 @@
             <span class="plan-day-cards">📚 ${d.cards} kaartjes</span>
           </div>
         </div>`).join('');
-      result.classList.remove('hidden');
+    result.classList.remove('hidden');
+  }
+
+  async function generateStudyPlan() {
+    const examDate = document.getElementById('input-exam-date').value;
+    if (!examDate) return;
+    const btn = document.getElementById('btn-generate-plan');
+    const error = document.getElementById('plan-error');
+    btn.textContent = '⏳ Bezig...';
+    btn.disabled = true;
+    document.getElementById('plan-result').classList.add('hidden');
+    error.classList.add('hidden');
+    try {
+      const cardsRes = await fetch('/api/decks/' + currentDeckId + '/cards');
+      const cards = await cardsRes.json();
+      const res = await fetch('/api/study-plan', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ examDate, deckName: currentDeckName, cardCount: cards.length, deckId: currentDeckId })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Fout');
+      renderPlanDays(data.days, examDate);
     } catch(e) {
       error.textContent = 'Fout: ' + e.message;
       error.classList.remove('hidden');

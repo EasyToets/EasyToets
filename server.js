@@ -23,6 +23,15 @@ app.use(express.static(path.join(__dirname, 'public')));
 // Database setup
 async function initDb() {
   await pool.query(`
+    CREATE TABLE IF NOT EXISTS study_plans (
+      id SERIAL PRIMARY KEY,
+      user_id INTEGER NOT NULL,
+      deck_id INTEGER NOT NULL REFERENCES decks(id) ON DELETE CASCADE,
+      exam_date TEXT NOT NULL,
+      plan_json TEXT NOT NULL,
+      created_at TIMESTAMPTZ DEFAULT NOW(),
+      UNIQUE(user_id, deck_id)
+    );
     CREATE TABLE IF NOT EXISTS users (
       id SERIAL PRIMARY KEY,
       username TEXT UNIQUE NOT NULL,
@@ -254,10 +263,27 @@ app.post('/api/study-plan', requireAuth, async (req, res) => {
     const raw = data.content?.[0]?.text || '[]';
     const match = raw.match(/\[[\s\S]*\]/);
     if (!match) return res.status(500).json({ error: 'AI gaf geen geldig plan terug' });
-    res.json({ days: JSON.parse(match[0]) });
+    const days = JSON.parse(match[0]);
+    await pool.query(
+      `INSERT INTO study_plans (user_id, deck_id, exam_date, plan_json)
+       VALUES ($1, $2, $3, $4)
+       ON CONFLICT (user_id, deck_id) DO UPDATE SET exam_date=$3, plan_json=$4, created_at=NOW()`,
+      [req.session.userId, req.body.deckId, examDate, JSON.stringify(days)]
+    );
+    res.json({ days });
   } catch(e) {
     res.status(500).json({ error: e.message });
   }
+});
+
+app.get('/api/decks/:id/study-plan', requireAuth, async (req, res) => {
+  const result = await pool.query(
+    'SELECT * FROM study_plans WHERE user_id=$1 AND deck_id=$2',
+    [req.session.userId, req.params.id]
+  );
+  if (!result.rows.length) return res.json({ plan: null });
+  const row = result.rows[0];
+  res.json({ plan: { examDate: row.exam_date, days: JSON.parse(row.plan_json), createdAt: row.created_at } });
 });
 
 // ── Admin stats ──────────────────────────────────────────────
