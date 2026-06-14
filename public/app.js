@@ -2959,7 +2959,9 @@ function renderQuests() {
   const icons = ['📖', '🎯', '✅'];
   list.innerHTML = quests.map((q, i) => {
     const pct = Math.round(q.progress / q.goal * 100);
-    const label = t(q.tk, q.goal);
+    const tkMap = { study_cards: 'quest_study', play_match: 'quest_match', create_deck: 'quest_deck' };
+    const tk = q.tk || tkMap[q.id] || 'quest_study';
+    const label = t(tk, q.goal);
     return `<div class="quest-item ${q.done ? 'quest-item--done' : ''}">
       <div class="quest-item-icon">${icons[i % icons.length]}</div>
       <div class="quest-item-body">
