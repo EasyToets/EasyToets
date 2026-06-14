@@ -259,11 +259,8 @@ app.post('/api/process-file', requireAuth, upload.single('file'), async (req, re
       const result = await mammoth.extractRawText({ buffer: file.buffer });
       text = result.value;
     } else if (mime === 'application/vnd.openxmlformats-officedocument.presentationml.presentation') {
-      text = await new Promise((resolve, reject) => {
-        officeParser.parseOffice(file.buffer, (data, err) => {
-          if (err) reject(err); else resolve(data);
-        }, { outputErrorToConsole: false });
-      });
+      const ast = await officeParser.parseOffice(file.buffer, { fileType: 'pptx' });
+      text = ast.toText();
     } else if (mime.startsWith('text/')) {
       text = file.buffer.toString('utf-8');
     } else {
