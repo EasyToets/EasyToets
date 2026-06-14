@@ -75,6 +75,7 @@ const TR = {
     bulk_import_btn:      (n) => `Importeren (${n} kaartje${n !== 1 ? 's' : ''})`,
     tab_write:            'Schrijven',
     empty_write:          'Voeg eerst kaartjes toe om te oefenen.',
+    nav_settings:         'Instellingen',
     nav_ai:               'AI Tools',
     aitool_generate_title:'Kaartjes genereren',
     aitool_generate_sub:  'Plak tekst — AI maakt er flashcards van',
@@ -159,6 +160,7 @@ const TR = {
     bulk_import_btn:      (n) => `Importieren (${n} Karte${n !== 1 ? 'n' : ''})`,
     tab_write:            'Schreiben',
     empty_write:          'Füge zuerst Karten hinzu.',
+    nav_settings:         'Einstellungen',
     nav_ai:               'KI-Tools',
     aitool_generate_title:'Karten generieren',
     aitool_generate_sub:  'Text einfügen — KI erstellt Karteikarten',
@@ -243,6 +245,7 @@ const TR = {
     bulk_import_btn:      (n) => `Importer (${n} carte${n !== 1 ? 's' : ''})`,
     tab_write:            'Écrire',
     empty_write:          'Ajoute des cartes pour commencer.',
+    nav_settings:         'Paramètres',
     nav_ai:               'Outils IA',
     aitool_generate_title:'Générer des cartes',
     aitool_generate_sub:  'Colle du texte — l\'IA crée des flashcards',
@@ -327,6 +330,7 @@ const TR = {
     bulk_import_btn:      (n) => `Importar (${n} tarjeta${n !== 1 ? 's' : ''})`,
     tab_write:            'Escribir',
     empty_write:          'Añade tarjetas primero para practicar.',
+    nav_settings:         'Ajustes',
     nav_ai:               'Herramientas IA',
     aitool_generate_title:'Generar tarjetas',
     aitool_generate_sub:  'Pega texto — la IA crea flashcards',
@@ -411,6 +415,7 @@ const TR = {
     bulk_import_btn:      (n) => `Importar (${n} cartão${n !== 1 ? 'ões' : ''})`,
     tab_write:            'Escrever',
     empty_write:          'Adicione cartões primeiro para praticar.',
+    nav_settings:         'Configurações',
     nav_ai:               'Ferramentas IA',
     aitool_generate_title:'Gerar cartões',
     aitool_generate_sub:  'Cole texto — a IA cria flashcards',
@@ -495,6 +500,7 @@ const TR = {
     bulk_import_btn:      (n) => `Import (${n} card${n !== 1 ? 's' : ''})`,
     tab_write:            'Write',
     empty_write:          'Add some cards first to start practising.',
+    nav_settings:         'Settings',
     nav_ai:               'AI Tools',
     aitool_generate_title:'Generate cards',
     aitool_generate_sub:  'Paste text — AI creates flashcards',
@@ -788,6 +794,16 @@ function showPage(page) {
     document.getElementById('nav-deck').classList.add('active');
     setTopbar(currentDeckName, []);
   }
+
+  if (page === 'settings') {
+    setTopbar('⚙️ ' + t('nav_settings'), []);
+  }
+
+  // Bottom nav active state
+  document.querySelectorAll('.bottom-nav-item').forEach(b => b.classList.remove('active'));
+  const bnavMap = { home: 'bnav-home', ai: 'bnav-ai', stats: 'bnav-stats', leaderboard: 'bnav-leaderboard', settings: 'bnav-settings', deck: 'bnav-home', result: 'bnav-home' };
+  const bnavId = bnavMap[page];
+  if (bnavId) { const el = document.getElementById(bnavId); if (el) el.classList.add('active'); }
 }
 
 function setTopbar(title, buttons) {
@@ -1744,6 +1760,23 @@ function copyShareLink() {
     document.getElementById('share-status').textContent = '✅ Link gekopieerd!';
   });
 }
+
+// ── Swipe gestures op flashcard ───────────────────────────────
+(function initSwipe() {
+  let startX = 0, startY = 0;
+  document.addEventListener('touchstart', e => {
+    startX = e.touches[0].clientX;
+    startY = e.touches[0].clientY;
+  }, { passive: true });
+  document.addEventListener('touchend', e => {
+    if (!document.getElementById('fc-wrapper') || document.getElementById('fc-wrapper').style.display === 'none') return;
+    const dx = e.changedTouches[0].clientX - startX;
+    const dy = e.changedTouches[0].clientY - startY;
+    if (Math.abs(dx) < 40 || Math.abs(dy) > Math.abs(dx)) return;
+    if (dx < 0) answerFlashcard(false);  // swipe links = fout
+    else answerFlashcard(true);           // swipe rechts = goed
+  }, { passive: true });
+})();
 
 // ── Settings ─────────────────────────────────────────────────
 async function changeUsername() {
