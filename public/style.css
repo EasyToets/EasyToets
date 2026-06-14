@@ -1561,6 +1561,16 @@ main input, main textarea { cursor: text; user-select: text; }
 
 /* ── Leaderboard ─────────────────────────────────────────────── */
 .leaderboard-list { display: flex; flex-direction: column; gap: 0.6rem; max-width: 640px; }
+
+/* ── Settings ────────────────────────────────────────────── */
+.settings-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 14px; padding: 1.25rem 1.5rem; margin-bottom: 1.25rem; max-width: 480px; }
+.settings-section-title { font-size: 1rem; font-weight: 600; margin: 0 0 1rem; }
+.settings-field { display: flex; flex-direction: column; gap: 0.3rem; margin-bottom: 0.85rem; }
+.settings-field label { font-size: 0.82rem; color: var(--text-muted); }
+.settings-field input { padding: 0.55rem 0.75rem; border: 1px solid var(--border); border-radius: 8px; background: var(--bg); color: var(--text); font-size: 0.95rem; }
+.settings-field input:focus { outline: none; border-color: var(--accent); }
+.settings-error { color: var(--danger, #e74c3c); font-size: 0.85rem; margin-bottom: 0.75rem; }
+.settings-success { color: #22c55e; font-size: 0.85rem; margin-bottom: 0.75rem; }
 .lb-row {
   display: flex;
   align-items: center;

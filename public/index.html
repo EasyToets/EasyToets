@@ -145,6 +145,9 @@
       <button class="nav-item" id="nav-leaderboard" onclick="showPage('leaderboard')">
         <span class="nav-icon">🏆</span> <span>Leaderboard</span>
       </button>
+      <button class="nav-item" id="nav-settings" onclick="showPage('settings')">
+        <span class="nav-icon">⚙️</span> <span id="nav-settings-label">Instellingen</span>
+      </button>
       <button class="nav-item" id="nav-install" onclick="installApp()" style="display:none">
         <span class="nav-icon">⬇️</span> <span id="nav-install-label">Installeer app</span>
       </button>
@@ -487,6 +490,37 @@
         <h2 class="page-title">🏆 Leaderboard</h2>
         <p class="page-sub">Wie heeft de langste streak en hoogste quizscore?</p>
         <div id="leaderboard-list" class="leaderboard-list"></div>
+      </section>
+
+      <!-- SETTINGS -->
+      <section id="page-settings" class="hidden">
+        <h2 class="page-title">⚙️ <span id="settings-title-label">Instellingen</span></h2>
+
+        <div class="settings-card">
+          <h3 class="settings-section-title" id="settings-username-title">Gebruikersnaam wijzigen</h3>
+          <div class="settings-field">
+            <label id="settings-username-label">Nieuwe gebruikersnaam</label>
+            <input type="text" id="input-new-username" placeholder="Nieuwe gebruikersnaam" autocomplete="off">
+          </div>
+          <div id="settings-username-error" class="settings-error hidden"></div>
+          <div id="settings-username-success" class="settings-success hidden"></div>
+          <button class="btn primary" onclick="changeUsername()" id="btn-change-username">Opslaan</button>
+        </div>
+
+        <div class="settings-card">
+          <h3 class="settings-section-title" id="settings-password-title">Wachtwoord wijzigen</h3>
+          <div class="settings-field">
+            <label id="settings-current-pw-label">Huidig wachtwoord</label>
+            <input type="password" id="input-current-password" placeholder="Huidig wachtwoord" autocomplete="current-password">
+          </div>
+          <div class="settings-field">
+            <label id="settings-new-pw-label">Nieuw wachtwoord</label>
+            <input type="password" id="input-new-password" placeholder="Nieuw wachtwoord (min. 6 tekens)" autocomplete="new-password">
+          </div>
+          <div id="settings-password-error" class="settings-error hidden"></div>
+          <div id="settings-password-success" class="settings-success hidden"></div>
+          <button class="btn primary" onclick="changePassword()" id="btn-change-password">Opslaan</button>
+        </div>
       </section>
 
     </main>

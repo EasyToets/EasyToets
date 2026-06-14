@@ -157,6 +157,30 @@ app.post('/api/logout', (req, res) => {
   res.json({ ok: true });
 });
 
+// ── Settings: gebruikersnaam & wachtwoord wijzigen ───────────
+app.post('/api/settings/username', requireAuth, async (req, res) => {
+  const { username } = req.body;
+  if (!username?.trim()) return res.status(400).json({ error: 'Vul een gebruikersnaam in' });
+  if (username.trim().length < 3) return res.status(400).json({ error: 'Minimaal 3 tekens' });
+  if (username.includes('@')) return res.status(400).json({ error: 'Geen emailadres — kies een bijnaam' });
+  const existing = await pool.query('SELECT id FROM users WHERE LOWER(username) = LOWER($1) AND id != $2', [username.trim(), req.session.userId]);
+  if (existing.rows.length) return res.status(400).json({ error: 'Deze gebruikersnaam is al bezet' });
+  await pool.query('UPDATE users SET username=$1 WHERE id=$2', [username.trim(), req.session.userId]);
+  req.session.username = username.trim();
+  res.json({ ok: true, username: username.trim() });
+});
+
+app.post('/api/settings/password', requireAuth, async (req, res) => {
+  const { currentPassword, newPassword } = req.body;
+  if (!currentPassword || !newPassword) return res.status(400).json({ error: 'Vul alle velden in' });
+  if (newPassword.length < 6) return res.status(400).json({ error: 'Nieuw wachtwoord minimaal 6 tekens' });
+  const r = await pool.query('SELECT password_hash FROM users WHERE id=$1', [req.session.userId]);
+  if (!bcrypt.compareSync(currentPassword, r.rows[0].password_hash)) return res.status(400).json({ error: 'Huidig wachtwoord klopt niet' });
+  const hash = bcrypt.hashSync(newPassword, 10);
+  await pool.query('UPDATE users SET password_hash=$1 WHERE id=$2', [hash, req.session.userId]);
+  res.json({ ok: true });
+});
+
 // ── Decks ────────────────────────────────────────────────────
 app.get('/api/decks', requireAuth, async (req, res) => {
   const result = await pool.query(`

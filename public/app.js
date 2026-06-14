@@ -1703,6 +1703,48 @@ function copyShareLink() {
   });
 }
 
+// ── Settings ─────────────────────────────────────────────────
+async function changeUsername() {
+  const input = document.getElementById('input-new-username');
+  const err = document.getElementById('settings-username-error');
+  const ok = document.getElementById('settings-username-success');
+  const btn = document.getElementById('btn-change-username');
+  err.classList.add('hidden'); ok.classList.add('hidden');
+  btn.disabled = true;
+  const res = await fetch('/api/settings/username', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ username: input.value })
+  });
+  const data = await res.json();
+  btn.disabled = false;
+  if (!res.ok) { err.textContent = data.error; err.classList.remove('hidden'); return; }
+  currentUser.username = data.username;
+  updateUserDisplay();
+  input.value = '';
+  ok.textContent = '✅ Gebruikersnaam gewijzigd naar ' + data.username;
+  ok.classList.remove('hidden');
+}
+
+async function changePassword() {
+  const cur = document.getElementById('input-current-password');
+  const nw = document.getElementById('input-new-password');
+  const err = document.getElementById('settings-password-error');
+  const ok = document.getElementById('settings-password-success');
+  const btn = document.getElementById('btn-change-password');
+  err.classList.add('hidden'); ok.classList.add('hidden');
+  btn.disabled = true;
+  const res = await fetch('/api/settings/password', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ currentPassword: cur.value, newPassword: nw.value })
+  });
+  const data = await res.json();
+  btn.disabled = false;
+  if (!res.ok) { err.textContent = data.error; err.classList.remove('hidden'); return; }
+  cur.value = ''; nw.value = '';
+  ok.textContent = '✅ Wachtwoord gewijzigd';
+  ok.classList.remove('hidden');
+}
+
 // ── Mijn samenvattingen ───────────────────────────────────────
 async function openSummariesModal() {
   openModal('modal-summaries');
