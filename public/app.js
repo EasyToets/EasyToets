@@ -2748,17 +2748,21 @@ function renderQuests() {
     return;
   }
   const quests = getTodayQuests();
-  list.innerHTML = quests.map(q => {
+  const icons = ['📖', '🎯', '✅'];
+  list.innerHTML = quests.map((q, i) => {
     const pct = Math.round(q.progress / q.goal * 100);
     return `<div class="quest-item ${q.done ? 'quest-item--done' : ''}">
-      <div class="quest-item-top">
-        <span class="quest-item-label">${q.label}</span>
-        <span class="quest-item-xp">${q.done ? '✅' : '+' + q.xp + ' XP'}</span>
+      <div class="quest-item-icon">${icons[i % icons.length]}</div>
+      <div class="quest-item-body">
+        <div class="quest-item-top">
+          <span class="quest-item-label">${q.label}</span>
+          ${q.done ? '<span class="quest-done-pill">Klaar!</span>' : '<span class="quest-item-xp">+' + q.xp + ' XP</span>'}
+        </div>
+        <div class="quest-progress-bar-wrap">
+          <div class="quest-progress-bar" style="width:${pct}%"></div>
+        </div>
+        <div class="quest-progress-text">${q.progress} / ${q.goal}</div>
       </div>
-      <div class="quest-progress-bar-wrap">
-        <div class="quest-progress-bar" style="width:${pct}%"></div>
-      </div>
-      <div class="quest-progress-text">${q.progress} / ${q.goal}</div>
     </div>`;
   }).join('');
 }
