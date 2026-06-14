@@ -683,17 +683,22 @@ app.get('/api/quiz-stats/hard-cards', requireAuth, async (req, res) => {
 
 // ── Leaderboard ───────────────────────────────────────────────
 app.get('/api/leaderboard', requireAuth, async (req, res) => {
-  const result = await pool.query(`
-    SELECT u.username, u.streak,
-           COUNT(qs.id)::int as quiz_count,
-           COALESCE(ROUND(AVG(qs.pct)), 0)::int as avg_pct
-    FROM users u
-    LEFT JOIN quiz_stats qs ON qs.user_id = u.id
-    GROUP BY u.id, u.username, u.streak
-    ORDER BY u.streak DESC, avg_pct DESC
-    LIMIT 20
-  `);
-  res.json(result.rows);
+  try {
+    const result = await pool.query(`
+      SELECT u.username, u.streak, COALESCE(u.xp, 0) as xp,
+             COUNT(qs.id)::int as quiz_count,
+             COALESCE(ROUND(AVG(qs.pct)), 0)::int as avg_pct
+      FROM users u
+      LEFT JOIN quiz_stats qs ON qs.user_id = u.id
+      GROUP BY u.id, u.username, u.streak, u.xp
+      ORDER BY u.xp DESC, u.streak DESC
+      LIMIT 20
+    `);
+    res.json(result.rows);
+  } catch (e) {
+    console.error('Leaderboard error:', e);
+    res.status(500).json({ error: 'Leaderboard kon niet worden geladen' });
+  }
 });
 
 // ── Deck delen ────────────────────────────────────────────────

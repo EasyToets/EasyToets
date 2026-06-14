@@ -1967,19 +1967,28 @@ function toggleDark() {
 
 // ── Leaderboard ───────────────────────────────────────────────
 async function loadLeaderboard() {
-  const res = await fetch('/api/leaderboard');
-  const rows = await res.json();
-  const me = currentUser?.username;
-  document.getElementById('leaderboard-list').innerHTML = rows.map((r, i) => {
-    const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `${i+1}.`;
-    const isMe = r.username === me;
-    return `<div class="lb-row${isMe ? ' lb-me' : ''}">
-      <span class="lb-rank">${medal}</span>
-      <span class="lb-name">${esc(r.username)}${isMe ? ' <span class="lb-you">(jij)</span>' : ''}</span>
-      <span class="lb-streak">🔥 ${r.streak}</span>
-      <span class="lb-score">${r.quiz_count} toetsen · ${r.avg_pct}% gem.</span>
-    </div>`;
-  }).join('') || '<p class="stats-empty">Nog geen gegevens.</p>';
+  const listEl = document.getElementById('leaderboard-list');
+  try {
+    const res = await fetch('/api/leaderboard');
+    if (!res.ok) throw new Error('server error');
+    const rows = await res.json();
+    if (!Array.isArray(rows)) throw new Error('onverwacht antwoord');
+    const me = currentUser?.username;
+    listEl.innerHTML = rows.map((r, i) => {
+      const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `${i+1}.`;
+      const isMe = r.username === me;
+      const level = getLevel(r.xp || 0);
+      return `<div class="lb-row${isMe ? ' lb-me' : ''}">
+        <span class="lb-rank">${medal}</span>
+        <span class="lb-name">${esc(r.username)}${isMe ? ' <span class="lb-you">(jij)</span>' : ''}</span>
+        <span class="lb-level">Lv.${level}</span>
+        <span class="lb-streak">🔥 ${r.streak}</span>
+        <span class="lb-xp">${r.xp || 0} XP</span>
+      </div>`;
+    }).join('') || '<p class="stats-empty">Nog geen gegevens.</p>';
+  } catch (e) {
+    listEl.innerHTML = '<p class="stats-empty">Leaderboard kon niet worden geladen. Probeer het opnieuw.</p>';
+  }
 }
 
 // ── Stats uitbreiden met moeilijke kaartjes ───────────────────
