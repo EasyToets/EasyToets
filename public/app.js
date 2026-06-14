@@ -3,7 +3,18 @@ let currentUser = null;
 let authMode = 'login';
 
 // ── Language ─────────────────────────────────────────────────
-let currentLang = localStorage.getItem('et_lang') || null;
+function detectLang() {
+  const saved = localStorage.getItem('et_lang');
+  if (saved) return saved;
+  const supported = ['nl', 'de', 'fr', 'es', 'pt', 'en'];
+  const browser = (navigator.language || navigator.userLanguage || 'nl').toLowerCase();
+  // Exact match first (e.g. 'nl', 'de')
+  for (const l of supported) { if (browser === l) return l; }
+  // Prefix match (e.g. 'nl-NL', 'pt-BR')
+  for (const l of supported) { if (browser.startsWith(l + '-')) return l; }
+  return 'nl';
+}
+let currentLang = detectLang();
 
 const TR = {
   nl: {
@@ -1429,13 +1440,8 @@ function hideLanding() {
 }
 function showAuthFromLanding(mode) {
   hideLanding();
-  if (!currentLang) {
-    window._pendingAuthMode = mode || 'login';
-    document.getElementById('modal-lang').classList.remove('hidden');
-  } else {
-    if (mode) showAuthTab(mode);
-    showAuthModal();
-  }
+  if (mode) showAuthTab(mode);
+  showAuthModal();
 }
 
 // ── Init ─────────────────────────────────────────────────────
@@ -1444,8 +1450,8 @@ async function init() {
   const meData = await meRes.json();
   currentUser = meData.user;
 
+  applyLang();
   if (currentUser) {
-    if (currentLang) applyLang();
     updateUserDisplay();
     renderStreak(meData.user.streak);
     const darkBtn = document.getElementById('dark-toggle');
