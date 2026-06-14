@@ -103,6 +103,38 @@ const TR = {
     summaries_loading:    'Laden...',
     summaries_error:      'Kon samenvattingen niet laden.',
     summary_delete_confirm:'Samenvatting verwijderen?',
+    level_titles: ['Nieuweling','Leerling','Student','Kenner','Geleerde','Expert','Meester','Grootmeester','Professor','Legende'],
+    quest_study:  (n) => `Beantwoord ${n} kaarten correct`,
+    quest_match:  (n) => `Speel ${n} match potje${n !== 1 ? 's' : ''}`,
+    quest_deck:   (n) => `Maak ${n} nieuw${n !== 1 ? 'e' : ''} deck${n !== 1 ? 's' : ''} aan`,
+    quest_done:   'Klaar!',
+    quest_refresh:'vernieuwen om middernacht',
+    quests_title: 'Dagelijkse quests',
+    badges_title: '🏅 Badges',
+    badges_unlocked: (n, t) => `${n} / ${t} ontgrendeld`,
+    badge_first_deck:   'Eerste deck',
+    badge_deck_shared:  'Deler',
+    badge_match_master: 'Match master',
+    badge_group_joined: 'Teamspeler',
+    badge_streak_3:     '3-daagse streak',
+    badge_streak_7:     'Weekkampioen',
+    badge_streak_30:    'Maandmaster',
+    badge_cards_10:     '10 kaarten',
+    badge_cards_50:     '50 kaarten',
+    badge_cards_100:    '100 kaarten',
+    badge_cards_500:    '500 kaarten',
+    badge_level_5:      'Level 5',
+    badge_level_10:     'Level 10',
+    badge_level_25:     'Level 25',
+    badge_level_50:     'Level 50',
+    badge_xp_100:       '100 XP',
+    badge_xp_500:       '500 XP',
+    badge_xp_1000:      '1000 XP',
+    badge_unlocked_msg: 'Badge ontgrendeld!',
+    quest_complete_msg: 'Opdracht voltooid!',
+    levelup_label:      'LEVEL UP',
+    levelup_hint:       'Tik om door te gaan',
+    xp_max:             'Max level',
   },
   de: {
     tagline:              'Intelligenter lernen,<br>nicht härter.',
@@ -190,6 +222,38 @@ const TR = {
     summaries_loading:    'Laden...',
     summaries_error:      'Zusammenfassungen konnten nicht geladen werden.',
     summary_delete_confirm:'Zusammenfassung löschen?',
+    level_titles: ['Anfänger','Lernender','Student','Kenner','Gelehrter','Experte','Meister','Großmeister','Professor','Legende'],
+    quest_study:  (n) => `${n} Karten richtig beantworten`,
+    quest_match:  (n) => `${n} Match-Spiel${n !== 1 ? 'e' : ''} spielen`,
+    quest_deck:   (n) => `${n} neues Deck erstellen`,
+    quest_done:   'Erledigt!',
+    quest_refresh:'erneuert um Mitternacht',
+    quests_title: 'Tägliche Quests',
+    badges_title: '🏅 Abzeichen',
+    badges_unlocked: (n, t) => `${n} / ${t} freigeschaltet`,
+    badge_first_deck:   'Erstes Deck',
+    badge_deck_shared:  'Teiler',
+    badge_match_master: 'Match-Meister',
+    badge_group_joined: 'Teamplayer',
+    badge_streak_3:     '3-Tage-Streak',
+    badge_streak_7:     'Wochenchampion',
+    badge_streak_30:    'Monatsmeister',
+    badge_cards_10:     '10 Karten',
+    badge_cards_50:     '50 Karten',
+    badge_cards_100:    '100 Karten',
+    badge_cards_500:    '500 Karten',
+    badge_level_5:      'Level 5',
+    badge_level_10:     'Level 10',
+    badge_level_25:     'Level 25',
+    badge_level_50:     'Level 50',
+    badge_xp_100:       '100 XP',
+    badge_xp_500:       '500 XP',
+    badge_xp_1000:      '1000 XP',
+    badge_unlocked_msg: 'Abzeichen freigeschaltet!',
+    quest_complete_msg: 'Quest abgeschlossen!',
+    levelup_label:      'LEVEL UP',
+    levelup_hint:       'Tippen zum Fortfahren',
+    xp_max:             'Max. Level',
   },
   fr: {
     tagline:              'Apprendre plus vite,<br>pas plus dur.',
@@ -277,6 +341,38 @@ const TR = {
     summaries_loading:    'Chargement...',
     summaries_error:      'Impossible de charger les résumés.',
     summary_delete_confirm:'Supprimer ce résumé ?',
+    level_titles: ['Débutant','Apprenti','Étudiant','Connaisseur','Érudit','Expert','Maître','Grand maître','Professeur','Légende'],
+    quest_study:  (n) => `Réponds correctement à ${n} cartes`,
+    quest_match:  (n) => `Joue ${n} partie${n !== 1 ? 's' : ''} de match`,
+    quest_deck:   (n) => `Crée ${n} nouveau${n !== 1 ? 'x' : ''} deck${n !== 1 ? 's' : ''}`,
+    quest_done:   'Terminé !',
+    quest_refresh:'renouvellement à minuit',
+    quests_title: 'Quêtes du jour',
+    badges_title: '🏅 Badges',
+    badges_unlocked: (n, t) => `${n} / ${t} débloqués`,
+    badge_first_deck:   'Premier deck',
+    badge_deck_shared:  'Partageur',
+    badge_match_master: 'Maître du match',
+    badge_group_joined: 'Joueur d\'équipe',
+    badge_streak_3:     'Série de 3 jours',
+    badge_streak_7:     'Champion de la semaine',
+    badge_streak_30:    'Maître du mois',
+    badge_cards_10:     '10 cartes',
+    badge_cards_50:     '50 cartes',
+    badge_cards_100:    '100 cartes',
+    badge_cards_500:    '500 cartes',
+    badge_level_5:      'Niveau 5',
+    badge_level_10:     'Niveau 10',
+    badge_level_25:     'Niveau 25',
+    badge_level_50:     'Niveau 50',
+    badge_xp_100:       '100 XP',
+    badge_xp_500:       '500 XP',
+    badge_xp_1000:      '1000 XP',
+    badge_unlocked_msg: 'Badge débloqué !',
+    quest_complete_msg: 'Quête accomplie !',
+    levelup_label:      'NIVEAU SUPÉRIEUR',
+    levelup_hint:       'Appuyer pour continuer',
+    xp_max:             'Niveau max',
   },
   es: {
     tagline:              'Aprende más listo,<br>no más duro.',
@@ -364,6 +460,38 @@ const TR = {
     summaries_loading:    'Cargando...',
     summaries_error:      'No se pudieron cargar los resúmenes.',
     summary_delete_confirm:'¿Eliminar este resumen?',
+    level_titles: ['Principiante','Aprendiz','Estudiante','Conocedor','Erudito','Experto','Maestro','Gran maestro','Profesor','Leyenda'],
+    quest_study:  (n) => `Responde ${n} tarjetas correctamente`,
+    quest_match:  (n) => `Juega ${n} partida${n !== 1 ? 's' : ''} de match`,
+    quest_deck:   (n) => `Crea ${n} mazo${n !== 1 ? 's' : ''} nuevo${n !== 1 ? 's' : ''}`,
+    quest_done:   '¡Listo!',
+    quest_refresh:'se renueva a medianoche',
+    quests_title: 'Misiones del día',
+    badges_title: '🏅 Insignias',
+    badges_unlocked: (n, t) => `${n} / ${t} desbloqueadas`,
+    badge_first_deck:   'Primer mazo',
+    badge_deck_shared:  'Compartidor',
+    badge_match_master: 'Maestro del match',
+    badge_group_joined: 'Jugador de equipo',
+    badge_streak_3:     'Racha de 3 días',
+    badge_streak_7:     'Campeón semanal',
+    badge_streak_30:    'Maestro mensual',
+    badge_cards_10:     '10 tarjetas',
+    badge_cards_50:     '50 tarjetas',
+    badge_cards_100:    '100 tarjetas',
+    badge_cards_500:    '500 tarjetas',
+    badge_level_5:      'Nivel 5',
+    badge_level_10:     'Nivel 10',
+    badge_level_25:     'Nivel 25',
+    badge_level_50:     'Nivel 50',
+    badge_xp_100:       '100 XP',
+    badge_xp_500:       '500 XP',
+    badge_xp_1000:      '1000 XP',
+    badge_unlocked_msg: '¡Insignia desbloqueada!',
+    quest_complete_msg: '¡Misión completada!',
+    levelup_label:      '¡SUBISTE DE NIVEL!',
+    levelup_hint:       'Toca para continuar',
+    xp_max:             'Nivel máx.',
   },
   pt: {
     tagline:              'Aprenda mais rápido,<br>não mais difícil.',
@@ -451,6 +579,38 @@ const TR = {
     summaries_loading:    'Carregando...',
     summaries_error:      'Não foi possível carregar os resumos.',
     summary_delete_confirm:'Excluir este resumo?',
+    level_titles: ['Iniciante','Aprendiz','Estudante','Conhecedor','Erudito','Especialista','Mestre','Grão-mestre','Professor','Lenda'],
+    quest_study:  (n) => `Responda ${n} cartões corretamente`,
+    quest_match:  (n) => `Jogue ${n} partida${n !== 1 ? 's' : ''} de match`,
+    quest_deck:   (n) => `Crie ${n} deck${n !== 1 ? 's' : ''} novo${n !== 1 ? 's' : ''}`,
+    quest_done:   'Pronto!',
+    quest_refresh:'renova à meia-noite',
+    quests_title: 'Missões do dia',
+    badges_title: '🏅 Conquistas',
+    badges_unlocked: (n, t) => `${n} / ${t} desbloqueadas`,
+    badge_first_deck:   'Primeiro deck',
+    badge_deck_shared:  'Compartilhador',
+    badge_match_master: 'Mestre do match',
+    badge_group_joined: 'Jogador de equipa',
+    badge_streak_3:     'Sequência de 3 dias',
+    badge_streak_7:     'Campeão semanal',
+    badge_streak_30:    'Mestre mensal',
+    badge_cards_10:     '10 cartões',
+    badge_cards_50:     '50 cartões',
+    badge_cards_100:    '100 cartões',
+    badge_cards_500:    '500 cartões',
+    badge_level_5:      'Nível 5',
+    badge_level_10:     'Nível 10',
+    badge_level_25:     'Nível 25',
+    badge_level_50:     'Nível 50',
+    badge_xp_100:       '100 XP',
+    badge_xp_500:       '500 XP',
+    badge_xp_1000:      '1000 XP',
+    badge_unlocked_msg: 'Conquista desbloqueada!',
+    quest_complete_msg: 'Missão concluída!',
+    levelup_label:      'SUBIU DE NÍVEL',
+    levelup_hint:       'Toque para continuar',
+    xp_max:             'Nível máx.',
   },
   en: {
     tagline:              'Learn smarter,<br>not harder.',
@@ -538,6 +698,38 @@ const TR = {
     summaries_loading:    'Loading...',
     summaries_error:      'Could not load summaries.',
     summary_delete_confirm:'Delete this summary?',
+    level_titles: ['Beginner','Learner','Student','Connoisseur','Scholar','Expert','Master','Grand Master','Professor','Legend'],
+    quest_study:  (n) => `Answer ${n} card${n !== 1 ? 's' : ''} correctly`,
+    quest_match:  (n) => `Play ${n} match game${n !== 1 ? 's' : ''}`,
+    quest_deck:   (n) => `Create ${n} new deck${n !== 1 ? 's' : ''}`,
+    quest_done:   'Done!',
+    quest_refresh:'resets at midnight',
+    quests_title: 'Daily quests',
+    badges_title: '🏅 Badges',
+    badges_unlocked: (n, t) => `${n} / ${t} unlocked`,
+    badge_first_deck:   'First deck',
+    badge_deck_shared:  'Sharer',
+    badge_match_master: 'Match master',
+    badge_group_joined: 'Team player',
+    badge_streak_3:     '3-day streak',
+    badge_streak_7:     'Week champion',
+    badge_streak_30:    'Month master',
+    badge_cards_10:     '10 cards',
+    badge_cards_50:     '50 cards',
+    badge_cards_100:    '100 cards',
+    badge_cards_500:    '500 cards',
+    badge_level_5:      'Level 5',
+    badge_level_10:     'Level 10',
+    badge_level_25:     'Level 25',
+    badge_level_50:     'Level 50',
+    badge_xp_100:       '100 XP',
+    badge_xp_500:       '500 XP',
+    badge_xp_1000:      '1000 XP',
+    badge_unlocked_msg: 'Badge unlocked!',
+    quest_complete_msg: 'Quest complete!',
+    levelup_label:      'LEVEL UP',
+    levelup_hint:       'Tap to continue',
+    xp_max:             'Max level',
   }
 };
 
@@ -733,6 +925,13 @@ function applyLang() {
   // Modal: mijn samenvattingen
   const sumModalTitle = document.querySelector('#modal-summaries .ai-modal-header span');
   if (sumModalTitle) sumModalTitle.textContent = '📋 ' + t('summaries_modal_title');
+
+  // Gamificatie UI hertalen
+  if (currentUser) {
+    updateProfileUI();
+    renderQuests();
+    renderBadges();
+  }
 }
 
 // ── State ────────────────────────────────────────────────────
@@ -2455,38 +2654,33 @@ const XP_REWARDS = {
   quest_done:   25,
 };
 
-const LEVEL_TITLES = [
-  'Nieuweling', 'Leerling', 'Student', 'Kenner', 'Geleerde',
-  'Expert', 'Meester', 'Grootmeester', 'Professor', 'Legende'
-];
-
 const BADGES = [
-  { id: 'first_deck',   icon: '📚', label: 'Eerste deck',       desc: 'Maak je eerste deck aan' },
-  { id: 'deck_shared',  icon: '🔗', label: 'Deler',             desc: 'Deel een deck publiek' },
-  { id: 'match_master', icon: '🎯', label: 'Match master',      desc: 'Voltooi een match spel' },
-  { id: 'group_joined', icon: '👥', label: 'Teamspeler',        desc: 'Sluit je aan bij een groep' },
-  { id: 'streak_3',     icon: '🔥', label: '3-daagse streak',   desc: '3 dagen op rij geleerd' },
-  { id: 'streak_7',     icon: '🔥', label: 'Weekkampioen',      desc: '7 dagen op rij geleerd' },
-  { id: 'streak_30',    icon: '🔥', label: 'Maandmaster',       desc: '30 dagen op rij geleerd' },
-  { id: 'cards_10',     icon: '✅', label: '10 kaarten',        desc: '10 kaarten correct beantwoord' },
-  { id: 'cards_50',     icon: '✅', label: '50 kaarten',        desc: '50 kaarten correct beantwoord' },
-  { id: 'cards_100',    icon: '🌟', label: '100 kaarten',       desc: '100 kaarten correct beantwoord' },
-  { id: 'cards_500',    icon: '💫', label: '500 kaarten',       desc: '500 kaarten correct beantwoord' },
-  { id: 'level_5',      icon: '⭐', label: 'Level 5',           desc: 'Bereik level 5' },
-  { id: 'level_10',     icon: '⭐', label: 'Level 10',          desc: 'Bereik level 10' },
-  { id: 'level_25',     icon: '👑', label: 'Level 25',          desc: 'Bereik level 25' },
-  { id: 'level_50',     icon: '👑', label: 'Level 50',          desc: 'Bereik level 50' },
-  { id: 'xp_100',       icon: '💎', label: '100 XP',            desc: 'Verdien 100 XP totaal' },
-  { id: 'xp_500',       icon: '💎', label: '500 XP',            desc: 'Verdien 500 XP totaal' },
-  { id: 'xp_1000',      icon: '💎', label: '1000 XP',           desc: 'Verdien 1000 XP totaal' },
+  { id: 'first_deck',   icon: '📚', tk: 'badge_first_deck' },
+  { id: 'deck_shared',  icon: '🔗', tk: 'badge_deck_shared' },
+  { id: 'match_master', icon: '🎯', tk: 'badge_match_master' },
+  { id: 'group_joined', icon: '👥', tk: 'badge_group_joined' },
+  { id: 'streak_3',     icon: '🔥', tk: 'badge_streak_3' },
+  { id: 'streak_7',     icon: '🔥', tk: 'badge_streak_7' },
+  { id: 'streak_30',    icon: '🔥', tk: 'badge_streak_30' },
+  { id: 'cards_10',     icon: '✅', tk: 'badge_cards_10' },
+  { id: 'cards_50',     icon: '✅', tk: 'badge_cards_50' },
+  { id: 'cards_100',    icon: '🌟', tk: 'badge_cards_100' },
+  { id: 'cards_500',    icon: '💫', tk: 'badge_cards_500' },
+  { id: 'level_5',      icon: '⭐', tk: 'badge_level_5' },
+  { id: 'level_10',     icon: '⭐', tk: 'badge_level_10' },
+  { id: 'level_25',     icon: '👑', tk: 'badge_level_25' },
+  { id: 'level_50',     icon: '👑', tk: 'badge_level_50' },
+  { id: 'xp_100',       icon: '💎', tk: 'badge_xp_100' },
+  { id: 'xp_500',       icon: '💎', tk: 'badge_xp_500' },
+  { id: 'xp_1000',      icon: '💎', tk: 'badge_xp_1000' },
 ];
 
 const QUEST_TEMPLATES = [
-  { id: 'study_cards', label: 'Beantwoord {n} kaarten correct', goal: 10, xp: 25 },
-  { id: 'study_cards', label: 'Beantwoord {n} kaarten correct', goal: 20, xp: 50 },
-  { id: 'play_match',  label: 'Speel {n} match potje(s)',        goal: 1,  xp: 30 },
-  { id: 'play_match',  label: 'Speel {n} match potje(s)',        goal: 3,  xp: 60 },
-  { id: 'create_deck', label: 'Maak {n} nieuw(e) deck(s) aan',  goal: 1,  xp: 20 },
+  { id: 'study_cards', tk: 'quest_study', goal: 10, xp: 25 },
+  { id: 'study_cards', tk: 'quest_study', goal: 20, xp: 50 },
+  { id: 'play_match',  tk: 'quest_match', goal: 1,  xp: 30 },
+  { id: 'play_match',  tk: 'quest_match', goal: 3,  xp: 60 },
+  { id: 'create_deck', tk: 'quest_deck',  goal: 1,  xp: 20 },
 ];
 
 function getLevel(xp) {
@@ -2498,8 +2692,10 @@ function xpForLevel(level) {
 }
 
 function getLevelTitle(level) {
-  const idx = Math.min(LEVEL_TITLES.length - 1, Math.floor((level - 1) / 5));
-  return LEVEL_TITLES[idx];
+  const titles = t('level_titles');
+  const arr = Array.isArray(titles) ? titles : ['Nieuweling','Leerling','Student','Kenner','Geleerde','Expert','Meester','Grootmeester','Professor','Legende'];
+  const idx = Math.min(arr.length - 1, Math.floor((level - 1) / 5));
+  return arr[idx];
 }
 
 function renderCharacterSVG(level) {
@@ -2547,7 +2743,7 @@ function updateProfileUI() {
 
   const xpTextEl = document.getElementById('profile-xp-text');
   if (xpTextEl) xpTextEl.textContent = level >= 50
-    ? `${userXP} XP (Max level)`
+    ? `${userXP} XP (${t('xp_max')})`
     : `${userXP} / ${nextLevelXP} XP`;
 }
 
@@ -2595,6 +2791,10 @@ function showLevelUp(level) {
   if (lvlEl) lvlEl.textContent = 'Level ' + level;
   const titleEl = document.getElementById('levelup-title-text');
   if (titleEl) titleEl.textContent = getLevelTitle(level);
+  const labelEl = overlay.querySelector('.levelup-badge-label');
+  if (labelEl) labelEl.textContent = t('levelup_label');
+  const hintEl = overlay.querySelector('.levelup-hint');
+  if (hintEl) hintEl.textContent = t('levelup_hint');
   overlay.classList.remove('hidden');
 }
 
@@ -2633,7 +2833,7 @@ async function unlockBadge(badgeId) {
 function showBadgeUnlock(badge) {
   const el = document.createElement('div');
   el.className = 'badge-unlock-toast';
-  el.innerHTML = `<span class="badge-unlock-icon">${badge.icon}</span><span><strong>Badge ontgrendeld!</strong><br>${badge.label}</span>`;
+  el.innerHTML = `<span class="badge-unlock-icon">${badge.icon}</span><span><strong>${t('badge_unlocked_msg')}</strong><br>${t(badge.tk)}</span>`;
   document.body.appendChild(el);
   requestAnimationFrame(() => el.classList.add('badge-unlock-toast--show'));
   setTimeout(() => {
@@ -2645,13 +2845,18 @@ function showBadgeUnlock(badge) {
 function renderBadges() {
   const grid = document.getElementById('badges-grid');
   if (!grid) return;
+  const countEl = document.getElementById('badges-count');
+  if (countEl) countEl.textContent = t('badges_unlocked', unlockedBadges.size, BADGES.length);
   grid.innerHTML = BADGES.map(b => {
     const unlocked = unlockedBadges.has(b.id);
-    return `<div class="badge-item ${unlocked ? 'badge-item--unlocked' : 'badge-item--locked'}" title="${b.desc}">
+    const label = t(b.tk);
+    return `<div class="badge-item ${unlocked ? 'badge-item--unlocked' : 'badge-item--locked'}" title="${label}">
       <span class="badge-item-icon">${unlocked ? b.icon : '🔒'}</span>
-      <span class="badge-item-label">${b.label}</span>
+      <span class="badge-item-label">${label}</span>
     </div>`;
   }).join('');
+  const titleEl = document.querySelector('.badges-title');
+  if (titleEl) titleEl.textContent = t('badges_title');
 }
 
 function checkBadges() {
@@ -2701,7 +2906,6 @@ function getTodayQuests() {
   const shuffled = [...QUEST_TEMPLATES].sort(() => rng() - 0.5);
   const chosen = shuffled.slice(0, 3).map(tmpl => ({
     ...tmpl,
-    label: tmpl.label.replace('{n}', tmpl.goal),
     progress: 0,
     done: false,
     rewarded: false,
@@ -2743,6 +2947,10 @@ function updateQuestProgress(questType, amount) {
 function renderQuests() {
   const list = document.getElementById('quests-list');
   if (!list) return;
+  const titleEl = document.querySelector('.quests-title');
+  if (titleEl) titleEl.textContent = t('quests_title');
+  const subEl = document.querySelector('.quests-xp-label');
+  if (subEl) subEl.textContent = t('quest_refresh');
   if (!currentUser) {
     list.innerHTML = '<p style="color:var(--text-muted);font-size:0.9rem">Log in om dagelijkse opdrachten te zien.</p>';
     return;
@@ -2751,12 +2959,13 @@ function renderQuests() {
   const icons = ['📖', '🎯', '✅'];
   list.innerHTML = quests.map((q, i) => {
     const pct = Math.round(q.progress / q.goal * 100);
+    const label = t(q.tk, q.goal);
     return `<div class="quest-item ${q.done ? 'quest-item--done' : ''}">
       <div class="quest-item-icon">${icons[i % icons.length]}</div>
       <div class="quest-item-body">
         <div class="quest-item-top">
-          <span class="quest-item-label">${q.label}</span>
-          ${q.done ? '<span class="quest-done-pill">Klaar!</span>' : '<span class="quest-item-xp">+' + q.xp + ' XP</span>'}
+          <span class="quest-item-label">${label}</span>
+          ${q.done ? '<span class="quest-done-pill">' + t('quest_done') + '</span>' : '<span class="quest-item-xp">+' + q.xp + ' XP</span>'}
         </div>
         <div class="quest-progress-bar-wrap">
           <div class="quest-progress-bar" style="width:${pct}%"></div>
@@ -2770,7 +2979,7 @@ function renderQuests() {
 function showQuestComplete(quest) {
   const el = document.createElement('div');
   el.className = 'quest-complete-toast';
-  el.innerHTML = '🎯 <strong>Opdracht voltooid!</strong> ' + quest.label;
+  el.innerHTML = '🎯 <strong>' + t('quest_complete_msg') + '</strong> ' + t(quest.tk, quest.goal);
   document.body.appendChild(el);
   requestAnimationFrame(() => el.classList.add('quest-complete-toast--show'));
   setTimeout(() => {
