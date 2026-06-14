@@ -260,8 +260,9 @@ app.post('/api/process-file', requireAuth, upload.single('file'), async (req, re
       text = result.value;
     } else if (mime === 'application/vnd.openxmlformats-officedocument.presentationml.presentation') {
       text = await new Promise((resolve, reject) => {
-        officeParser.parseOfficeAsync(file.buffer, { outputErrorToConsole: false })
-          .then(resolve).catch(reject);
+        officeParser.parseOffice(file.buffer, (data, err) => {
+          if (err) reject(err); else resolve(data);
+        }, { outputErrorToConsole: false });
       });
     } else if (mime.startsWith('text/')) {
       text = file.buffer.toString('utf-8');
