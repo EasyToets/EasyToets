@@ -2537,7 +2537,7 @@ function updateProfileUI() {
   if (charEl) charEl.innerHTML = renderCharacterSVG(level);
 
   const badgeEl = document.getElementById('profile-level-badge');
-  if (badgeEl) badgeEl.textContent = 'L' + level;
+  if (badgeEl) badgeEl.textContent = 'Level ' + level;
 
   const titleEl = document.getElementById('profile-title-text');
   if (titleEl) titleEl.textContent = getLevelTitle(level);
