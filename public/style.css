@@ -2149,3 +2149,296 @@ main input, main textarea { cursor: text; user-select: text; }
 .match-win-emoji { font-size: 3rem; margin-bottom: 0.5rem; }
 .match-win h3 { font-size: 1.25rem; font-weight: 800; color: var(--text); margin-bottom: 0.4rem; }
 .match-win p  { color: var(--text-muted); font-size: 0.95rem; margin-bottom: 1.1rem; }
+
+
+/* ── Gamificatie stijlen ─────────────────────────────────────── */
+
+/* Profielkaart */
+.profile-card {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 1rem;
+  padding: 1rem 1.25rem;
+  margin-bottom: 1rem;
+}
+.profile-char-wrap {
+  flex-shrink: 0;
+  width: 64px;
+  height: 72px;
+}
+.profile-char {
+  width: 64px;
+  height: 72px;
+}
+.profile-char svg {
+  width: 100%;
+  height: 100%;
+}
+.profile-info {
+  flex: 1;
+  min-width: 0;
+}
+.profile-level-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0.25rem 0 0.4rem;
+  flex-wrap: wrap;
+}
+.profile-level-badge {
+  background: var(--primary);
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 999px;
+}
+.profile-title-text {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+.profile-xp-bar-wrap {
+  height: 8px;
+  background: var(--border);
+  border-radius: 999px;
+  overflow: hidden;
+  margin-bottom: 0.3rem;
+}
+.profile-xp-bar {
+  height: 100%;
+  background: linear-gradient(90deg, var(--primary), #7c3aed);
+  border-radius: 999px;
+  transition: width 0.5s ease;
+}
+.profile-xp-text {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+/* Dagelijkse opdrachten */
+.quests-card,
+.badges-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 1rem;
+  padding: 1rem 1.25rem;
+  margin-bottom: 1rem;
+}
+.quests-card h3,
+.badges-card h3 {
+  margin: 0 0 0.75rem;
+  font-size: 1rem;
+  font-weight: 700;
+}
+.quest-item {
+  margin-bottom: 0.75rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--border);
+}
+.quest-item:last-child {
+  margin-bottom: 0;
+  padding-bottom: 0;
+  border-bottom: none;
+}
+.quest-item--done .quest-item-label {
+  text-decoration: line-through;
+  opacity: 0.6;
+}
+.quest-item-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.35rem;
+}
+.quest-item-label {
+  font-size: 0.88rem;
+  font-weight: 500;
+}
+.quest-item-xp {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--primary);
+  white-space: nowrap;
+  margin-left: 0.5rem;
+}
+.quest-progress-bar-wrap {
+  height: 6px;
+  background: var(--border);
+  border-radius: 999px;
+  overflow: hidden;
+  margin-bottom: 0.2rem;
+}
+.quest-progress-bar {
+  height: 100%;
+  background: linear-gradient(90deg, #06d6a0, #0096c7);
+  border-radius: 999px;
+  transition: width 0.4s ease;
+}
+.quest-progress-text {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+}
+
+/* Badges raster */
+.badges-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(72px, 1fr));
+  gap: 0.6rem;
+}
+.badge-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.5rem 0.25rem;
+  border-radius: 0.75rem;
+  border: 1px solid var(--border);
+  background: var(--card-bg);
+  cursor: default;
+  transition: transform 0.15s;
+}
+.badge-item--unlocked {
+  border-color: var(--primary);
+  background: color-mix(in srgb, var(--primary) 8%, var(--card-bg));
+}
+.badge-item--locked {
+  opacity: 0.45;
+}
+.badge-item:hover {
+  transform: translateY(-2px);
+}
+.badge-item-icon {
+  font-size: 1.5rem;
+  line-height: 1;
+}
+.badge-item-label {
+  font-size: 0.62rem;
+  text-align: center;
+  color: var(--text-muted);
+  line-height: 1.2;
+  font-weight: 600;
+}
+
+/* Level-up overlay */
+.levelup-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  backdrop-filter: blur(4px);
+}
+.levelup-overlay.hidden {
+  display: none;
+}
+.levelup-box {
+  background: var(--card-bg);
+  border-radius: 1.5rem;
+  padding: 2rem 2.5rem;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  border: 2px solid var(--primary);
+  box-shadow: 0 0 40px color-mix(in srgb, var(--primary) 40%, transparent);
+  animation: levelup-pop 0.4s cubic-bezier(.17,.67,.45,1.4) both;
+  max-width: 300px;
+  width: 90%;
+}
+@keyframes levelup-pop {
+  from { transform: scale(0.6); opacity: 0; }
+  to   { transform: scale(1);   opacity: 1; }
+}
+.levelup-char {
+  width: 80px;
+  height: 90px;
+  margin-bottom: 0.5rem;
+}
+.levelup-char svg {
+  width: 100%;
+  height: 100%;
+}
+.levelup-badge-label {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--primary);
+  letter-spacing: 0.1em;
+}
+.levelup-level {
+  font-size: 2rem;
+  font-weight: 900;
+  line-height: 1;
+}
+.levelup-title {
+  font-size: 1rem;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+.levelup-hint {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin-top: 0.5rem;
+}
+
+/* Toast meldingen */
+.xp-gain-toast {
+  position: fixed;
+  bottom: 100px;
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: var(--primary);
+  color: #fff;
+  font-weight: 700;
+  font-size: 1rem;
+  padding: 0.5rem 1.25rem;
+  border-radius: 999px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.25);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s, transform 0.3s;
+  z-index: 8888;
+  white-space: nowrap;
+}
+.xp-gain-toast--show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+.badge-unlock-toast,
+.quest-complete-toast {
+  position: fixed;
+  bottom: 160px;
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: var(--card-bg);
+  border: 1px solid var(--primary);
+  color: var(--text);
+  font-size: 0.9rem;
+  padding: 0.6rem 1rem;
+  border-radius: 0.75rem;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s, transform 0.3s;
+  z-index: 8889;
+  white-space: nowrap;
+  max-width: 90vw;
+}
+.badge-unlock-toast--show,
+.quest-complete-toast--show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+.badge-unlock-icon {
+  font-size: 1.5rem;
+}

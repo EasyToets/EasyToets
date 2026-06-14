@@ -408,14 +408,23 @@
 
       <!-- HOME -->
       <section id="page-home">
-        <!-- Welkom blok -->
-        <div class="home-welcome">
-          <div class="home-welcome-text">
-            <h2 class="home-greeting" id="home-greeting">Hallo 👋</h2>
-            <p class="home-sub" id="home-sub">Wat ga je vandaag leren?</p>
+
+        <!-- Profiel kaart -->
+        <div class="profile-card" id="profile-card">
+          <div class="profile-char-wrap">
+            <div class="profile-char" id="profile-char"></div>
           </div>
-          <div class="home-streak-pill" id="home-streak-pill" style="display:none">
-            🔥 <span id="home-streak-num">0</span>
+          <div class="profile-info">
+            <h2 class="home-greeting" id="home-greeting">Hallo 👋</h2>
+            <div class="profile-level-row">
+              <span class="profile-level-badge" id="profile-level-badge">L1</span>
+              <span class="profile-title-text" id="profile-title-text">Nieuweling</span>
+              <div class="home-streak-pill" id="home-streak-pill" style="display:none">🔥 <span id="home-streak-num">0</span></div>
+            </div>
+            <div class="profile-xp-bar-wrap">
+              <div class="profile-xp-bar" id="profile-xp-bar" style="width:0%"></div>
+            </div>
+            <div class="profile-xp-text" id="profile-xp-text">0 XP</div>
           </div>
         </div>
 
@@ -449,6 +458,24 @@
             <span id="review-widget-sub">Laadt...</span>
           </div>
           <button class="btn primary review-widget-btn" id="review-widget-btn" onclick="startBestDueReview()">Herhalen →</button>
+        </div>
+
+        <!-- Dagelijkse quests -->
+        <div class="quests-card" id="quests-card">
+          <div class="quests-header">
+            <h3 class="quests-title">📋 Dagelijkse quests</h3>
+            <span class="quests-xp-label" id="quests-xp-label"></span>
+          </div>
+          <div class="quests-list" id="quests-list"></div>
+        </div>
+
+        <!-- Badges -->
+        <div class="badges-card" id="badges-card">
+          <div class="badges-header">
+            <h3 class="badges-title">🏅 Badges</h3>
+            <span class="badges-count" id="badges-count"></span>
+          </div>
+          <div class="badges-grid" id="badges-grid"></div>
         </div>
 
         <div id="deck-list" class="deck-grid"></div>
@@ -977,6 +1004,17 @@
 </div>
 
 <div id="modal-backdrop" class="modal-backdrop hidden" onclick="closeAllModals()"></div>
+
+<!-- LEVEL UP OVERLAY -->
+<div id="levelup-overlay" class="levelup-overlay hidden" onclick="this.classList.add('hidden')">
+  <div class="levelup-box">
+    <div class="levelup-char" id="levelup-char"></div>
+    <div class="levelup-badge-label">⬆️ LEVEL UP!</div>
+    <div class="levelup-level" id="levelup-level">Level 2</div>
+    <div class="levelup-title" id="levelup-title-text">Leerling</div>
+    <div class="levelup-hint">Tik om door te gaan</div>
+  </div>
+</div>
 
 
 <script src="app.js"></script>

@@ -115,6 +115,14 @@ async function initDb() {
       key TEXT PRIMARY KEY,
       value TEXT NOT NULL
     );
+    ALTER TABLE users ADD COLUMN IF NOT EXISTS xp INTEGER NOT NULL DEFAULT 0;
+    CREATE TABLE IF NOT EXISTS user_badges (
+      id SERIAL PRIMARY KEY,
+      user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      badge_key TEXT NOT NULL,
+      unlocked_at TIMESTAMPTZ DEFAULT NOW(),
+      UNIQUE(user_id, badge_key)
+    );
   `);
 }
 initDb().then(initVapid).catch(console.error);
@@ -188,7 +196,9 @@ async function checkinStreak(userId) {
 app.get('/api/me', async (req, res) => {
   if (!req.session.userId) return res.json({ user: null });
   const streak = await checkinStreak(req.session.userId);
-  res.json({ user: { id: req.session.userId, username: req.session.username, streak } });
+  const xpRow = await pool.query('SELECT xp FROM users WHERE id=$1', [req.session.userId]);
+  const xp = xpRow.rows[0]?.xp || 0;
+  res.json({ user: { id: req.session.userId, username: req.session.username, streak, xp } });
 });
 
 app.post('/api/register', async (req, res) => {
@@ -221,7 +231,9 @@ app.post('/api/login', async (req, res) => {
   req.session.userId = user.id;
   req.session.username = user.username;
   const streak = await checkinStreak(user.id);
-  res.json({ ok: true, username: user.username, streak });
+  const xpRow = await pool.query('SELECT xp FROM users WHERE id=$1', [user.id]);
+  const xp = xpRow.rows[0]?.xp || 0;
+  res.json({ ok: true, username: user.username, streak, xp });
 });
 
 app.post('/api/logout', (req, res) => {
@@ -795,6 +807,29 @@ app.delete('/api/groups/:id', requireAuth, async (req, res) => {
 app.post('/api/groups/:id/leave', requireAuth, async (req, res) => {
   await pool.query('DELETE FROM group_members WHERE group_id=$1 AND user_id=$2',
     [req.params.id, req.session.userId]);
+  res.json({ ok: true });
+});
+
+// ── XP & Badges ──────────────────────────────────────────────
+app.post('/api/xp/add', requireAuth, async (req, res) => {
+  const amount = parseInt(req.body.amount);
+  if (!amount || amount < 1 || amount > 2000) return res.status(400).json({ error: 'Ongeldig bedrag' });
+  const r = await pool.query('UPDATE users SET xp = xp + $1 WHERE id=$2 RETURNING xp', [amount, req.session.userId]);
+  res.json({ xp: r.rows[0].xp });
+});
+
+app.get('/api/badges', requireAuth, async (req, res) => {
+  const r = await pool.query('SELECT badge_key, unlocked_at FROM user_badges WHERE user_id=$1 ORDER BY unlocked_at ASC', [req.session.userId]);
+  res.json(r.rows);
+});
+
+app.post('/api/badges/unlock', requireAuth, async (req, res) => {
+  const { badge_key } = req.body;
+  if (!badge_key) return res.status(400).json({ error: 'badge_key vereist' });
+  await pool.query(
+    'INSERT INTO user_badges (user_id, badge_key) VALUES ($1,$2) ON CONFLICT (user_id, badge_key) DO NOTHING',
+    [req.session.userId, badge_key]
+  );
   res.json({ ok: true });
 });
 

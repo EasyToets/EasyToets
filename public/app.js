@@ -797,6 +797,9 @@ function showPage(page) {
       btn('primary', t('btn_new_deck'), "openModal('modal-new-deck')")
     ]);
     updateHomeWelcome();
+    updateProfileUI();
+    renderQuests();
+    renderBadges();
     loadDecks();
     loadDueWidget();
     checkStreakBanner();
@@ -902,6 +905,8 @@ function updateHomeWelcome() {
 }
 
 let decks = [];
+let userXP = 0;
+let unlockedBadges = new Set();
 
 async function loadDecks() {
   const res = await fetch('/api/decks');
@@ -956,6 +961,10 @@ async function createDeck() {
   document.getElementById('input-deck-name').value = '';
   closeModal('modal-new-deck');
   loadDecks();
+  addXP(XP_REWARDS.create_deck, `+${XP_REWARDS.create_deck} XP`);
+  unlockBadge('first_deck');
+  updateQuestProgress('create_deck', 1);
+  checkBadges();
 }
 
 async function deleteDeck(id, e) {
@@ -1164,6 +1173,13 @@ function showResult() {
   if (sessionMode === 'quiz') {
     recordQuizStat(currentDeckName, sessionCorrect, sessionCards.length);
     recordQuizStatServer(currentDeckId, currentDeckName, sessionCorrect, sessionCards.length);
+  }
+  if (sessionCorrect > 0) {
+    const xpGain = sessionCorrect * XP_REWARDS.correct_card;
+    addXP(xpGain, `+${xpGain} XP`);
+    addTotalCorrect(sessionCorrect);
+    updateQuestProgress('study_cards', sessionCorrect);
+    checkBadges();
   }
   showPage('result');
 }
@@ -1480,6 +1496,7 @@ async function submitAuth() {
     return;
   }
   currentUser = { username: data.username };
+  userXP = data.xp || 0;
   document.getElementById('auth-password').value = '';
   document.getElementById('auth-username').value = '';
   hideAuthModal();
@@ -1488,6 +1505,7 @@ async function submitAuth() {
   renderStreak(data.streak);
   showPage('home');
   if (typeof loadSidebarPlans === 'function') loadSidebarPlans();
+  loadBadges();
 }
 
 async function doLogout() {
@@ -1580,12 +1598,14 @@ async function init() {
 
   applyLang();
   if (currentUser) {
+    userXP = meData.user.xp || 0;
     updateUserDisplay();
     renderStreak(meData.user.streak);
     const darkBtn = document.getElementById('dark-toggle');
     if (darkBtn) darkBtn.textContent = document.documentElement.classList.contains('dark') ? '☀️' : '🌙';
     showPage('home');
     if (typeof loadSidebarPlans === 'function') loadSidebarPlans();
+    loadBadges();
   } else {
     showLanding();
   }
@@ -1831,6 +1851,8 @@ async function enableShare() {
   document.getElementById('share-status').textContent = '✅ Deck is nu publiek';
   const deck = decks.find(d => d.id === shareCurrentDeckId);
   if (deck) { deck.is_public = true; deck.share_token = data.token; }
+  unlockBadge('deck_shared');
+  addXP(XP_REWARDS.share_deck, `+${XP_REWARDS.share_deck} XP`);
 }
 
 async function disableShare() {
@@ -1974,6 +1996,8 @@ async function createGroup() {
   closeModal('modal-create-group');
   loadGroups();
   openGroupDetail(data.id, true, data.name, data.code);
+  unlockBadge('group_joined');
+  addXP(XP_REWARDS.join_group, `+${XP_REWARDS.join_group} XP`);
 }
 
 async function joinGroup() {
@@ -1987,6 +2011,8 @@ async function joinGroup() {
   document.getElementById('input-group-code').value = '';
   closeModal('modal-join-group');
   loadGroups();
+  unlockBadge('group_joined');
+  addXP(XP_REWARDS.join_group, `+${XP_REWARDS.join_group} XP`);
 }
 
 async function openGroupDetail(id, isOwner, name, code) {
@@ -2308,6 +2334,10 @@ function showMatchWin() {
   document.getElementById('match-win-errors').textContent = matchErrors;
   document.getElementById('match-win').classList.remove('hidden');
   showConfetti();
+  addXP(XP_REWARDS.match_win, `+${XP_REWARDS.match_win} XP`);
+  updateQuestProgress('play_match', 1);
+  unlockBadge('match_master');
+  checkBadges();
 }
 
 // ── Push notificaties ─────────────────────────────────────────
@@ -2410,4 +2440,337 @@ async function copySharedDeck() {
     btn.disabled = false;
     btn.textContent = '➕ Kopieer naar mijn decks';
   }
+}
+
+
+
+// ── Gamificatie ───────────────────────────────────────────────
+
+const XP_REWARDS = {
+  correct_card: 2,
+  create_deck:  10,
+  share_deck:   15,
+  match_win:    20,
+  join_group:   10,
+  quest_done:   25,
+};
+
+const LEVEL_TITLES = [
+  'Nieuweling', 'Leerling', 'Student', 'Kenner', 'Geleerde',
+  'Expert', 'Meester', 'Grootmeester', 'Professor', 'Legende'
+];
+
+const BADGES = [
+  { id: 'first_deck',   icon: '📚', label: 'Eerste deck',       desc: 'Maak je eerste deck aan' },
+  { id: 'deck_shared',  icon: '🔗', label: 'Deler',             desc: 'Deel een deck publiek' },
+  { id: 'match_master', icon: '🎯', label: 'Match master',      desc: 'Voltooi een match spel' },
+  { id: 'group_joined', icon: '👥', label: 'Teamspeler',        desc: 'Sluit je aan bij een groep' },
+  { id: 'streak_3',     icon: '🔥', label: '3-daagse streak',   desc: '3 dagen op rij geleerd' },
+  { id: 'streak_7',     icon: '🔥', label: 'Weekkampioen',      desc: '7 dagen op rij geleerd' },
+  { id: 'streak_30',    icon: '🔥', label: 'Maandmaster',       desc: '30 dagen op rij geleerd' },
+  { id: 'cards_10',     icon: '✅', label: '10 kaarten',        desc: '10 kaarten correct beantwoord' },
+  { id: 'cards_50',     icon: '✅', label: '50 kaarten',        desc: '50 kaarten correct beantwoord' },
+  { id: 'cards_100',    icon: '🌟', label: '100 kaarten',       desc: '100 kaarten correct beantwoord' },
+  { id: 'cards_500',    icon: '💫', label: '500 kaarten',       desc: '500 kaarten correct beantwoord' },
+  { id: 'level_5',      icon: '⭐', label: 'Level 5',           desc: 'Bereik level 5' },
+  { id: 'level_10',     icon: '⭐', label: 'Level 10',          desc: 'Bereik level 10' },
+  { id: 'level_25',     icon: '👑', label: 'Level 25',          desc: 'Bereik level 25' },
+  { id: 'level_50',     icon: '👑', label: 'Level 50',          desc: 'Bereik level 50' },
+  { id: 'xp_100',       icon: '💎', label: '100 XP',            desc: 'Verdien 100 XP totaal' },
+  { id: 'xp_500',       icon: '💎', label: '500 XP',            desc: 'Verdien 500 XP totaal' },
+  { id: 'xp_1000',      icon: '💎', label: '1000 XP',           desc: 'Verdien 1000 XP totaal' },
+];
+
+const QUEST_TEMPLATES = [
+  { id: 'study_cards', label: 'Beantwoord {n} kaarten correct', goal: 10, xp: 25 },
+  { id: 'study_cards', label: 'Beantwoord {n} kaarten correct', goal: 20, xp: 50 },
+  { id: 'play_match',  label: 'Speel {n} match potje(s)',        goal: 1,  xp: 30 },
+  { id: 'play_match',  label: 'Speel {n} match potje(s)',        goal: 3,  xp: 60 },
+  { id: 'create_deck', label: 'Maak {n} nieuw(e) deck(s) aan',  goal: 1,  xp: 20 },
+];
+
+function getLevel(xp) {
+  return Math.min(50, Math.floor(Math.sqrt(xp / 50)) + 1);
+}
+
+function xpForLevel(level) {
+  return (level - 1) * (level - 1) * 50;
+}
+
+function getLevelTitle(level) {
+  const idx = Math.min(LEVEL_TITLES.length - 1, Math.floor((level - 1) / 5));
+  return LEVEL_TITLES[idx];
+}
+
+function renderCharacterSVG(level) {
+  const tier = level >= 40 ? 5 : level >= 25 ? 4 : level >= 15 ? 3 : level >= 8 ? 2 : 1;
+  const colors = ['#a0c4ff', '#ffd166', '#06d6a0', '#ef476f', '#b5179e'];
+  const c = colors[tier - 1];
+  const crown = tier >= 4
+    ? `<g transform="translate(24,4)"><polygon points="0,8 4,0 8,8" fill="#f9c74f"/><polygon points="8,8 14,2 18,8" fill="#f9c74f"/><polygon points="16,8 20,0 24,8" fill="#f9c74f"/><rect x="0" y="7" width="24" height="4" rx="2" fill="#f9c74f"/></g>`
+    : '';
+  const glow = tier >= 5 ? `<circle cx="36" cy="42" r="32" fill="${c}" opacity="0.18"/>` : '';
+  const wings = tier >= 2
+    ? `<ellipse cx="16" cy="38" rx="8" ry="5" fill="${c}" transform="rotate(-20,16,38)"/><ellipse cx="56" cy="38" rx="8" ry="5" fill="${c}" transform="rotate(20,56,38)"/>`
+    : '';
+  const smile = tier >= 3 ? `<path d="M28,34 Q36,40 44,34" stroke="#fff8" stroke-width="2" fill="none"/>` : '';
+  return `<svg viewBox="0 0 72 80" xmlns="http://www.w3.org/2000/svg">
+    ${glow}${crown}
+    <ellipse cx="36" cy="50" rx="20" ry="20" fill="${c}"/>
+    <circle cx="36" cy="28" r="16" fill="${c}"/>
+    <circle cx="28" cy="24" r="6" fill="white"/><circle cx="44" cy="24" r="6" fill="white"/>
+    <circle cx="28" cy="24" r="3" fill="#222"/><circle cx="44" cy="24" r="3" fill="#222"/>
+    <circle cx="29" cy="23" r="1" fill="white"/><circle cx="45" cy="23" r="1" fill="white"/>
+    <ellipse cx="36" cy="32" rx="3" ry="2" fill="#e07b39"/>
+    ${wings}${smile}
+  </svg>`;
+}
+
+function updateProfileUI() {
+  if (!currentUser) return;
+  const level = getLevel(userXP);
+  const currentLevelXP = xpForLevel(level);
+  const nextLevelXP    = xpForLevel(level + 1);
+  const progress = level >= 50 ? 100 : Math.round((userXP - currentLevelXP) / (nextLevelXP - currentLevelXP) * 100);
+
+  const charEl = document.getElementById('profile-char');
+  if (charEl) charEl.innerHTML = renderCharacterSVG(level);
+
+  const badgeEl = document.getElementById('profile-level-badge');
+  if (badgeEl) badgeEl.textContent = 'L' + level;
+
+  const titleEl = document.getElementById('profile-title-text');
+  if (titleEl) titleEl.textContent = getLevelTitle(level);
+
+  const barEl = document.getElementById('profile-xp-bar');
+  if (barEl) barEl.style.width = progress + '%';
+
+  const xpTextEl = document.getElementById('profile-xp-text');
+  if (xpTextEl) xpTextEl.textContent = level >= 50
+    ? `${userXP} XP (Max level)`
+    : `${userXP} / ${nextLevelXP} XP`;
+}
+
+async function addXP(amount, label) {
+  if (!currentUser || amount <= 0) return;
+  const prevLevel = getLevel(userXP);
+  try {
+    const res = await fetch('/api/xp/add', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ amount })
+    });
+    const data = await res.json();
+    userXP = data.xp;
+  } catch (e) {
+    userXP += amount;
+  }
+  const newLevel = getLevel(userXP);
+  updateProfileUI();
+  if (label) showXPGain(label);
+  if (newLevel > prevLevel) {
+    checkLevelBadges(newLevel);
+    setTimeout(() => showLevelUp(newLevel), 1200);
+  }
+}
+
+function showXPGain(label) {
+  const el = document.createElement('div');
+  el.className = 'xp-gain-toast';
+  el.textContent = label;
+  document.body.appendChild(el);
+  requestAnimationFrame(() => el.classList.add('xp-gain-toast--show'));
+  setTimeout(() => {
+    el.classList.remove('xp-gain-toast--show');
+    setTimeout(() => el.remove(), 400);
+  }, 1800);
+}
+
+function showLevelUp(level) {
+  const overlay = document.getElementById('levelup-overlay');
+  if (!overlay) return;
+  const charEl = document.getElementById('levelup-char');
+  if (charEl) charEl.innerHTML = renderCharacterSVG(level);
+  const lvlEl = document.getElementById('levelup-level');
+  if (lvlEl) lvlEl.textContent = 'Level ' + level;
+  const titleEl = document.getElementById('levelup-title-text');
+  if (titleEl) titleEl.textContent = getLevelTitle(level);
+  overlay.classList.remove('hidden');
+}
+
+function checkLevelBadges(level) {
+  if (level >= 5)  unlockBadge('level_5');
+  if (level >= 10) unlockBadge('level_10');
+  if (level >= 25) unlockBadge('level_25');
+  if (level >= 50) unlockBadge('level_50');
+}
+
+async function loadBadges() {
+  if (!currentUser) return;
+  try {
+    const res = await fetch('/api/badges');
+    const data = await res.json();
+    unlockedBadges = new Set((data.badges || []).map(b => b.badge_id));
+    renderBadges();
+  } catch (e) {}
+}
+
+async function unlockBadge(badgeId) {
+  if (!currentUser || unlockedBadges.has(badgeId)) return;
+  unlockedBadges.add(badgeId);
+  try {
+    await fetch('/api/badges/unlock', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ badge_id: badgeId })
+    });
+  } catch (e) {}
+  const badge = BADGES.find(b => b.id === badgeId);
+  if (badge) showBadgeUnlock(badge);
+  renderBadges();
+}
+
+function showBadgeUnlock(badge) {
+  const el = document.createElement('div');
+  el.className = 'badge-unlock-toast';
+  el.innerHTML = `<span class="badge-unlock-icon">${badge.icon}</span><span><strong>Badge ontgrendeld!</strong><br>${badge.label}</span>`;
+  document.body.appendChild(el);
+  requestAnimationFrame(() => el.classList.add('badge-unlock-toast--show'));
+  setTimeout(() => {
+    el.classList.remove('badge-unlock-toast--show');
+    setTimeout(() => el.remove(), 400);
+  }, 3000);
+}
+
+function renderBadges() {
+  const grid = document.getElementById('badges-grid');
+  if (!grid) return;
+  grid.innerHTML = BADGES.map(b => {
+    const unlocked = unlockedBadges.has(b.id);
+    return `<div class="badge-item ${unlocked ? 'badge-item--unlocked' : 'badge-item--locked'}" title="${b.desc}">
+      <span class="badge-item-icon">${unlocked ? b.icon : '🔒'}</span>
+      <span class="badge-item-label">${b.label}</span>
+    </div>`;
+  }).join('');
+}
+
+function checkBadges() {
+  const total = getTotalCorrect();
+  if (total >= 10)  unlockBadge('cards_10');
+  if (total >= 50)  unlockBadge('cards_50');
+  if (total >= 100) unlockBadge('cards_100');
+  if (total >= 500) unlockBadge('cards_500');
+  if (userXP >= 100)  unlockBadge('xp_100');
+  if (userXP >= 500)  unlockBadge('xp_500');
+  if (userXP >= 1000) unlockBadge('xp_1000');
+  const streakEl = document.getElementById('home-streak-num');
+  if (streakEl) {
+    const streak = parseInt(streakEl.textContent) || 0;
+    if (streak >= 3)  unlockBadge('streak_3');
+    if (streak >= 7)  unlockBadge('streak_7');
+    if (streak >= 30) unlockBadge('streak_30');
+  }
+  checkLevelBadges(getLevel(userXP));
+}
+
+function getTotalCorrect() {
+  return parseInt(localStorage.getItem('total_correct') || '0');
+}
+
+function addTotalCorrect(n) {
+  const cur = getTotalCorrect();
+  localStorage.setItem('total_correct', String(cur + n));
+}
+
+function seededRng(seed) {
+  let s = seed;
+  return function() {
+    s = (s * 1664525 + 1013904223) & 0xffffffff;
+    return (s >>> 0) / 0xffffffff;
+  };
+}
+
+function getTodayQuests() {
+  const today = new Date().toISOString().slice(0, 10);
+  const key = 'quests_' + today + '_' + (currentUser ? currentUser.username : 'guest');
+  const stored = localStorage.getItem(key);
+  if (stored) return JSON.parse(stored);
+  const seed = today.split('-').reduce((a, b) => a * 100 + parseInt(b), 0) +
+    (currentUser ? currentUser.username.split('').reduce((a, c) => a + c.charCodeAt(0), 0) : 0);
+  const rng = seededRng(seed);
+  const shuffled = [...QUEST_TEMPLATES].sort(() => rng() - 0.5);
+  const chosen = shuffled.slice(0, 3).map(tmpl => ({
+    ...tmpl,
+    label: tmpl.label.replace('{n}', tmpl.goal),
+    progress: 0,
+    done: false,
+    rewarded: false,
+  }));
+  localStorage.setItem(key, JSON.stringify(chosen));
+  return chosen;
+}
+
+function saveTodayQuests(quests) {
+  const today = new Date().toISOString().slice(0, 10);
+  const key = 'quests_' + today + '_' + (currentUser ? currentUser.username : 'guest');
+  localStorage.setItem(key, JSON.stringify(quests));
+}
+
+function updateQuestProgress(questType, amount) {
+  if (!currentUser) return;
+  const quests = getTodayQuests();
+  let changed = false;
+  quests.forEach(q => {
+    if (q.id === questType && !q.done) {
+      q.progress = Math.min(q.goal, q.progress + amount);
+      if (q.progress >= q.goal) {
+        q.done = true;
+        if (!q.rewarded) {
+          q.rewarded = true;
+          addXP(q.xp, '+' + q.xp + ' XP (opdracht!)');
+          showQuestComplete(q);
+        }
+      }
+      changed = true;
+    }
+  });
+  if (changed) {
+    saveTodayQuests(quests);
+    renderQuests();
+  }
+}
+
+function renderQuests() {
+  const list = document.getElementById('quests-list');
+  if (!list) return;
+  if (!currentUser) {
+    list.innerHTML = '<p style="color:var(--text-muted);font-size:0.9rem">Log in om dagelijkse opdrachten te zien.</p>';
+    return;
+  }
+  const quests = getTodayQuests();
+  list.innerHTML = quests.map(q => {
+    const pct = Math.round(q.progress / q.goal * 100);
+    return `<div class="quest-item ${q.done ? 'quest-item--done' : ''}">
+      <div class="quest-item-top">
+        <span class="quest-item-label">${q.label}</span>
+        <span class="quest-item-xp">${q.done ? '✅' : '+' + q.xp + ' XP'}</span>
+      </div>
+      <div class="quest-progress-bar-wrap">
+        <div class="quest-progress-bar" style="width:${pct}%"></div>
+      </div>
+      <div class="quest-progress-text">${q.progress} / ${q.goal}</div>
+    </div>`;
+  }).join('');
+}
+
+function showQuestComplete(quest) {
+  const el = document.createElement('div');
+  el.className = 'quest-complete-toast';
+  el.innerHTML = '🎯 <strong>Opdracht voltooid!</strong> ' + quest.label;
+  document.body.appendChild(el);
+  requestAnimationFrame(() => el.classList.add('quest-complete-toast--show'));
+  setTimeout(() => {
+    el.classList.remove('quest-complete-toast--show');
+    setTimeout(() => el.remove(), 400);
+  }, 3000);
 }
