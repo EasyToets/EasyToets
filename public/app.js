@@ -76,6 +76,7 @@ const TR = {
     tab_write:            'Schrijven',
     empty_write:          'Voeg eerst kaartjes toe om te oefenen.',
     nav_settings:         'Instellingen',
+    nav_groups:           'Groepen',
     nav_discover:         'Ontdek',
     nav_ai:               'AI Tools',
     aitool_generate_title:'Kaartjes genereren',
@@ -162,6 +163,7 @@ const TR = {
     tab_write:            'Schreiben',
     empty_write:          'Füge zuerst Karten hinzu.',
     nav_settings:         'Einstellungen',
+    nav_groups:           'Gruppen',
     nav_discover:         'Entdecken',
     nav_ai:               'KI-Tools',
     aitool_generate_title:'Karten generieren',
@@ -248,6 +250,7 @@ const TR = {
     tab_write:            'Écrire',
     empty_write:          'Ajoute des cartes pour commencer.',
     nav_settings:         'Paramètres',
+    nav_groups:           'Groupes',
     nav_discover:         'Découvrir',
     nav_ai:               'Outils IA',
     aitool_generate_title:'Générer des cartes',
@@ -334,6 +337,7 @@ const TR = {
     tab_write:            'Escribir',
     empty_write:          'Añade tarjetas primero para practicar.',
     nav_settings:         'Ajustes',
+    nav_groups:           'Grupos',
     nav_discover:         'Descubrir',
     nav_ai:               'Herramientas IA',
     aitool_generate_title:'Generar tarjetas',
@@ -420,6 +424,7 @@ const TR = {
     tab_write:            'Escrever',
     empty_write:          'Adicione cartões primeiro para praticar.',
     nav_settings:         'Configurações',
+    nav_groups:           'Grupos',
     nav_discover:         'Descobrir',
     nav_ai:               'Ferramentas IA',
     aitool_generate_title:'Gerar cartões',
@@ -506,6 +511,7 @@ const TR = {
     tab_write:            'Write',
     empty_write:          'Add some cards first to start practising.',
     nav_settings:         'Settings',
+    nav_groups:           'Groups',
     nav_discover:         'Discover',
     nav_ai:               'AI Tools',
     aitool_generate_title:'Generate cards',
@@ -670,6 +676,10 @@ function applyLang() {
   if (navDiscoverLabel) navDiscoverLabel.textContent = t('nav_discover');
   const bnavDiscoverLabel = document.getElementById('bnav-discover-label');
   if (bnavDiscoverLabel) bnavDiscoverLabel.textContent = t('nav_discover');
+  const navGroupsLabel = document.getElementById('nav-groups-label');
+  if (navGroupsLabel) navGroupsLabel.textContent = t('nav_groups');
+  const bnavGroupsLabel = document.getElementById('bnav-groups-label');
+  if (bnavGroupsLabel) bnavGroupsLabel.textContent = t('nav_groups');
   const mlh = document.getElementById('menu-label-home');
   if (mlh) mlh.textContent = t('nav_home');
   const mll = document.getElementById('menu-label-lang');
@@ -788,6 +798,8 @@ function showPage(page) {
     ]);
     updateHomeWelcome();
     loadDecks();
+    loadDueWidget();
+    checkStreakBanner();
   }
 
   if (page === 'deck') {
@@ -816,9 +828,15 @@ function showPage(page) {
     loadDiscover();
   }
 
+  if (page === 'groups') {
+    document.getElementById('nav-groups').classList.add('active');
+    setTopbar('👥 ' + t('nav_groups'), []);
+    loadGroups();
+  }
+
   // Bottom nav active state
   document.querySelectorAll('.bottom-nav-item').forEach(b => b.classList.remove('active'));
-  const bnavMap = { home: 'bnav-home', ai: 'bnav-ai', stats: 'bnav-stats', discover: 'bnav-discover', leaderboard: 'bnav-leaderboard', settings: 'bnav-settings', deck: 'bnav-home', result: 'bnav-home' };
+  const bnavMap = { home: 'bnav-home', ai: 'bnav-ai', stats: 'bnav-stats', groups: 'bnav-groups', discover: 'bnav-discover', leaderboard: 'bnav-leaderboard', settings: 'bnav-settings', deck: 'bnav-home', result: 'bnav-home' };
   const bnavId = bnavMap[page];
   if (bnavId) { const el = document.getElementById(bnavId); if (el) el.classList.add('active'); }
 }
@@ -1032,6 +1050,7 @@ async function saveCardEdit() {
 
 // ── Flashcards ───────────────────────────────────────────────
 async function startFlashcards() {
+  markStudiedToday();
   const empty = document.getElementById('fc-empty');
   const wrapper = document.getElementById('fc-wrapper');
   if (fcSession.deckId === currentDeckId && fcSession.index < fcSession.cards.length) {
@@ -1082,6 +1101,7 @@ function nextCard(correct) {
 
 // ── Quiz ─────────────────────────────────────────────────────
 async function startQuiz() {
+  markStudiedToday();
   const empty = document.getElementById('quiz-empty');
   const wrapper = document.getElementById('quiz-wrapper');
   if (qzSession.deckId === currentDeckId && qzSession.index < qzSession.cards.length) {
@@ -1824,6 +1844,187 @@ function copyShareLink() {
   navigator.clipboard.writeText(val).then(() => {
     document.getElementById('share-status').textContent = '✅ Link gekopieerd!';
   });
+}
+
+// ── Streak banner ─────────────────────────────────────────────
+function checkStreakBanner() {
+  if (!currentUser || currentUser.streak < 1) return;
+  const today = new Date().toISOString().slice(0, 10);
+  const lastStudied = localStorage.getItem('lastStudiedDate_' + currentUser.username);
+  if (lastStudied === today) return;
+  const banner = document.getElementById('streak-banner');
+  if (banner) banner.classList.remove('hidden');
+}
+
+function markStudiedToday() {
+  if (!currentUser) return;
+  const today = new Date().toISOString().slice(0, 10);
+  localStorage.setItem('lastStudiedDate_' + currentUser.username, today);
+  const banner = document.getElementById('streak-banner');
+  if (banner) banner.classList.add('hidden');
+}
+
+// ── Spaced repetition widget ──────────────────────────────────
+let dueDecks = [];
+
+async function loadDueWidget() {
+  const widget = document.getElementById('review-widget');
+  const sub = document.getElementById('review-widget-sub');
+  try {
+    const res = await fetch('/api/due-summary');
+    if (!res.ok) { widget.classList.add('hidden'); return; }
+    dueDecks = await res.json();
+    if (dueDecks.length === 0) { widget.classList.add('hidden'); return; }
+    const total = dueDecks.reduce((s, d) => s + d.due_count, 0);
+    sub.textContent = `${total} kaartje${total !== 1 ? 's' : ''} in ${dueDecks.length} deck${dueDecks.length !== 1 ? 's' : ''}`;
+    widget.classList.remove('hidden');
+  } catch(e) { widget.classList.add('hidden'); }
+}
+
+function startBestDueReview() {
+  if (!dueDecks.length) return;
+  const best = dueDecks[0];
+  openDeck(best.id, best.name);
+  setTimeout(() => switchTab('flashcard'), 300);
+}
+
+// ── Quizlet import ────────────────────────────────────────────
+let activeBulkTab = 'manual';
+
+function switchBulkTab(tab) {
+  activeBulkTab = tab;
+  document.getElementById('bulk-panel-manual').classList.toggle('hidden', tab !== 'manual');
+  document.getElementById('bulk-panel-quizlet').classList.toggle('hidden', tab !== 'quizlet');
+  document.getElementById('bulk-tab-manual').classList.toggle('active', tab === 'manual');
+  document.getElementById('bulk-tab-quizlet').classList.toggle('active', tab === 'quizlet');
+  document.getElementById('bulk-preview').classList.add('hidden');
+  document.getElementById('btn-bulk-import').classList.add('hidden');
+}
+
+function parseQuizletExport(text) {
+  return text.split('\n')
+    .map(line => line.trim())
+    .filter(line => line.length > 0)
+    .map(line => {
+      const parts = line.split('\t');
+      if (parts.length >= 2) return { question: parts[0].trim(), answer: parts[1].trim() };
+      const sep = line.includes('|') ? '|' : '=';
+      const idx = line.indexOf(sep);
+      if (idx > 0) return { question: line.slice(0, idx).trim(), answer: line.slice(idx + 1).trim() };
+      return null;
+    })
+    .filter(c => c && c.question && c.answer);
+}
+
+function previewBulkActive() {
+  if (activeBulkTab === 'quizlet') {
+    const text = document.getElementById('input-quizlet').value;
+    const cards = parseQuizletExport(text);
+    parsedBulkCards = cards;
+    const preview = document.getElementById('bulk-preview');
+    if (!cards.length) { preview.innerHTML = '<p style="color:var(--danger);font-size:0.9rem">Geen kaartjes herkend. Kopieer de volledige Quizlet export.</p>'; preview.classList.remove('hidden'); return; }
+    preview.innerHTML = cards.map((c, i) =>
+      `<div class="bulk-row"><span class="bulk-q">${i+1}. ${esc(c.question)}</span><span class="bulk-a">${esc(c.answer)}</span></div>`
+    ).join('');
+    preview.classList.remove('hidden');
+    document.getElementById('btn-bulk-import').classList.remove('hidden');
+  } else {
+    previewBulk();
+  }
+}
+
+// ── Klassengroepen ────────────────────────────────────────────
+let currentGroupId = null;
+let currentGroupIsOwner = false;
+let currentGroupCode = '';
+
+async function loadGroups() {
+  const list = document.getElementById('groups-list');
+  list.innerHTML = '<p style="color:var(--text-muted);font-size:0.9rem">Laden...</p>';
+  const res = await fetch('/api/groups');
+  if (!res.ok) { list.innerHTML = ''; return; }
+  const groups = await res.json();
+  if (!groups.length) {
+    list.innerHTML = `<div class="empty-state"><div class="empty-icon">👥</div><p>Je bent nog geen lid van een groep.<br>Maak er een aan of voer een code in.</p></div>`;
+    return;
+  }
+  list.innerHTML = groups.map(g => `
+    <div class="group-card" onclick="openGroupDetail(${g.id}, ${g.is_owner}, '${esc(g.name)}', '${esc(g.code)}')">
+      <div class="group-card-info">
+        <div class="group-card-name">${esc(g.name)}</div>
+        <div class="group-card-meta">${g.member_count} leden · ${g.is_owner ? '👑 Jij bent beheerder' : `door ${esc(g.owner_name)}`}</div>
+      </div>
+      <div class="group-card-code">${esc(g.code)}</div>
+    </div>`).join('');
+}
+
+async function createGroup() {
+  const name = document.getElementById('input-group-name').value.trim();
+  const err = document.getElementById('group-create-error');
+  if (!name) { err.textContent = 'Voer een naam in'; err.classList.remove('hidden'); return; }
+  err.classList.add('hidden');
+  const res = await fetch('/api/groups', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name }) });
+  const data = await res.json();
+  if (!res.ok) { err.textContent = data.error; err.classList.remove('hidden'); return; }
+  document.getElementById('input-group-name').value = '';
+  closeModal('modal-create-group');
+  loadGroups();
+  openGroupDetail(data.id, true, data.name, data.code);
+}
+
+async function joinGroup() {
+  const code = document.getElementById('input-group-code').value.trim().toUpperCase();
+  const err = document.getElementById('group-join-error');
+  if (!code) { err.textContent = 'Voer een code in'; err.classList.remove('hidden'); return; }
+  err.classList.add('hidden');
+  const res = await fetch('/api/groups/join', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ code }) });
+  const data = await res.json();
+  if (!res.ok) { err.textContent = data.error; err.classList.remove('hidden'); return; }
+  document.getElementById('input-group-code').value = '';
+  closeModal('modal-join-group');
+  loadGroups();
+}
+
+async function openGroupDetail(id, isOwner, name, code) {
+  currentGroupId = id;
+  currentGroupIsOwner = isOwner;
+  currentGroupCode = code;
+  document.getElementById('group-detail-title').textContent = '👥 ' + name;
+  document.getElementById('group-detail-code').textContent = code;
+  document.getElementById('btn-delete-group').classList.toggle('hidden', !isOwner);
+  document.getElementById('btn-leave-group').classList.toggle('hidden', !!isOwner);
+  document.getElementById('group-members-list').innerHTML = '<p style="color:var(--text-muted);font-size:0.9rem">Laden...</p>';
+  openModal('modal-group-detail');
+  const res = await fetch(`/api/groups/${id}/members`);
+  const members = await res.json();
+  document.getElementById('group-members-list').innerHTML = members.map((m, i) => `
+    <div class="group-member-row">
+      <span class="group-member-rank">${i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `${i+1}.`}</span>
+      <span class="group-member-name">${esc(m.username)}${m.is_owner ? ' 👑' : ''}</span>
+      <span class="group-member-streak">🔥 ${m.streak}</span>
+      ${m.last_score != null ? `<span class="group-member-score">${m.last_score}%</span>` : ''}
+    </div>`).join('');
+}
+
+function copyGroupCode() {
+  navigator.clipboard.writeText(currentGroupCode).then(() => {
+    document.getElementById('group-detail-code').textContent = currentGroupCode + ' ✓';
+    setTimeout(() => { document.getElementById('group-detail-code').textContent = currentGroupCode; }, 1500);
+  });
+}
+
+async function deleteGroup() {
+  if (!confirm('Groep verwijderen? Dit kan niet ongedaan worden gemaakt.')) return;
+  await fetch(`/api/groups/${currentGroupId}`, { method: 'DELETE' });
+  closeModal('modal-group-detail');
+  loadGroups();
+}
+
+async function leaveGroup() {
+  if (!confirm('Groep verlaten?')) return;
+  await fetch(`/api/groups/${currentGroupId}/leave`, { method: 'POST' });
+  closeModal('modal-group-detail');
+  loadGroups();
 }
 
 // ── Publieke deck-bibliotheek ─────────────────────────────────

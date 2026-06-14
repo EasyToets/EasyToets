@@ -91,6 +91,19 @@ async function initDb() {
       content TEXT NOT NULL,
       created_at TIMESTAMPTZ DEFAULT NOW()
     );
+    CREATE TABLE IF NOT EXISTS groups (
+      id SERIAL PRIMARY KEY,
+      name TEXT NOT NULL,
+      code TEXT UNIQUE NOT NULL,
+      owner_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      created_at TIMESTAMPTZ DEFAULT NOW()
+    );
+    CREATE TABLE IF NOT EXISTS group_members (
+      group_id INTEGER NOT NULL REFERENCES groups(id) ON DELETE CASCADE,
+      user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      joined_at TIMESTAMPTZ DEFAULT NOW(),
+      PRIMARY KEY (group_id, user_id)
+    );
   `);
 }
 initDb().catch(console.error);
@@ -631,6 +644,99 @@ app.post('/api/share/:token/copy', requireAuth, async (req, res) => {
       [newId, c.question, c.answer]);
   }
   res.json({ ok: true, deck_id: newId });
+});
+
+// ── Due cards overzicht (alle decks) ─────────────────────────
+app.get('/api/due-summary', requireAuth, async (req, res) => {
+  const today = new Date().toISOString().slice(0, 10);
+  const result = await pool.query(`
+    SELECT d.id, d.name, COUNT(c.id)::int as due_count
+    FROM decks d
+    JOIN cards c ON c.deck_id = d.id
+    LEFT JOIN card_reviews cr ON cr.card_id = c.id AND cr.user_id = $1
+    WHERE d.user_id = $1
+      AND COALESCE(cr.next_review, CURRENT_DATE) <= $2
+    GROUP BY d.id, d.name
+    HAVING COUNT(c.id) > 0
+    ORDER BY due_count DESC
+  `, [req.session.userId, today]);
+  res.json(result.rows);
+});
+
+// ── Groepen ───────────────────────────────────────────────────
+function genCode() {
+  return Math.random().toString(36).substring(2, 8).toUpperCase();
+}
+
+app.post('/api/groups', requireAuth, async (req, res) => {
+  const { name } = req.body;
+  if (!name?.trim()) return res.status(400).json({ error: 'Naam vereist' });
+  let code, tries = 0;
+  do { code = genCode(); tries++; } while (tries < 10 &&
+    (await pool.query('SELECT 1 FROM groups WHERE code=$1', [code])).rows.length);
+  const r = await pool.query(
+    'INSERT INTO groups (name, code, owner_id) VALUES ($1,$2,$3) RETURNING *',
+    [name.trim(), code, req.session.userId]);
+  await pool.query('INSERT INTO group_members (group_id, user_id) VALUES ($1,$2)',
+    [r.rows[0].id, req.session.userId]);
+  res.json(r.rows[0]);
+});
+
+app.post('/api/groups/join', requireAuth, async (req, res) => {
+  const { code } = req.body;
+  if (!code?.trim()) return res.status(400).json({ error: 'Code vereist' });
+  const g = await pool.query('SELECT * FROM groups WHERE code=$1', [code.trim().toUpperCase()]);
+  if (!g.rows.length) return res.status(404).json({ error: 'Groep niet gevonden' });
+  const group = g.rows[0];
+  const existing = await pool.query('SELECT 1 FROM group_members WHERE group_id=$1 AND user_id=$2',
+    [group.id, req.session.userId]);
+  if (existing.rows.length) return res.status(400).json({ error: 'Je bent al lid' });
+  await pool.query('INSERT INTO group_members (group_id, user_id) VALUES ($1,$2)',
+    [group.id, req.session.userId]);
+  res.json({ ok: true, group });
+});
+
+app.get('/api/groups', requireAuth, async (req, res) => {
+  const result = await pool.query(`
+    SELECT g.*, u.username as owner_name,
+           (SELECT COUNT(*)::int FROM group_members gm2 WHERE gm2.group_id = g.id) as member_count,
+           g.owner_id = $1 as is_owner
+    FROM groups g
+    JOIN group_members gm ON gm.group_id = g.id AND gm.user_id = $1
+    JOIN users u ON u.id = g.owner_id
+    ORDER BY g.created_at DESC
+  `, [req.session.userId]);
+  res.json(result.rows);
+});
+
+app.get('/api/groups/:id/members', requireAuth, async (req, res) => {
+  const isMember = await pool.query(
+    'SELECT 1 FROM group_members WHERE group_id=$1 AND user_id=$2',
+    [req.params.id, req.session.userId]);
+  if (!isMember.rows.length) return res.status(403).json({ error: 'Geen toegang' });
+  const result = await pool.query(`
+    SELECT u.username, u.streak,
+           g.owner_id = u.id as is_owner,
+           gm.joined_at,
+           (SELECT pct FROM quiz_stats qs WHERE qs.user_id = u.id ORDER BY qs.created_at DESC LIMIT 1) as last_score
+    FROM group_members gm
+    JOIN users u ON u.id = gm.user_id
+    JOIN groups g ON g.id = gm.group_id
+    WHERE gm.group_id = $1
+    ORDER BY u.streak DESC
+  `, [req.params.id]);
+  res.json(result.rows);
+});
+
+app.delete('/api/groups/:id', requireAuth, async (req, res) => {
+  await pool.query('DELETE FROM groups WHERE id=$1 AND owner_id=$2', [req.params.id, req.session.userId]);
+  res.json({ ok: true });
+});
+
+app.post('/api/groups/:id/leave', requireAuth, async (req, res) => {
+  await pool.query('DELETE FROM group_members WHERE group_id=$1 AND user_id=$2',
+    [req.params.id, req.session.userId]);
+  res.json({ ok: true });
 });
 
 app.get('/api/public-decks', async (req, res) => {

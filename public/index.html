@@ -149,6 +149,9 @@
       <button class="nav-item" id="nav-ai" onclick="showPage('ai')">
         <span class="nav-icon">✨</span> <span>AI Tools</span>
       </button>
+      <button class="nav-item" id="nav-groups" onclick="showPage('groups')">
+        <span class="nav-icon">👥</span> <span id="nav-groups-label">Groepen</span>
+      </button>
       <button class="nav-item" id="nav-discover" onclick="showPage('discover')">
         <span class="nav-icon">🌍</span> <span id="nav-discover-label">Ontdek</span>
       </button>
@@ -194,6 +197,10 @@
     <button class="bottom-nav-item" id="bnav-stats" onclick="showPage('stats')">
       <span class="bnav-icon">📊</span>
       <span class="bnav-label" id="bnav-stats-label">Stats</span>
+    </button>
+    <button class="bottom-nav-item" id="bnav-groups" onclick="showPage('groups')">
+      <span class="bnav-icon">👥</span>
+      <span class="bnav-label" id="bnav-groups-label">Groepen</span>
     </button>
     <button class="bottom-nav-item" id="bnav-discover" onclick="showPage('discover')">
       <span class="bnav-icon">🌍</span>
@@ -428,6 +435,22 @@
           </button>
         </div>
 
+        <!-- Streak banner -->
+        <div id="streak-banner" class="streak-warning-banner hidden">
+          🔥 <span id="streak-banner-text">Je hebt vandaag nog niet geoefend — je streak staat op het spel!</span>
+          <button class="streak-banner-close" onclick="document.getElementById('streak-banner').classList.add('hidden')">✕</button>
+        </div>
+
+        <!-- Herhalen widget -->
+        <div id="review-widget" class="review-widget hidden">
+          <div class="review-widget-icon">🔄</div>
+          <div class="review-widget-text">
+            <strong id="review-widget-title">Kaartjes te herhalen</strong>
+            <span id="review-widget-sub">Laadt...</span>
+          </div>
+          <button class="btn primary review-widget-btn" id="review-widget-btn" onclick="startBestDueReview()">Herhalen →</button>
+        </div>
+
         <div id="deck-list" class="deck-grid"></div>
       </section>
 
@@ -549,6 +572,17 @@
             <div id="hard-cards-list"></div>
           </div>
         </div>
+      </section>
+
+      <!-- GROEPEN -->
+      <section id="page-groups" class="hidden">
+        <h2 class="page-title">👥 <span id="groups-title-label">Groepen</span></h2>
+        <p class="page-sub" id="groups-sub">Maak een klas aan of join er een met een code. Zie elkaars streaks en scores.</p>
+        <div class="groups-actions">
+          <button class="btn primary" onclick="openModal('modal-create-group')">+ Nieuwe groep</button>
+          <button class="btn secondary" onclick="openModal('modal-join-group')">Code invoeren</button>
+        </div>
+        <div id="groups-list" class="groups-list"></div>
       </section>
 
       <!-- ONTDEK -->
@@ -752,14 +786,68 @@
 <div id="modal-bulk" class="modal hidden">
   <div class="modal-box modal-bulk-box">
     <h3>Bulk import</h3>
-    <p class="modal-hint">Zet elke flashcard op een nieuwe regel. Scheid vraag en antwoord met <code>|</code>, <code>=</code> of een tab.<br>
-    Voorbeeld: <em>Fotosynthese | Planten zetten licht om in energie</em></p>
-    <textarea id="input-bulk" placeholder="Begrip | Uitleg&#10;Begrip = Uitleg&#10;..." rows="10"></textarea>
+    <div class="bulk-tabs">
+      <button class="bulk-tab active" id="bulk-tab-manual" onclick="switchBulkTab('manual')">✏️ Handmatig</button>
+      <button class="bulk-tab" id="bulk-tab-quizlet" onclick="switchBulkTab('quizlet')">📥 Quizlet import</button>
+    </div>
+    <div id="bulk-panel-manual">
+      <p class="modal-hint">Zet elke flashcard op een nieuwe regel. Scheid vraag en antwoord met <code>|</code>, <code>=</code> of een tab.</p>
+      <textarea id="input-bulk" placeholder="Begrip | Uitleg&#10;Begrip = Uitleg&#10;..." rows="8"></textarea>
+    </div>
+    <div id="bulk-panel-quizlet" class="hidden">
+      <p class="modal-hint">Ga in Quizlet naar jouw set → <strong>···</strong> → <strong>Exporteren</strong> → kopieer de tekst en plak hem hier.</p>
+      <textarea id="input-quizlet" placeholder="Plak hier de Quizlet export..." rows="8"></textarea>
+    </div>
     <div id="bulk-preview" class="bulk-preview hidden"></div>
     <div class="btn-group">
       <button class="btn secondary" onclick="closeModal('modal-bulk')">Annuleren</button>
-      <button class="btn accent" onclick="previewBulk()">Controleren</button>
+      <button class="btn accent" id="btn-bulk-check" onclick="previewBulkActive()">Controleren</button>
       <button class="btn primary hidden" id="btn-bulk-import" onclick="importBulk()">Importeren</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: groep aanmaken -->
+<div id="modal-create-group" class="modal hidden">
+  <div class="modal-box">
+    <h3>👥 Nieuwe groep aanmaken</h3>
+    <p class="modal-hint">Jij wordt beheerder. Deel de code met je klasgenoten zodat ze kunnen joinen.</p>
+    <input type="text" id="input-group-name" placeholder="Naam van de groep (bijv. Klas 4B)">
+    <div id="group-create-error" class="settings-error hidden"></div>
+    <div class="btn-group" style="margin-top:1rem">
+      <button class="btn secondary" onclick="closeModal('modal-create-group')">Annuleren</button>
+      <button class="btn primary" onclick="createGroup()">Aanmaken</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: groep joinen -->
+<div id="modal-join-group" class="modal hidden">
+  <div class="modal-box">
+    <h3>🔑 Groep joinen</h3>
+    <p class="modal-hint">Voer de 6-letterige code in die je van de groepsbeheerder hebt gekregen.</p>
+    <input type="text" id="input-group-code" placeholder="Bijv. AB12CD" maxlength="6" style="text-transform:uppercase;letter-spacing:0.15em;font-size:1.2rem;text-align:center">
+    <div id="group-join-error" class="settings-error hidden"></div>
+    <div class="btn-group" style="margin-top:1rem">
+      <button class="btn secondary" onclick="closeModal('modal-join-group')">Annuleren</button>
+      <button class="btn primary" onclick="joinGroup()">Joinen</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: groep detail -->
+<div id="modal-group-detail" class="modal hidden">
+  <div class="modal-box">
+    <h3 id="group-detail-title">Groep</h3>
+    <div class="group-code-display">
+      Code: <strong id="group-detail-code"></strong>
+      <button class="btn secondary" style="padding:0.3rem 0.6rem;font-size:0.8rem" onclick="copyGroupCode()">📋</button>
+    </div>
+    <div id="group-members-list" class="group-members-list"></div>
+    <div class="btn-group" style="margin-top:1rem">
+      <button class="btn secondary" onclick="closeModal('modal-group-detail')">Sluiten</button>
+      <button class="btn danger hidden" id="btn-delete-group" onclick="deleteGroup()">Groep verwijderen</button>
+      <button class="btn danger hidden" id="btn-leave-group" onclick="leaveGroup()">Verlaten</button>
     </div>
   </div>
 </div>
@@ -1110,16 +1198,27 @@
 
   function renderPlanDays(days, examDate) {
     const result = document.getElementById('plan-result');
-    result.innerHTML = `<p class="plan-exam-label">📅 Toets op <strong>${examDate}</strong></p>` +
-      days.map(d => `
-        <div class="plan-day">
-          <div class="plan-day-date">${d.day}</div>
-          <div class="plan-day-body">
-            <strong>${d.activity}</strong>
-            <span>${d.tip}</span>
-            <span class="plan-day-cards">📚 ${d.cards} kaartjes</span>
-          </div>
-        </div>`).join('');
+    const today = new Date().toISOString().slice(0, 10);
+    result.innerHTML = `<p class="plan-exam-label">📅 Toets op <strong>${examDate}</strong></p>
+      <div class="plan-calendar">
+        ${days.map((d, i) => {
+          const date = new Date(); date.setDate(date.getDate() + i);
+          const dateStr = date.toISOString().slice(0, 10);
+          const isToday = dateStr === today;
+          const isPast = dateStr < today;
+          return `<div class="plan-cal-day ${isToday ? 'plan-cal-today' : ''} ${isPast ? 'plan-cal-past' : ''}">
+            <div class="plan-cal-date">${date.getDate()}<span>${['zo','ma','di','wo','do','vr','za'][date.getDay()]}</span></div>
+            <div class="plan-cal-body">
+              <strong>${d.activity}</strong>
+              <span class="plan-cal-cards">📚 ${d.cards}</span>
+            </div>
+          </div>`;
+        }).join('')}
+        <div class="plan-cal-day plan-cal-exam">
+          <div class="plan-cal-date">🎯<span>toets</span></div>
+          <div class="plan-cal-body"><strong>${examDate}</strong></div>
+        </div>
+      </div>`;
     result.classList.remove('hidden');
   }
 
