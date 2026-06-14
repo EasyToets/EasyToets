@@ -2899,7 +2899,14 @@ function getTodayQuests() {
   const today = new Date().toISOString().slice(0, 10);
   const key = 'quests_' + today + '_' + (currentUser ? currentUser.username : 'guest');
   const stored = localStorage.getItem(key);
-  if (stored) return JSON.parse(stored);
+  if (stored) {
+    const parsed = JSON.parse(stored);
+    const tkMap = { study_cards: 'quest_study', play_match: 'quest_match', create_deck: 'quest_deck' };
+    let migrated = false;
+    parsed.forEach(q => { if (!q.tk && q.id) { q.tk = tkMap[q.id] || 'quest_study'; migrated = true; } });
+    if (migrated) localStorage.setItem(key, JSON.stringify(parsed));
+    return parsed;
+  }
   const seed = today.split('-').reduce((a, b) => a * 100 + parseInt(b), 0) +
     (currentUser ? currentUser.username.split('').reduce((a, c) => a + c.charCodeAt(0), 0) : 0);
   const rng = seededRng(seed);
