@@ -239,7 +239,7 @@
           </div>
           <div class="help-card">
             <h3>📄 Bestand importeren</h3>
-            <p>Upload een <strong>PDF</strong>, <strong>Word (.docx)</strong> of <strong>tekstbestand</strong> en de AI zet het om in flashcards of een samenvatting. Ga naar <strong>AI Tools → Bestand importeren</strong>. Je kunt het bestand ook direct slepen naar het uploadvenster.</p>
+            <p>Upload een <strong>PDF</strong>, <strong>Word (.docx)</strong>, <strong>PowerPoint (.pptx)</strong> of <strong>tekstbestand</strong> en de AI zet het om in flashcards of een samenvatting. Ga naar <strong>AI Tools → Bestand importeren</strong>. Je kunt het bestand ook direct slepen naar het uploadvenster.</p>
           </div>
           <div class="help-card">
             <h3>💡 Hint tijdens oefenen</h3>
@@ -568,12 +568,12 @@
       <button class="ai-modal-close" onclick="closeModal('modal-file')">✕</button>
     </div>
     <div class="ai-modal-body">
-      <p class="modal-hint">Upload een PDF, Word (.docx) of tekstbestand — de AI maakt er flashcards of een samenvatting van.</p>
+      <p class="modal-hint">Upload een PDF, Word (.docx), PowerPoint (.pptx) of tekstbestand — de AI maakt er flashcards of een samenvatting van.</p>
       <div class="file-drop-zone" id="file-drop-zone" onclick="document.getElementById('file-input').click()">
         <div class="file-drop-icon">📂</div>
         <div class="file-drop-text">Klik om een bestand te kiezen</div>
-        <div class="file-drop-sub">PDF, Word of .txt · max 10MB</div>
-        <input type="file" id="file-input" accept=".pdf,.docx,.txt,text/plain,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document" style="display:none">
+        <div class="file-drop-sub">PDF, Word, PowerPoint of .txt · max 10MB</div>
+        <input type="file" id="file-input" accept=".pdf,.docx,.pptx,.txt,text/plain,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.openxmlformats-officedocument.presentationml.presentation" style="display:none">
       </div>
       <div id="file-selected" class="file-selected hidden"></div>
       <div class="file-action-row">
@@ -776,7 +776,7 @@
 
   function selectFile(file) {
     selectedFile = file;
-    const icons = { 'application/pdf': '📕', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document': '📘' };
+    const icons = { 'application/pdf': '📕', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document': '📘', 'application/vnd.openxmlformats-officedocument.presentationml.presentation': '📊' };
     const icon = icons[file.type] || '📄';
     const kb = (file.size / 1024).toFixed(0);
     document.getElementById('file-selected').innerHTML = `<span class="file-chip">${icon} ${file.name} <span class="file-size">${kb} KB</span></span>`;

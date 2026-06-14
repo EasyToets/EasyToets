@@ -6,6 +6,7 @@ const path = require('path');
 const multer = require('multer');
 const pdfParse = require('pdf-parse');
 const mammoth = require('mammoth');
+const officeParser = require('officeparser');
 
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 10 * 1024 * 1024 } });
 
@@ -257,10 +258,15 @@ app.post('/api/process-file', requireAuth, upload.single('file'), async (req, re
     } else if (mime === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
       const result = await mammoth.extractRawText({ buffer: file.buffer });
       text = result.value;
+    } else if (mime === 'application/vnd.openxmlformats-officedocument.presentationml.presentation') {
+      text = await new Promise((resolve, reject) => {
+        officeParser.parseOfficeAsync(file.buffer, { outputErrorToConsole: false })
+          .then(resolve).catch(reject);
+      });
     } else if (mime.startsWith('text/')) {
       text = file.buffer.toString('utf-8');
     } else {
-      return res.status(400).json({ error: 'Bestandstype niet ondersteund. Gebruik PDF, Word of tekst.' });
+      return res.status(400).json({ error: 'Bestandstype niet ondersteund. Gebruik PDF, Word, PowerPoint of tekst.' });
     }
 
     if (!text.trim()) return res.status(400).json({ error: 'Geen tekst gevonden in bestand' });
