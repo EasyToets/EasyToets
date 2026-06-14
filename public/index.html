@@ -33,7 +33,7 @@
       <p class="landing-sub">Maak flashcard-decks, oefen met de toetsmodus en volg je voortgang. Voor scholieren die écht resultaat willen.</p>
       <div class="landing-cta-group">
         <button class="landing-cta-btn" onclick="showAuthFromLanding('register')">Start gratis →</button>
-        <button class="landing-cta-secondary" onclick="showAuthFromLanding('login')">Ik heb al een account</button>
+        <button class="landing-cta-secondary" onclick="startDemo()">Probeer demo</button>
       </div>
     </div>
     <div class="landing-hero-visual">
@@ -116,6 +116,13 @@
   <div class="landing-footer">
     <p>© 2025 EasyToets · Gratis te gebruiken</p>
   </div>
+</div>
+
+<!-- DEMO BANNER -->
+<div id="demo-banner" class="demo-banner hidden">
+  <span>👀 Je bekijkt een demo — maak een gratis account aan om je voortgang op te slaan</span>
+  <button class="demo-banner-btn" onclick="showAuthFromLanding('register')">Gratis aanmelden →</button>
+  <button class="demo-banner-close" onclick="exitDemo()">✕</button>
 </div>
 
 <div class="layout">

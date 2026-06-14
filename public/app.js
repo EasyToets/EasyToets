@@ -889,6 +889,7 @@ function openDeck(id, name) {
 
 // ── Cards ────────────────────────────────────────────────────
 async function loadCards() {
+  if (isDemoMode) { renderDemoCards(); return; }
   const res = await fetch('/api/decks/' + currentDeckId + '/cards');
   const cards = await res.json();
   const el = document.getElementById('card-list');
@@ -977,8 +978,7 @@ async function startFlashcards() {
     empty.style.display = 'none'; wrapper.style.display = 'flex';
     showFlashcard(); return;
   }
-  const res = await fetch('/api/decks/' + currentDeckId + '/cards');
-  const cards = await res.json();
+  const cards = isDemoMode ? DEMO_CARDS : await (await fetch('/api/decks/' + currentDeckId + '/cards')).json();
   if (cards.length === 0) { empty.style.display = 'block'; wrapper.style.display = 'none'; return; }
   sessionCards = shuffle([...cards]); sessionIndex = 0; sessionCorrect = 0;
   sessionMode = 'flashcard'; sessionDeckId = currentDeckId;
@@ -1028,8 +1028,7 @@ async function startQuiz() {
     empty.style.display = 'none'; wrapper.style.display = 'flex';
     showQuizQuestion(); return;
   }
-  const res = await fetch('/api/decks/' + currentDeckId + '/cards');
-  const cards = await res.json();
+  const cards = isDemoMode ? DEMO_CARDS : await (await fetch('/api/decks/' + currentDeckId + '/cards')).json();
   if (cards.length < 2) { empty.style.display = 'block'; wrapper.style.display = 'none'; return; }
   sessionCards = shuffle([...cards]); sessionIndex = 0; sessionCorrect = 0;
   sessionMode = 'quiz'; sessionDeckId = currentDeckId;
@@ -1430,6 +1429,49 @@ document.getElementById('auth-password').addEventListener('keydown', e => {
 });
 
 // ── Landing ───────────────────────────────────────────────────
+// ── Demo mode ─────────────────────────────────────────────────
+let isDemoMode = false;
+
+const DEMO_CARDS = [
+  { id: 1, question: 'What is photosynthesis?', answer: 'The process by which plants convert sunlight, water and CO₂ into glucose and oxygen.' },
+  { id: 2, question: 'What is the powerhouse of the cell?', answer: 'The mitochondria — it produces ATP through cellular respiration.' },
+  { id: 3, question: 'What is DNA?', answer: 'Deoxyribonucleic acid — a molecule that carries the genetic instructions for life.' },
+  { id: 4, question: 'What is osmosis?', answer: 'The movement of water through a semi-permeable membrane from low to high solute concentration.' },
+  { id: 5, question: 'What is Newton\'s second law?', answer: 'Force equals mass times acceleration: F = ma.' },
+  { id: 6, question: 'What is the speed of light?', answer: 'Approximately 299,792,458 metres per second (3 × 10⁸ m/s).' },
+];
+
+function startDemo() {
+  isDemoMode = true;
+  hideLanding();
+  document.getElementById('demo-banner').classList.remove('hidden');
+  currentDeckId = 'demo';
+  currentDeckName = '🎓 Biology & Physics Demo';
+  document.getElementById('nav-deck-label').textContent = currentDeckName;
+  document.getElementById('nav-deck').style.display = '';
+  showPage('deck');
+  switchTab('cards');
+}
+
+function exitDemo() {
+  isDemoMode = false;
+  document.getElementById('demo-banner').classList.add('hidden');
+  showLanding();
+}
+
+function renderDemoCards() {
+  const el = document.getElementById('card-list');
+  el.innerHTML = DEMO_CARDS.map(c => `
+    <div class="learn-card">
+      <p class="card-q">${c.question}</p>
+      <p class="card-a">${c.answer}</p>
+      <div class="card-actions">
+        <span class="demo-locked">🔒 Maak een account aan om te bewerken</span>
+      </div>
+    </div>
+  `).join('');
+}
+
 function showLanding() {
   document.getElementById('landing').classList.remove('hidden');
   document.querySelector('.layout').style.display = 'none';
