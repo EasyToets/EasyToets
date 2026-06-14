@@ -521,6 +521,16 @@ main input, main textarea { cursor: text; user-select: text; }
 .he-a { color: var(--text-muted); font-size: 0.88rem; flex: 2; }
 
 /* ── Deck grid (home) ────────────────────────────────────── */
+.home-welcome { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.25rem; }
+.home-greeting { font-size: 1.4rem; font-weight: 700; margin: 0; }
+.home-sub { font-size: 0.9rem; color: var(--text-muted); margin: 0.15rem 0 0; }
+.home-streak-pill { display: flex; align-items: center; gap: 0.3rem; background: rgba(245,158,11,0.12); color: #d97706; font-weight: 700; font-size: 1rem; padding: 0.4rem 0.9rem; border-radius: 20px; }
+.home-quick-actions { display: flex; gap: 0.75rem; margin-bottom: 1.5rem; }
+.quick-action-btn { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 0.4rem; padding: 0.85rem 0.5rem; background: var(--surface, #fff); border: 1px solid var(--border); border-radius: 14px; cursor: pointer; font-family: inherit; transition: transform 0.15s, box-shadow 0.15s; -webkit-tap-highlight-color: transparent; }
+.quick-action-btn:hover { transform: translateY(-2px); box-shadow: var(--shadow); }
+.qa-icon { font-size: 1.4rem; }
+.qa-label { font-size: 0.75rem; font-weight: 600; color: var(--text); text-align: center; }
+
 .deck-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));

@@ -394,6 +394,33 @@
 
       <!-- HOME -->
       <section id="page-home">
+        <!-- Welkom blok -->
+        <div class="home-welcome">
+          <div class="home-welcome-text">
+            <h2 class="home-greeting" id="home-greeting">Hallo 👋</h2>
+            <p class="home-sub" id="home-sub">Wat ga je vandaag leren?</p>
+          </div>
+          <div class="home-streak-pill" id="home-streak-pill" style="display:none">
+            🔥 <span id="home-streak-num">0</span>
+          </div>
+        </div>
+
+        <!-- Snelle acties -->
+        <div class="home-quick-actions">
+          <button class="quick-action-btn" onclick="openModal('modal-new-deck')">
+            <span class="qa-icon">📚</span>
+            <span class="qa-label" id="qa-new-deck">Nieuw deck</span>
+          </button>
+          <button class="quick-action-btn" onclick="showPage('ai')">
+            <span class="qa-icon">✨</span>
+            <span class="qa-label">AI Tools</span>
+          </button>
+          <button class="quick-action-btn" onclick="requireDeckThen('file')">
+            <span class="qa-icon">📄</span>
+            <span class="qa-label" id="qa-import">Importeren</span>
+          </button>
+        </div>
+
         <div id="deck-list" class="deck-grid"></div>
       </section>
 

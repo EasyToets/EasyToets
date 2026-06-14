@@ -776,6 +776,7 @@ function showPage(page) {
     setTopbar(t('nav_home'), [
       btn('primary', t('btn_new_deck'), "openModal('modal-new-deck')")
     ]);
+    updateHomeWelcome();
     loadDecks();
   }
 
@@ -835,6 +836,33 @@ function switchTab(tab) {
 }
 
 // ── Decks ────────────────────────────────────────────────────
+function updateHomeWelcome() {
+  const greeting = document.getElementById('home-greeting');
+  const sub = document.getElementById('home-sub');
+  const pill = document.getElementById('home-streak-pill');
+  const pillNum = document.getElementById('home-streak-num');
+  if (!greeting) return;
+
+  const hour = new Date().getHours();
+  const name = currentUser?.username || '';
+  let greetText = hour < 12 ? '☀️ Goedemorgen' : hour < 18 ? '👋 Hallo' : '🌙 Goedenavond';
+  if (currentLang === 'en') greetText = hour < 12 ? '☀️ Good morning' : hour < 18 ? '👋 Hey' : '🌙 Good evening';
+  if (currentLang === 'de') greetText = hour < 12 ? '☀️ Guten Morgen' : hour < 18 ? '👋 Hallo' : '🌙 Guten Abend';
+  if (currentLang === 'fr') greetText = hour < 12 ? '☀️ Bonjour' : hour < 18 ? '👋 Salut' : '🌙 Bonsoir';
+  if (currentLang === 'es') greetText = hour < 12 ? '☀️ Buenos días' : hour < 18 ? '👋 Hola' : '🌙 Buenas noches';
+  if (currentLang === 'pt') greetText = hour < 12 ? '☀️ Bom dia' : hour < 18 ? '👋 Olá' : '🌙 Boa noite';
+
+  greeting.textContent = name ? `${greetText}, ${name}` : greetText;
+
+  const streak = currentUser?.streak || 0;
+  if (streak > 0) {
+    pill.style.display = 'flex';
+    pillNum.textContent = streak;
+  } else {
+    pill.style.display = 'none';
+  }
+}
+
 async function loadDecks() {
   const res = await fetch('/api/decks');
   const decks = await res.json();
