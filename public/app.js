@@ -987,6 +987,7 @@ function showPage(page) {
     if (intro) intro.textContent = hasDeck
       ? `Actief deck: ${currentDeckName}`
       : 'Selecteer eerst een deck via Mijn Decks, dan kun je de AI tools gebruiken.';
+    updateAIQuotaBar();
   }
 
   if (page === 'home') {
@@ -1106,6 +1107,8 @@ function updateHomeWelcome() {
 let decks = [];
 let userXP = 0;
 let unlockedBadges = new Set();
+let userAiUsed = 0;
+let userAiLimit = 15;
 
 async function loadDecks() {
   const res = await fetch('/api/decks');
@@ -1696,6 +1699,8 @@ async function submitAuth() {
   }
   currentUser = { username: data.username };
   userXP = data.xp || 0;
+  userAiUsed = data.aiUsed || 0;
+  userAiLimit = data.aiLimit || 15;
   document.getElementById('auth-password').value = '';
   document.getElementById('auth-username').value = '';
   hideAuthModal();
@@ -1798,6 +1803,8 @@ async function init() {
   applyLang();
   if (currentUser) {
     userXP = meData.user.xp || 0;
+    userAiUsed = meData.user.aiUsed || 0;
+    userAiLimit = meData.user.aiLimit || 15;
     updateUserDisplay();
     renderStreak(meData.user.streak);
     const darkBtn = document.getElementById('dark-toggle');
@@ -2995,4 +3002,17 @@ function showQuestComplete(quest) {
     el.classList.remove('quest-complete-toast--show');
     setTimeout(() => el.remove(), 400);
   }, 3000);
+}
+
+// ── AI quota balk ─────────────────────────────────────────────
+function updateAIQuotaBar() {
+  const bar = document.getElementById('ai-quota-bar');
+  const label = document.getElementById('ai-quota-label');
+  const fill = document.getElementById('ai-quota-fill');
+  if (!bar || !currentUser) return;
+  bar.style.display = 'block';
+  const pct = Math.round(userAiUsed / userAiLimit * 100);
+  fill.style.width = pct + '%';
+  fill.style.background = pct >= 100 ? '#ef4444' : pct >= 80 ? '#f59e0b' : '#8b5cf6';
+  label.textContent = userAiUsed + ' / ' + userAiLimit + ' AI-calls vandaag gebruikt';
 }

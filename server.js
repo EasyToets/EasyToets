@@ -116,6 +116,8 @@ async function initDb() {
       value TEXT NOT NULL
     );
     ALTER TABLE users ADD COLUMN IF NOT EXISTS xp INTEGER NOT NULL DEFAULT 0;
+    ALTER TABLE users ADD COLUMN IF NOT EXISTS ai_calls_today INTEGER NOT NULL DEFAULT 0;
+    ALTER TABLE users ADD COLUMN IF NOT EXISTS ai_calls_date TEXT;
     CREATE TABLE IF NOT EXISTS user_badges (
       id SERIAL PRIMARY KEY,
       user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
@@ -181,6 +183,29 @@ function requireAuth(req, res, next) {
   next();
 }
 
+const AI_DAILY_LIMIT = 15;
+
+async function requireAIQuota(req, res, next) {
+  if (!req.session.userId) return res.status(401).json({ error: 'Niet ingelogd' });
+  const today = new Date().toISOString().slice(0, 10);
+  const r = await pool.query('SELECT ai_calls_today, ai_calls_date FROM users WHERE id=$1', [req.session.userId]);
+  const { ai_calls_today, ai_calls_date } = r.rows[0];
+  const callsToday = ai_calls_date === today ? (ai_calls_today || 0) : 0;
+  if (callsToday >= AI_DAILY_LIMIT) {
+    return res.status(429).json({
+      error: 'Je hebt het dagelijks AI-limiet bereikt.',
+      limit: AI_DAILY_LIMIT,
+      used: callsToday,
+    });
+  }
+  if (ai_calls_date === today) {
+    await pool.query('UPDATE users SET ai_calls_today = ai_calls_today + 1 WHERE id=$1', [req.session.userId]);
+  } else {
+    await pool.query('UPDATE users SET ai_calls_today=1, ai_calls_date=$1 WHERE id=$2', [today, req.session.userId]);
+  }
+  next();
+}
+
 // ── Auth routes ──────────────────────────────────────────────
 async function checkinStreak(userId) {
   const today = new Date().toISOString().slice(0, 10);
@@ -196,9 +221,11 @@ async function checkinStreak(userId) {
 app.get('/api/me', async (req, res) => {
   if (!req.session.userId) return res.json({ user: null });
   const streak = await checkinStreak(req.session.userId);
-  const xpRow = await pool.query('SELECT xp FROM users WHERE id=$1', [req.session.userId]);
-  const xp = xpRow.rows[0]?.xp || 0;
-  res.json({ user: { id: req.session.userId, username: req.session.username, streak, xp } });
+  const row = await pool.query('SELECT xp, ai_calls_today, ai_calls_date FROM users WHERE id=$1', [req.session.userId]);
+  const { xp = 0, ai_calls_today = 0, ai_calls_date } = row.rows[0] || {};
+  const today = new Date().toISOString().slice(0, 10);
+  const aiUsed = ai_calls_date === today ? (ai_calls_today || 0) : 0;
+  res.json({ user: { id: req.session.userId, username: req.session.username, streak, xp, aiUsed, aiLimit: AI_DAILY_LIMIT } });
 });
 
 app.post('/api/register', async (req, res) => {
@@ -322,7 +349,7 @@ app.delete('/api/cards/:id', requireAuth, async (req, res) => {
 });
 
 // ── AI Flashcard Generator ───────────────────────────────────
-app.post('/api/generate-cards', requireAuth, async (req, res) => {
+app.post('/api/generate-cards', requireAIQuota, async (req, res) => {
   const { text } = req.body;
   if (!text?.trim()) return res.status(400).json({ error: 'Geen tekst meegegeven' });
   const apiKey = process.env.ANTHROPIC_API_KEY;
@@ -357,7 +384,7 @@ app.post('/api/generate-cards', requireAuth, async (req, res) => {
 });
 
 // ── AI: Bestand uploaden & verwerken ─────────────────────────
-app.post('/api/process-file', requireAuth, upload.single('file'), async (req, res) => {
+app.post('/api/process-file', requireAIQuota, upload.single('file'), async (req, res) => {
   const { action } = req.body; // 'flashcards' of 'summary'
   const file = req.file;
   if (!file) return res.status(400).json({ error: 'Geen bestand meegegeven' });
@@ -445,7 +472,7 @@ app.delete('/api/summaries/:id', requireAuth, async (req, res) => {
 });
 
 // ── AI: Uitleg per kaartje ───────────────────────────────────
-app.post('/api/explain-card', requireAuth, async (req, res) => {
+app.post('/api/explain-card', requireAIQuota, async (req, res) => {
   const { question, answer, deckCards } = req.body;
   if (!question || !answer) return res.status(400).json({ error: 'Geen kaartje meegegeven' });
   const apiKey = process.env.ANTHROPIC_API_KEY;
@@ -471,7 +498,7 @@ app.post('/api/explain-card', requireAuth, async (req, res) => {
 });
 
 // ── AI: Hint tijdens oefenen ─────────────────────────────────
-app.post('/api/hint-card', requireAuth, async (req, res) => {
+app.post('/api/hint-card', requireAIQuota, async (req, res) => {
   const { question, answer } = req.body;
   if (!question || !answer) return res.status(400).json({ error: 'Geen kaartje meegegeven' });
   const apiKey = process.env.ANTHROPIC_API_KEY;
@@ -494,7 +521,7 @@ app.post('/api/hint-card', requireAuth, async (req, res) => {
 });
 
 // ── AI: Studieplan ───────────────────────────────────────────
-app.post('/api/study-plan', requireAuth, async (req, res) => {
+app.post('/api/study-plan', requireAIQuota, async (req, res) => {
   const { examDate, deckName, cardCount } = req.body;
   if (!examDate || !cardCount) return res.status(400).json({ error: 'Ontbrekende gegevens' });
   const apiKey = process.env.ANTHROPIC_API_KEY;

@@ -2609,3 +2609,31 @@ html:not(.dark) .quest-complete-toast {
   font-size: 0.78rem;
   color: rgba(200,195,240,0.6);
 }
+
+/* ── AI quota balk ─────────────────────────────────────────────── */
+.ai-quota-bar {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+  padding: 0.6rem 0.9rem;
+  margin-bottom: 1rem;
+}
+.ai-quota-label {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  font-weight: 600;
+  display: block;
+  margin-bottom: 0.4rem;
+}
+.ai-quota-track {
+  height: 6px;
+  background: var(--border);
+  border-radius: 999px;
+  overflow: hidden;
+}
+.ai-quota-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: #8b5cf6;
+  transition: width 0.4s ease, background 0.3s;
+}
