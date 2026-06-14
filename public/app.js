@@ -863,9 +863,11 @@ function updateHomeWelcome() {
   }
 }
 
+let decks = [];
+
 async function loadDecks() {
   const res = await fetch('/api/decks');
-  const decks = await res.json();
+  decks = await res.json();
   const el = document.getElementById('deck-list');
   if (decks.length === 0) {
     el.innerHTML = `<div class="empty-state">
