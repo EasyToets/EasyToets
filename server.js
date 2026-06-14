@@ -83,6 +83,14 @@ async function initDb() {
     );
     ALTER TABLE decks ADD COLUMN IF NOT EXISTS is_public BOOLEAN NOT NULL DEFAULT FALSE;
     ALTER TABLE decks ADD COLUMN IF NOT EXISTS share_token TEXT;
+    CREATE TABLE IF NOT EXISTS summaries (
+      id SERIAL PRIMARY KEY,
+      user_id INTEGER NOT NULL,
+      deck_id INTEGER REFERENCES decks(id) ON DELETE SET NULL,
+      filename TEXT NOT NULL,
+      content TEXT NOT NULL,
+      created_at TIMESTAMPTZ DEFAULT NOW()
+    );
   `);
 }
 initDb().catch(console.error);
@@ -292,12 +300,40 @@ app.post('/api/process-file', requireAuth, upload.single('file'), async (req, re
       if (!match) return res.status(500).json({ error: 'AI gaf geen geldige kaartjes terug' });
       return res.json({ cards: JSON.parse(match[0]) });
     } else {
+      const deckId = req.body.deckId ? parseInt(req.body.deckId) : null;
+      await pool.query(
+        'INSERT INTO summaries (user_id, deck_id, filename, content) VALUES ($1, $2, $3, $4)',
+        [req.session.userId, deckId, file.originalname, raw]
+      );
       return res.json({ summary: raw });
     }
   } catch(e) {
     console.error('process-file error:', e.message);
     res.status(500).json({ error: e.message });
   }
+});
+
+// ── Samenvattingen ophalen & verwijderen ─────────────────────
+app.get('/api/summaries', requireAuth, async (req, res) => {
+  const r = await pool.query(
+    'SELECT id, filename, created_at, LEFT(content, 200) AS preview FROM summaries WHERE user_id=$1 ORDER BY created_at DESC',
+    [req.session.userId]
+  );
+  res.json(r.rows);
+});
+
+app.get('/api/summaries/:id', requireAuth, async (req, res) => {
+  const r = await pool.query(
+    'SELECT * FROM summaries WHERE id=$1 AND user_id=$2',
+    [req.params.id, req.session.userId]
+  );
+  if (!r.rows[0]) return res.status(404).json({ error: 'Niet gevonden' });
+  res.json(r.rows[0]);
+});
+
+app.delete('/api/summaries/:id', requireAuth, async (req, res) => {
+  await pool.query('DELETE FROM summaries WHERE id=$1 AND user_id=$2', [req.params.id, req.session.userId]);
+  res.json({ ok: true });
 });
 
 // ── AI: Uitleg per kaartje ───────────────────────────────────

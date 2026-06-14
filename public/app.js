@@ -1507,6 +1507,47 @@ function copyShareLink() {
   });
 }
 
+// ── Mijn samenvattingen ───────────────────────────────────────
+async function openSummariesModal() {
+  openModal('modal-summaries');
+  const list = document.getElementById('summaries-list');
+  list.innerHTML = '<p class="stats-empty">Laden...</p>';
+  const res = await fetch('/api/summaries');
+  if (!res.ok) { list.innerHTML = '<p class="stats-empty">Kon samenvattingen niet laden.</p>'; return; }
+  const summaries = await res.json();
+  if (!summaries.length) {
+    list.innerHTML = '<p class="stats-empty">Nog geen samenvattingen opgeslagen. Maak er een via Bestand importeren → Samenvatting.</p>';
+    return;
+  }
+  list.innerHTML = summaries.map(s => {
+    const date = new Date(s.created_at).toLocaleDateString('nl-NL', { day: 'numeric', month: 'long', year: 'numeric' });
+    return `<div class="summary-list-item">
+      <div class="summary-list-info" onclick="viewSummary(${s.id}, ${JSON.stringify(s.filename)})">
+        <span class="summary-list-name">📄 ${s.filename}</span>
+        <span class="summary-list-date">${date}</span>
+        <span class="summary-list-preview">${s.preview.replace(/[#*]/g,'').trim()}…</span>
+      </div>
+      <button class="btn-summary-delete" onclick="deleteSummary(${s.id}, this)" title="Verwijderen">🗑</button>
+    </div>`;
+  }).join('');
+}
+
+async function viewSummary(id, filename) {
+  const res = await fetch('/api/summaries/' + id);
+  const data = await res.json();
+  document.getElementById('summary-view-title').textContent = '📄 ' + filename;
+  document.getElementById('summary-view-content').innerHTML = mdToHtml(data.content);
+  openModal('modal-summary-view');
+}
+
+async function deleteSummary(id, btn) {
+  if (!confirm('Samenvatting verwijderen?')) return;
+  await fetch('/api/summaries/' + id, { method: 'DELETE' });
+  btn.closest('.summary-list-item').remove();
+  const list = document.getElementById('summaries-list');
+  if (!list.children.length) list.innerHTML = '<p class="stats-empty">Nog geen samenvattingen opgeslagen.</p>';
+}
+
 // ── Gedeeld deck via URL openen (/share/TOKEN) ────────────────
 let sharedDeckToken = null;
 async function checkShareUrl() {

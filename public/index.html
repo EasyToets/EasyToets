@@ -346,6 +346,15 @@
             </div>
             <div class="ai-tool-arrow">→</div>
           </div>
+
+          <div class="ai-tool-card" onclick="openSummariesModal()">
+            <div class="ai-tool-icon">📋</div>
+            <div class="ai-tool-info">
+              <strong>Mijn samenvattingen</strong>
+              <span>Bekijk eerder gemaakte samenvattingen van je bestanden</span>
+            </div>
+            <div class="ai-tool-arrow">→</div>
+          </div>
         </div>
       </section>
 
@@ -586,6 +595,32 @@
   </div>
 </div>
 
+<!-- MODAL: Mijn samenvattingen -->
+<div id="modal-summaries" class="modal hidden">
+  <div class="modal-box ai-modal-box">
+    <div class="ai-modal-header">
+      <span>📋 Mijn samenvattingen</span>
+      <button class="ai-modal-close" onclick="closeModal('modal-summaries')">✕</button>
+    </div>
+    <div class="ai-modal-body">
+      <div id="summaries-list"></div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Samenvatting bekijken -->
+<div id="modal-summary-view" class="modal hidden">
+  <div class="modal-box ai-modal-box">
+    <div class="ai-modal-header">
+      <span id="summary-view-title">Samenvatting</span>
+      <button class="ai-modal-close" onclick="closeModal('modal-summary-view')">✕</button>
+    </div>
+    <div class="ai-modal-body">
+      <div id="summary-view-content" class="file-summary"></div>
+    </div>
+  </div>
+</div>
+
 <!-- MODAL: AI genereren -->
 <div id="modal-ai" class="modal hidden">
   <div class="modal-box modal-bulk-box">
@@ -801,6 +836,7 @@
       const form = new FormData();
       form.append('file', selectedFile);
       form.append('action', action);
+      if (currentDeckId) form.append('deckId', currentDeckId);
       const res = await fetch('/api/process-file', { method: 'POST', body: form });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Fout');
@@ -811,7 +847,7 @@
           </div>
           <button class="btn primary" onclick="importFileCards(${JSON.stringify(data.cards).replace(/"/g,'&quot;')})">Importeren in deck →</button>`;
       } else {
-        result.innerHTML = `<div class="file-summary">${mdToHtml(data.summary)}</div>`;
+        result.innerHTML = `<div class="file-summary">${mdToHtml(data.summary)}</div><p class="summary-saved-hint">✅ Samenvatting opgeslagen — terug te vinden via <strong>AI Tools → Mijn samenvattingen</strong></p>`;
       }
       result.classList.remove('hidden');
     } catch(e) {
