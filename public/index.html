@@ -299,7 +299,7 @@
       <!-- AI TOOLS -->
       <section id="page-ai" class="hidden">
         <div class="ai-tools-page">
-          <h2>✨ AI Tools</h2>
+          <h2>✨ <span id="nav-ai-label">AI Tools</span></h2>
           <p class="ai-tools-intro">Selecteer eerst een deck, dan kun je de AI tools gebruiken.</p>
 
           <div class="ai-tool-card" id="aitool-generate" onclick="requireDeckThen('modal-ai')">
@@ -311,7 +311,7 @@
             <div class="ai-tool-arrow">→</div>
           </div>
 
-          <div class="ai-tool-card" id="aitool-plan" onclick="requireDeckThen('studyplan')">
+          <div class="ai-tool-card" id="aitool-studyplan" onclick="requireDeckThen('studyplan')">
             <div class="ai-tool-icon">📅</div>
             <div class="ai-tool-info">
               <strong>Studieplan</strong>
@@ -329,7 +329,7 @@
             <div class="ai-tool-arrow">→</div>
           </div>
 
-          <div class="ai-tool-card" onclick="requireDeckThen('file')">
+          <div class="ai-tool-card" id="aitool-file" onclick="requireDeckThen('file')">
             <div class="ai-tool-icon">📄</div>
             <div class="ai-tool-info">
               <strong>Bestand importeren</strong>
@@ -347,7 +347,7 @@
             <div class="ai-tool-arrow">→</div>
           </div>
 
-          <div class="ai-tool-card" onclick="openSummariesModal()">
+          <div class="ai-tool-card" id="aitool-summaries" onclick="openSummariesModal()">
             <div class="ai-tool-icon">📋</div>
             <div class="ai-tool-info">
               <strong>Mijn samenvattingen</strong>
@@ -847,7 +847,7 @@
           </div>
           <button class="btn primary" onclick="importFileCards(${JSON.stringify(data.cards).replace(/"/g,'&quot;')})">Importeren in deck →</button>`;
       } else {
-        result.innerHTML = `<div class="file-summary">${mdToHtml(data.summary)}</div><p class="summary-saved-hint">✅ Samenvatting opgeslagen — terug te vinden via <strong>AI Tools → Mijn samenvattingen</strong></p>`;
+        result.innerHTML = `<div class="file-summary">${mdToHtml(data.summary)}</div><p class="summary-saved-hint">${t('file_saved_hint')}</p>`;
       }
       result.classList.remove('hidden');
     } catch(e) {

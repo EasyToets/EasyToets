@@ -64,6 +64,31 @@ const TR = {
     bulk_import_btn:      (n) => `Importeren (${n} kaartje${n !== 1 ? 's' : ''})`,
     tab_write:            'Schrijven',
     empty_write:          'Voeg eerst kaartjes toe om te oefenen.',
+    nav_ai:               'AI Tools',
+    aitool_generate_title:'Kaartjes genereren',
+    aitool_generate_sub:  'Plak tekst — AI maakt er flashcards van',
+    aitool_studyplan_title:'Studieplan',
+    aitool_studyplan_sub: 'AI maakt een persoonlijk studieplan',
+    aitool_hint_title:    'Oefenen met hints',
+    aitool_hint_sub:      'Oefen met kaartjes en vraag een AI-hint als je vastloopt',
+    aitool_file_title:    'Bestand importeren',
+    aitool_file_sub:      'Upload PDF, Word of tekst — AI maakt flashcards of samenvatting',
+    aitool_explain_title: 'Uitleg per kaartje',
+    aitool_explain_sub:   'Klik op ✨ Uitleg bij een kaartje voor een diepere uitleg',
+    aitool_summaries_title:'Mijn samenvattingen',
+    aitool_summaries_sub: 'Bekijk eerder gemaakte samenvattingen van je bestanden',
+    file_modal_title:     'Bestand importeren',
+    file_modal_hint:      'Upload een PDF, Word (.docx), PowerPoint (.pptx) of tekstbestand — de AI maakt er flashcards of een samenvatting van.',
+    file_drop_text:       'Klik om een bestand te kiezen',
+    file_drop_sub:        'PDF, Word, PowerPoint of .txt · max 10MB',
+    file_btn_cards:       '✨ Maak flashcards',
+    file_btn_summary:     '📝 Samenvatting',
+    file_saved_hint:      '✅ Samenvatting opgeslagen — terug te vinden via AI Tools → Mijn samenvattingen',
+    summaries_modal_title:'Mijn samenvattingen',
+    summaries_empty:      'Nog geen samenvattingen opgeslagen. Maak er een via Bestand importeren → Samenvatting.',
+    summaries_loading:    'Laden...',
+    summaries_error:      'Kon samenvattingen niet laden.',
+    summary_delete_confirm:'Samenvatting verwijderen?',
   },
   de: {
     tagline:              'Intelligenter lernen,<br>nicht härter.',
@@ -123,6 +148,31 @@ const TR = {
     bulk_import_btn:      (n) => `Importieren (${n} Karte${n !== 1 ? 'n' : ''})`,
     tab_write:            'Schreiben',
     empty_write:          'Füge zuerst Karten hinzu.',
+    nav_ai:               'KI-Tools',
+    aitool_generate_title:'Karten generieren',
+    aitool_generate_sub:  'Text einfügen — KI erstellt Karteikarten',
+    aitool_studyplan_title:'Lernplan',
+    aitool_studyplan_sub: 'KI erstellt einen persönlichen Lernplan',
+    aitool_hint_title:    'Üben mit Hinweisen',
+    aitool_hint_sub:      'Übe mit Karten und frage die KI um Hilfe',
+    aitool_file_title:    'Datei importieren',
+    aitool_file_sub:      'PDF, Word oder Text hochladen — KI erstellt Karten oder Zusammenfassung',
+    aitool_explain_title: 'Erklärung pro Karte',
+    aitool_explain_sub:   'Klicke auf ✨ Erklärung für eine tiefere Erläuterung',
+    aitool_summaries_title:'Meine Zusammenfassungen',
+    aitool_summaries_sub: 'Frühere Zusammenfassungen deiner Dateien ansehen',
+    file_modal_title:     'Datei importieren',
+    file_modal_hint:      'Lade eine PDF-, Word- (.docx), PowerPoint- (.pptx) oder Textdatei hoch — die KI erstellt Karteikarten oder eine Zusammenfassung.',
+    file_drop_text:       'Klicken um eine Datei auszuwählen',
+    file_drop_sub:        'PDF, Word, PowerPoint oder .txt · max 10MB',
+    file_btn_cards:       '✨ Karten erstellen',
+    file_btn_summary:     '📝 Zusammenfassung',
+    file_saved_hint:      '✅ Zusammenfassung gespeichert — unter KI-Tools → Meine Zusammenfassungen abrufbar',
+    summaries_modal_title:'Meine Zusammenfassungen',
+    summaries_empty:      'Noch keine Zusammenfassungen. Erstelle eine über Datei importieren → Zusammenfassung.',
+    summaries_loading:    'Laden...',
+    summaries_error:      'Zusammenfassungen konnten nicht geladen werden.',
+    summary_delete_confirm:'Zusammenfassung löschen?',
   },
   fr: {
     tagline:              'Apprendre plus vite,<br>pas plus dur.',
@@ -182,6 +232,31 @@ const TR = {
     bulk_import_btn:      (n) => `Importer (${n} carte${n !== 1 ? 's' : ''})`,
     tab_write:            'Écrire',
     empty_write:          'Ajoute des cartes pour commencer.',
+    nav_ai:               'Outils IA',
+    aitool_generate_title:'Générer des cartes',
+    aitool_generate_sub:  'Colle du texte — l\'IA crée des flashcards',
+    aitool_studyplan_title:'Plan d\'étude',
+    aitool_studyplan_sub: 'L\'IA crée un plan d\'étude personnalisé',
+    aitool_hint_title:    'Pratiquer avec indices',
+    aitool_hint_sub:      'Pratique avec des cartes et demande un indice à l\'IA',
+    aitool_file_title:    'Importer un fichier',
+    aitool_file_sub:      'PDF, Word ou texte — l\'IA crée des cartes ou un résumé',
+    aitool_explain_title: 'Explication par carte',
+    aitool_explain_sub:   'Clique sur ✨ Explication pour une explication approfondie',
+    aitool_summaries_title:'Mes résumés',
+    aitool_summaries_sub: 'Consulte tes résumés enregistrés',
+    file_modal_title:     'Importer un fichier',
+    file_modal_hint:      'Télécharge un fichier PDF, Word (.docx), PowerPoint (.pptx) ou texte — l\'IA en fait des flashcards ou un résumé.',
+    file_drop_text:       'Cliquer pour choisir un fichier',
+    file_drop_sub:        'PDF, Word, PowerPoint ou .txt · max 10Mo',
+    file_btn_cards:       '✨ Créer des cartes',
+    file_btn_summary:     '📝 Résumé',
+    file_saved_hint:      '✅ Résumé enregistré — retrouvable via Outils IA → Mes résumés',
+    summaries_modal_title:'Mes résumés',
+    summaries_empty:      'Aucun résumé enregistré. Crée-en un via Importer un fichier → Résumé.',
+    summaries_loading:    'Chargement...',
+    summaries_error:      'Impossible de charger les résumés.',
+    summary_delete_confirm:'Supprimer ce résumé ?',
   },
   es: {
     tagline:              'Aprende más listo,<br>no más duro.',
@@ -241,6 +316,31 @@ const TR = {
     bulk_import_btn:      (n) => `Importar (${n} tarjeta${n !== 1 ? 's' : ''})`,
     tab_write:            'Escribir',
     empty_write:          'Añade tarjetas primero para practicar.',
+    nav_ai:               'Herramientas IA',
+    aitool_generate_title:'Generar tarjetas',
+    aitool_generate_sub:  'Pega texto — la IA crea flashcards',
+    aitool_studyplan_title:'Plan de estudio',
+    aitool_studyplan_sub: 'La IA crea un plan de estudio personalizado',
+    aitool_hint_title:    'Practicar con pistas',
+    aitool_hint_sub:      'Practica con tarjetas y pide una pista a la IA',
+    aitool_file_title:    'Importar archivo',
+    aitool_file_sub:      'PDF, Word o texto — la IA crea tarjetas o resumen',
+    aitool_explain_title: 'Explicación por tarjeta',
+    aitool_explain_sub:   'Haz clic en ✨ Explicación para una explicación detallada',
+    aitool_summaries_title:'Mis resúmenes',
+    aitool_summaries_sub: 'Consulta tus resúmenes guardados',
+    file_modal_title:     'Importar archivo',
+    file_modal_hint:      'Sube un PDF, Word (.docx), PowerPoint (.pptx) o archivo de texto — la IA crea flashcards o un resumen.',
+    file_drop_text:       'Clic para elegir un archivo',
+    file_drop_sub:        'PDF, Word, PowerPoint o .txt · máx 10MB',
+    file_btn_cards:       '✨ Crear tarjetas',
+    file_btn_summary:     '📝 Resumen',
+    file_saved_hint:      '✅ Resumen guardado — encuéntralo en Herramientas IA → Mis resúmenes',
+    summaries_modal_title:'Mis resúmenes',
+    summaries_empty:      'Ningún resumen guardado. Crea uno en Importar archivo → Resumen.',
+    summaries_loading:    'Cargando...',
+    summaries_error:      'No se pudieron cargar los resúmenes.',
+    summary_delete_confirm:'¿Eliminar este resumen?',
   },
   pt: {
     tagline:              'Aprenda mais rápido,<br>não mais difícil.',
@@ -300,6 +400,31 @@ const TR = {
     bulk_import_btn:      (n) => `Importar (${n} cartão${n !== 1 ? 'ões' : ''})`,
     tab_write:            'Escrever',
     empty_write:          'Adicione cartões primeiro para praticar.',
+    nav_ai:               'Ferramentas IA',
+    aitool_generate_title:'Gerar cartões',
+    aitool_generate_sub:  'Cole texto — a IA cria flashcards',
+    aitool_studyplan_title:'Plano de estudo',
+    aitool_studyplan_sub: 'A IA cria um plano de estudo personalizado',
+    aitool_hint_title:    'Praticar com dicas',
+    aitool_hint_sub:      'Pratique com cartões e peça uma dica à IA',
+    aitool_file_title:    'Importar arquivo',
+    aitool_file_sub:      'PDF, Word ou texto — a IA cria cartões ou resumo',
+    aitool_explain_title: 'Explicação por cartão',
+    aitool_explain_sub:   'Clique em ✨ Explicação para uma explicação detalhada',
+    aitool_summaries_title:'Meus resumos',
+    aitool_summaries_sub: 'Veja seus resumos salvos',
+    file_modal_title:     'Importar arquivo',
+    file_modal_hint:      'Envie um PDF, Word (.docx), PowerPoint (.pptx) ou arquivo de texto — a IA cria flashcards ou um resumo.',
+    file_drop_text:       'Clique para escolher um arquivo',
+    file_drop_sub:        'PDF, Word, PowerPoint ou .txt · máx 10MB',
+    file_btn_cards:       '✨ Criar cartões',
+    file_btn_summary:     '📝 Resumo',
+    file_saved_hint:      '✅ Resumo salvo — encontre em Ferramentas IA → Meus resumos',
+    summaries_modal_title:'Meus resumos',
+    summaries_empty:      'Nenhum resumo salvo. Crie um em Importar arquivo → Resumo.',
+    summaries_loading:    'Carregando...',
+    summaries_error:      'Não foi possível carregar os resumos.',
+    summary_delete_confirm:'Excluir este resumo?',
   },
   en: {
     tagline:              'Learn smarter,<br>not harder.',
@@ -359,6 +484,31 @@ const TR = {
     bulk_import_btn:      (n) => `Import (${n} card${n !== 1 ? 's' : ''})`,
     tab_write:            'Write',
     empty_write:          'Add some cards first to start practising.',
+    nav_ai:               'AI Tools',
+    aitool_generate_title:'Generate cards',
+    aitool_generate_sub:  'Paste text — AI creates flashcards',
+    aitool_studyplan_title:'Study plan',
+    aitool_studyplan_sub: 'AI creates a personal study plan',
+    aitool_hint_title:    'Practice with hints',
+    aitool_hint_sub:      'Practice with cards and ask AI for a hint',
+    aitool_file_title:    'Import file',
+    aitool_file_sub:      'Upload PDF, Word or text — AI makes flashcards or summary',
+    aitool_explain_title: 'Card explanation',
+    aitool_explain_sub:   'Click ✨ Explanation on a card for a deeper explanation',
+    aitool_summaries_title:'My summaries',
+    aitool_summaries_sub: 'View your saved summaries',
+    file_modal_title:     'Import file',
+    file_modal_hint:      'Upload a PDF, Word (.docx), PowerPoint (.pptx) or text file — the AI turns it into flashcards or a summary.',
+    file_drop_text:       'Click to choose a file',
+    file_drop_sub:        'PDF, Word, PowerPoint or .txt · max 10MB',
+    file_btn_cards:       '✨ Make flashcards',
+    file_btn_summary:     '📝 Summary',
+    file_saved_hint:      '✅ Summary saved — find it under AI Tools → My summaries',
+    summaries_modal_title:'My summaries',
+    summaries_empty:      'No summaries saved yet. Create one via Import file → Summary.',
+    summaries_loading:    'Loading...',
+    summaries_error:      'Could not load summaries.',
+    summary_delete_confirm:'Delete this summary?',
   }
 };
 
@@ -506,6 +656,46 @@ function applyLang() {
 
   // Streak
   renderStreak();
+
+  // Nav AI label
+  const navAiLabel = document.getElementById('nav-ai-label');
+  if (navAiLabel) navAiLabel.textContent = t('nav_ai');
+
+  // AI tool cards
+  const toolCards = [
+    ['aitool-generate',  'aitool_generate_title',  'aitool_generate_sub'],
+    ['aitool-studyplan', 'aitool_studyplan_title',  'aitool_studyplan_sub'],
+    ['aitool-hint',      'aitool_hint_title',       'aitool_hint_sub'],
+    ['aitool-file',      'aitool_file_title',       'aitool_file_sub'],
+    ['aitool-explain',   'aitool_explain_title',    'aitool_explain_sub'],
+    ['aitool-summaries', 'aitool_summaries_title',  'aitool_summaries_sub'],
+  ];
+  toolCards.forEach(([id, titleKey, subKey]) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const strong = el.querySelector('strong');
+    const span = el.querySelector('span');
+    if (strong) strong.textContent = t(titleKey);
+    if (span) span.textContent = t(subKey);
+  });
+
+  // Modal: bestand importeren
+  const fileModalTitle = document.querySelector('#modal-file .ai-modal-header span');
+  if (fileModalTitle) fileModalTitle.textContent = '📄 ' + t('file_modal_title');
+  const fileModalHint = document.querySelector('#modal-file .modal-hint');
+  if (fileModalHint) fileModalHint.textContent = t('file_modal_hint');
+  const fileDropText = document.querySelector('#file-drop-zone .file-drop-text');
+  if (fileDropText) fileDropText.textContent = t('file_drop_text');
+  const fileDropSub = document.querySelector('#file-drop-zone .file-drop-sub');
+  if (fileDropSub) fileDropSub.textContent = t('file_drop_sub');
+  const btnFileCards = document.getElementById('btn-file-cards');
+  if (btnFileCards && !btnFileCards.disabled) btnFileCards.textContent = t('file_btn_cards');
+  const btnFileSummary = document.getElementById('btn-file-summary');
+  if (btnFileSummary && !btnFileSummary.disabled) btnFileSummary.textContent = t('file_btn_summary');
+
+  // Modal: mijn samenvattingen
+  const sumModalTitle = document.querySelector('#modal-summaries .ai-modal-header span');
+  if (sumModalTitle) sumModalTitle.textContent = '📋 ' + t('summaries_modal_title');
 }
 
 // ── State ────────────────────────────────────────────────────
@@ -1511,12 +1701,12 @@ function copyShareLink() {
 async function openSummariesModal() {
   openModal('modal-summaries');
   const list = document.getElementById('summaries-list');
-  list.innerHTML = '<p class="stats-empty">Laden...</p>';
+  list.innerHTML = `<p class="stats-empty">${t('summaries_loading')}</p>`;
   const res = await fetch('/api/summaries');
-  if (!res.ok) { list.innerHTML = '<p class="stats-empty">Kon samenvattingen niet laden.</p>'; return; }
+  if (!res.ok) { list.innerHTML = `<p class="stats-empty">${t('summaries_error')}</p>`; return; }
   const summaries = await res.json();
   if (!summaries.length) {
-    list.innerHTML = '<p class="stats-empty">Nog geen samenvattingen opgeslagen. Maak er een via Bestand importeren → Samenvatting.</p>';
+    list.innerHTML = `<p class="stats-empty">${t('summaries_empty')}</p>`;
     return;
   }
   list.innerHTML = summaries.map(s => {
@@ -1541,11 +1731,11 @@ async function viewSummary(id, filename) {
 }
 
 async function deleteSummary(id, btn) {
-  if (!confirm('Samenvatting verwijderen?')) return;
+  if (!confirm(t('summary_delete_confirm'))) return;
   await fetch('/api/summaries/' + id, { method: 'DELETE' });
   btn.closest('.summary-list-item').remove();
   const list = document.getElementById('summaries-list');
-  if (!list.children.length) list.innerHTML = '<p class="stats-empty">Nog geen samenvattingen opgeslagen.</p>';
+  if (!list.children.length) list.innerHTML = `<p class="stats-empty">${t('summaries_empty')}</p>`;
 }
 
 // ── Gedeeld deck via URL openen (/share/TOKEN) ────────────────
