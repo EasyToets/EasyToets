@@ -7,6 +7,7 @@ const multer = require('multer');
 const pdfParse = require('pdf-parse');
 const mammoth = require('mammoth');
 const officeParser = require('officeparser');
+const webpush = require('web-push');
 
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 10 * 1024 * 1024 } });
 
@@ -104,9 +105,67 @@ async function initDb() {
       joined_at TIMESTAMPTZ DEFAULT NOW(),
       PRIMARY KEY (group_id, user_id)
     );
+    CREATE TABLE IF NOT EXISTS push_subscriptions (
+      id SERIAL PRIMARY KEY,
+      user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      subscription_json TEXT NOT NULL,
+      created_at TIMESTAMPTZ DEFAULT NOW()
+    );
+    CREATE TABLE IF NOT EXISTS server_settings (
+      key TEXT PRIMARY KEY,
+      value TEXT NOT NULL
+    );
   `);
 }
-initDb().catch(console.error);
+initDb().then(initVapid).catch(console.error);
+
+async function initVapid() {
+  try {
+    const r = await pool.query("SELECT value FROM server_settings WHERE key='vapid_public'");
+    if (r.rows.length) {
+      const pub = r.rows[0].value;
+      const privR = await pool.query("SELECT value FROM server_settings WHERE key='vapid_private'");
+      webpush.setVapidDetails('mailto:easytoets@gmail.com', pub, privR.rows[0].value);
+      return;
+    }
+    const keys = webpush.generateVAPIDKeys();
+    await pool.query(
+      "INSERT INTO server_settings (key,value) VALUES ('vapid_public',$1),('vapid_private',$2) ON CONFLICT (key) DO NOTHING",
+      [keys.publicKey, keys.privateKey]
+    );
+    webpush.setVapidDetails('mailto:easytoets@gmail.com', keys.publicKey, keys.privateKey);
+    console.log('VAPID keys gegenereerd');
+  } catch(e) { console.error('initVapid fout:', e.message); }
+}
+
+// Streak reminder: every hour between 17-20h
+setInterval(async () => {
+  const hour = new Date().getHours();
+  if (hour < 17 || hour > 20) return;
+  const today = new Date().toISOString().slice(0, 10);
+  try {
+    const rows = await pool.query(`
+      SELECT DISTINCT ON (ps.user_id) u.id, ps.subscription_json
+      FROM users u
+      JOIN push_subscriptions ps ON ps.user_id = u.id
+      WHERE u.streak > 0 AND (u.last_login_date IS NULL OR u.last_login_date < $1)
+    `, [today]);
+    for (const row of rows.rows) {
+      try {
+        await webpush.sendNotification(JSON.parse(row.subscription_json), JSON.stringify({
+          title: '🔥 EasyToets reminder',
+          body: 'Je hebt vandaag nog niet geoefend — je streak staat op het spel!',
+          url: '/'
+        }));
+      } catch(e) {
+        if (e.statusCode === 410 || e.statusCode === 404) {
+          await pool.query('DELETE FROM push_subscriptions WHERE user_id=$1 AND subscription_json=$2',
+            [row.id, row.subscription_json]);
+        }
+      }
+    }
+  } catch(e) { console.error('Streak reminder fout:', e.message); }
+}, 60 * 60 * 1000);
 
 // ── Auth middleware ──────────────────────────────────────────
 function requireAuth(req, res, next) {
@@ -736,6 +795,32 @@ app.delete('/api/groups/:id', requireAuth, async (req, res) => {
 app.post('/api/groups/:id/leave', requireAuth, async (req, res) => {
   await pool.query('DELETE FROM group_members WHERE group_id=$1 AND user_id=$2',
     [req.params.id, req.session.userId]);
+  res.json({ ok: true });
+});
+
+// ── Push notificaties ─────────────────────────────────────────
+app.get('/api/push/vapid-key', async (req, res) => {
+  try {
+    const r = await pool.query("SELECT value FROM server_settings WHERE key='vapid_public'");
+    res.json({ key: r.rows[0]?.value || null });
+  } catch(e) { res.json({ key: null }); }
+});
+
+app.post('/api/push/subscribe', requireAuth, async (req, res) => {
+  const sub = req.body.subscription;
+  if (!sub) return res.status(400).json({ error: 'Geen subscription' });
+  try {
+    await pool.query(
+      `INSERT INTO push_subscriptions (user_id, subscription_json) VALUES ($1, $2)
+       ON CONFLICT DO NOTHING`,
+      [req.session.userId, JSON.stringify(sub)]
+    );
+    res.json({ ok: true });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+app.post('/api/push/unsubscribe', requireAuth, async (req, res) => {
+  await pool.query('DELETE FROM push_subscriptions WHERE user_id=$1', [req.session.userId]);
   res.json({ ok: true });
 });
 

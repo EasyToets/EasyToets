@@ -820,6 +820,7 @@ function showPage(page) {
 
   if (page === 'settings') {
     setTopbar('⚙️ ' + t('nav_settings'), []);
+    initPushSettingsUI();
   }
 
   if (page === 'discover') {
@@ -856,9 +857,11 @@ function toggleSidebar() {
 
 // ── Tabs ─────────────────────────────────────────────────────
 function switchTab(tab) {
-  ['cards', 'flashcard', 'quiz', 'write'].forEach(name => {
-    document.getElementById('tab-content-' + name).classList.add('hidden');
-    document.getElementById('tab-' + name).classList.remove('active');
+  ['cards', 'flashcard', 'quiz', 'write', 'match'].forEach(name => {
+    const c = document.getElementById('tab-content-' + name);
+    if (c) c.classList.add('hidden');
+    const t = document.getElementById('tab-' + name);
+    if (t) t.classList.remove('active');
   });
   document.getElementById('tab-content-' + tab).classList.remove('hidden');
   document.getElementById('tab-' + tab).classList.add('active');
@@ -867,6 +870,7 @@ function switchTab(tab) {
   if (tab === 'flashcard') startFlashcards();
   if (tab === 'quiz')      startQuiz();
   if (tab === 'write')     startWriteMode();
+  if (tab === 'match')     startMatch();
 }
 
 // ── Decks ────────────────────────────────────────────────────
@@ -2198,6 +2202,164 @@ async function deleteSummary(id, btn) {
   btn.closest('.summary-list-item').remove();
   const list = document.getElementById('summaries-list');
   if (!list.children.length) list.innerHTML = `<p class="stats-empty">${t('summaries_empty')}</p>`;
+}
+
+// ── Match modus ───────────────────────────────────────────────
+let matchCards = [];
+let matchSelected = null;
+let matchMatched = 0;
+let matchTimerInterval = null;
+let matchSeconds = 0;
+let matchErrors = 0;
+
+async function startMatch() {
+  const emptyEl = document.getElementById('match-empty');
+  const wrapper = document.getElementById('match-wrapper');
+  const cards = isDemoMode ? DEMO_CARDS : await (await fetch('/api/decks/' + currentDeckId + '/cards')).json();
+
+  if (!cards || cards.length < 2) {
+    emptyEl.style.display = 'block';
+    wrapper.style.display = 'none';
+    return;
+  }
+  emptyEl.style.display = 'none';
+  wrapper.style.display = '';
+  document.getElementById('match-win').classList.add('hidden');
+
+  // Pick up to 6 random pairs
+  const shuffled = [...cards].sort(() => Math.random() - 0.5);
+  matchCards = shuffled.slice(0, Math.min(6, shuffled.length));
+  matchSelected = null;
+  matchMatched = 0;
+  matchSeconds = 0;
+  matchErrors = 0;
+
+  const tiles = [];
+  matchCards.forEach((card, i) => {
+    tiles.push({ pairId: i, type: 'q', text: card.question });
+    tiles.push({ pairId: i, type: 'a', text: card.answer });
+  });
+  tiles.sort(() => Math.random() - 0.5);
+
+  document.getElementById('match-grid').innerHTML = tiles.map(tile =>
+    `<div class="match-tile" data-pair="${tile.pairId}" data-type="${tile.type}" onclick="matchTileClick(this)">${esc(tile.text)}</div>`
+  ).join('');
+
+  document.getElementById('match-progress').textContent = `0 / ${matchCards.length}`;
+  document.getElementById('match-timer').textContent = '00:00';
+
+  clearInterval(matchTimerInterval);
+  matchTimerInterval = setInterval(() => {
+    matchSeconds++;
+    const m = Math.floor(matchSeconds / 60).toString().padStart(2, '0');
+    const s = (matchSeconds % 60).toString().padStart(2, '0');
+    document.getElementById('match-timer').textContent = `${m}:${s}`;
+  }, 1000);
+}
+
+function matchTileClick(el) {
+  if (el.classList.contains('matched') || el.classList.contains('wrong')) return;
+
+  if (!matchSelected) {
+    if (el.classList.contains('selected')) {
+      el.classList.remove('selected');
+    } else {
+      el.classList.add('selected');
+      matchSelected = el;
+    }
+    return;
+  }
+
+  if (matchSelected === el) {
+    el.classList.remove('selected');
+    matchSelected = null;
+    return;
+  }
+
+  const pA = matchSelected.dataset.pair, tA = matchSelected.dataset.type;
+  const pB = el.dataset.pair, tB = el.dataset.type;
+
+  if (pA === pB && tA !== tB) {
+    matchSelected.classList.remove('selected');
+    matchSelected.classList.add('matched');
+    el.classList.add('matched');
+    matchSelected = null;
+    matchMatched++;
+    document.getElementById('match-progress').textContent = `${matchMatched} / ${matchCards.length}`;
+    if (matchMatched === matchCards.length) {
+      clearInterval(matchTimerInterval);
+      setTimeout(showMatchWin, 400);
+    }
+  } else {
+    matchErrors++;
+    const prev = matchSelected;
+    matchSelected = null;
+    prev.classList.remove('selected');
+    prev.classList.add('wrong');
+    el.classList.add('wrong');
+    setTimeout(() => { prev.classList.remove('wrong'); el.classList.remove('wrong'); }, 800);
+  }
+}
+
+function showMatchWin() {
+  const m = Math.floor(matchSeconds / 60).toString().padStart(2, '0');
+  const s = (matchSeconds % 60).toString().padStart(2, '0');
+  document.getElementById('match-win-time').textContent = `${m}:${s}`;
+  document.getElementById('match-win-errors').textContent = matchErrors;
+  document.getElementById('match-win').classList.remove('hidden');
+  showConfetti();
+}
+
+// ── Push notificaties ─────────────────────────────────────────
+function urlBase64ToUint8Array(base64String) {
+  const padding = '='.repeat((4 - base64String.length % 4) % 4);
+  const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+  const raw = atob(base64);
+  return Uint8Array.from([...raw].map(c => c.charCodeAt(0)));
+}
+
+async function subscribeToPush() {
+  const statusEl = document.getElementById('push-status-text');
+  if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+    if (statusEl) statusEl.textContent = '❌ Push notificaties worden niet ondersteund door je browser.';
+    return;
+  }
+  try {
+    const keyRes = await fetch('/api/push/vapid-key');
+    const { key } = await keyRes.json();
+    if (!key) { if (statusEl) statusEl.textContent = '❌ Server niet klaar. Probeer later opnieuw.'; return; }
+
+    const permission = await Notification.requestPermission();
+    if (permission !== 'granted') {
+      if (statusEl) statusEl.textContent = '❌ Toestemming geweigerd. Sta notificaties toe in je browser.';
+      return;
+    }
+
+    const reg = await navigator.serviceWorker.ready;
+    const sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: urlBase64ToUint8Array(key) });
+    await fetch('/api/push/subscribe', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ subscription: sub }) });
+    localStorage.setItem('push_subscribed', '1');
+    if (statusEl) statusEl.textContent = '✅ Pushmeldingen ingeschakeld!';
+    document.getElementById('btn-push-enable')?.classList.add('hidden');
+    document.getElementById('btn-push-disable')?.classList.remove('hidden');
+  } catch(e) {
+    if (statusEl) statusEl.textContent = '❌ Fout: ' + e.message;
+  }
+}
+
+async function unsubscribePush() {
+  await fetch('/api/push/unsubscribe', { method: 'POST' });
+  localStorage.removeItem('push_subscribed');
+  const statusEl = document.getElementById('push-status-text');
+  if (statusEl) statusEl.textContent = 'Pushmeldingen uitgeschakeld.';
+  document.getElementById('btn-push-enable')?.classList.remove('hidden');
+  document.getElementById('btn-push-disable')?.classList.add('hidden');
+}
+
+function initPushSettingsUI() {
+  const enabled = localStorage.getItem('push_subscribed') === '1';
+  document.getElementById('btn-push-enable')?.classList.toggle('hidden', enabled);
+  document.getElementById('btn-push-disable')?.classList.toggle('hidden', !enabled);
 }
 
 // ── Gedeeld deck via URL openen (/share/TOKEN) ────────────────

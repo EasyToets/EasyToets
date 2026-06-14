@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EasyToets Promo</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:#0a0614;display:flex;align-items:center;justify-content:center;font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
+.wrap{display:flex;flex-direction:column;align-items:center;padding:2.5rem 3rem;gap:1.25rem;background:linear-gradient(160deg,#0f0a1e 0%,#1a0d3d 50%,#0f0a1e 100%);border-radius:24px;min-width:340px}
+.phone{width:240px;height:480px;border-radius:42px;border:7px solid #2a1f4a;background:#07050f;position:relative;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 0 0 1px #3d2e6e inset,0 40px 80px rgba(0,0,0,0.6)}
+.phone-notch{width:60px;height:16px;background:#0a0816;border-radius:0 0 12px 12px;margin:0 auto;flex-shrink:0;border:3px solid #2a1f4a;border-top:none}
+.screen{flex:1;position:relative;overflow:hidden;background:#07050f}
+.slide{position:absolute;inset:0;display:flex;flex-direction:column;opacity:0;transition:opacity 0.4s;padding:16px 14px 12px}
+.slide.active{opacity:1}
+.tag{font-size:9px;font-weight:700;letter-spacing:0.08em;background:rgba(124,58,237,0.2);color:#a78bfa;border-radius:6px;padding:3px 8px;width:fit-content;margin-bottom:8px;border:1px solid rgba(124,58,237,0.3)}
+.slide-title{font-size:14px;font-weight:700;color:#ede8ff;margin-bottom:4px}
+.slide-sub{font-size:10px;color:#7b6ea8;margin-bottom:12px;line-height:1.5}
+.card-sm{border-radius:13px;border:1px solid rgba(255,255,255,0.06);background:#100d1c;padding:10px 12px;margin-bottom:7px;position:relative;overflow:hidden}
+.card-accent{position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,#7c3aed,#a855f7)}
+.deck-row{display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.04)}
+.deck-row:last-child{border-bottom:none}
+.deck-name{font-size:11px;font-weight:600;color:#ede8ff}
+.deck-badge{font-size:9px;background:rgba(124,58,237,0.15);color:#a78bfa;border-radius:5px;padding:2px 7px}
+.btn-sm{border-radius:9px;background:#7c3aed;color:#fff;font-size:10px;font-weight:700;padding:7px 14px;border:none;margin-top:6px;letter-spacing:0.02em;cursor:pointer}
+.quiz-opt{border-radius:10px;border:1px solid rgba(255,255,255,0.08);padding:9px 11px;font-size:10.5px;margin-bottom:6px;color:#c4baee;background:#100d1c}
+.quiz-opt.correct{background:rgba(5,150,105,0.15);border-color:#059669;color:#34d399;font-weight:600}
+.quiz-opt.wrong{background:rgba(220,38,38,0.1);border-color:#dc2626;color:#f87171}
+.ai-input{border-radius:10px;border:1px solid rgba(124,58,237,0.25);background:#0d0a1a;padding:9px 11px;font-size:9.5px;color:#9585c0;line-height:1.6;margin-bottom:8px}
+.ai-card{border-radius:10px;border:1px solid rgba(255,255,255,0.06);background:#100d1c;padding:9px 11px;margin-bottom:6px;position:relative;overflow:hidden}
+.ai-card-bar{position:absolute;top:0;left:0;right:0;height:2px;background:#7c3aed}
+.ai-q{font-size:10.5px;font-weight:600;color:#ede8ff;margin-top:2px}
+.ai-a{font-size:9.5px;color:#7b6ea8;margin-top:3px}
+.pub-row{display:flex;align-items:center;gap:9px;margin-bottom:7px;border-radius:11px;background:#100d1c;padding:9px 11px;border:1px solid rgba(255,255,255,0.05)}
+.pub-avatar{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#7c3aed,#a855f7);display:flex;align-items:center;justify-content:center;font-size:11px;color:#fff;font-weight:700;flex-shrink:0}
+.pub-name{font-size:10.5px;font-weight:600;color:#ede8ff}
+.pub-meta{font-size:9px;color:#7b6ea8;margin-top:2px}
+.pub-btn{background:rgba(124,58,237,0.2);border:1px solid rgba(124,58,237,0.3);color:#a78bfa;font-size:8.5px;font-weight:600;border-radius:7px;padding:4px 8px;margin-left:auto;flex-shrink:0}
+.cta-screen{display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;gap:10px}
+.cta-glow{width:68px;height:68px;border-radius:50%;background:rgba(124,58,237,0.15);display:flex;align-items:center;justify-content:center;font-size:30px;border:1px solid rgba(124,58,237,0.3)}
+.cta-logo{font-size:18px;font-weight:800;color:#ede8ff;letter-spacing:-0.5px}
+.cta-url{font-size:10px;color:#5a4d8a;margin-top:-4px}
+.cta-pill{font-size:10px;background:rgba(124,58,237,0.2);color:#a78bfa;border:1px solid rgba(124,58,237,0.3);border-radius:20px;padding:5px 12px}
+.stat-row{display:flex;gap:7px}
+.stat-box{flex:1;border-radius:10px;background:#100d1c;padding:8px;text-align:center;border:1px solid rgba(255,255,255,0.05)}
+.stat-num{font-size:17px;font-weight:800;color:#a78bfa}
+.stat-lbl{font-size:8.5px;color:#7b6ea8;margin-top:1px}
+.bottombar{height:20px;background:#05030d;display:flex;align-items:center;justify-content:center}
+.home-indicator{width:56px;height:4px;background:#1e1933;border-radius:3px}
+.progress-bar{display:flex;gap:5px;justify-content:center;padding:6px 0 4px;background:#05030d}
+.dot{width:22px;height:3px;border-radius:2px;background:rgba(255,255,255,0.1);transition:background 0.3s,width 0.3s}
+.dot.active{background:#7c3aed;width:32px}
+.caption-row{text-align:center;font-size:12px;color:rgba(255,255,255,0.45);max-width:240px;min-height:1.5em;letter-spacing:0.01em}
+.nav-btns{display:flex;gap:10px}
+.nav-btn{background:rgba(124,58,237,0.15);border:1px solid rgba(124,58,237,0.3);color:#a78bfa;border-radius:9px;font-size:12px;font-weight:600;padding:7px 18px;cursor:pointer;font-family:inherit;transition:background 0.2s}
+.nav-btn:hover{background:rgba(124,58,237,0.3)}
+.auto-label{font-size:10px;color:rgba(255,255,255,0.25);margin-top:-4px}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <div class="phone">
+    <div class="phone-notch"></div>
+    <div class="screen">
+
+      <div class="slide active" id="s0">
+        <div class="cta-screen">
+          <div class="cta-glow">⚡</div>
+          <div class="cta-logo">EasyToets</div>
+          <div class="cta-pill">gratis · geen paywall</div>
+          <div class="cta-url">easytoets.up.railway.app</div>
+        </div>
+      </div>
+
+      <div class="slide" id="s1">
+        <div class="tag">MIJN DECKS</div>
+        <div class="slide-title">Maak je eigen decks</div>
+        <div class="slide-sub">Voeg kaartjes toe of importeer een PDF, Word of PowerPoint</div>
+        <div class="card-sm">
+          <div class="card-accent"></div>
+          <div class="deck-row"><span class="deck-name">Biologie H3</span><span class="deck-badge">12 kaartjes</span></div>
+          <div class="deck-row"><span class="deck-name">Marketing begrippen</span><span class="deck-badge">28 kaartjes</span></div>
+          <div class="deck-row"><span class="deck-name">Engels woordjes</span><span class="deck-badge">45 kaartjes</span></div>
+        </div>
+        <button class="btn-sm">+ Nieuw deck</button>
+      </div>
+
+      <div class="slide" id="s2">
+        <div class="tag">AI TOOLS</div>
+        <div class="slide-title">AI maakt je kaartjes</div>
+        <div class="slide-sub">Plak tekst — AI genereert meteen flashcards</div>
+        <div class="ai-input">Fotosynthese is het proces waarbij planten zonlicht omzetten naar glucose en zuurstof via chlorofyl...</div>
+        <div class="ai-card">
+          <div class="ai-card-bar"></div>
+          <div class="ai-q">Wat is fotosynthese?</div>
+          <div class="ai-a">Planten zetten zonlicht om naar glucose en zuurstof</div>
+        </div>
+        <div class="ai-card">
+          <div class="ai-card-bar"></div>
+          <div class="ai-q">Welk pigment vangt licht op?</div>
+          <div class="ai-a">Chlorofyl</div>
+        </div>
+      </div>
+
+      <div class="slide" id="s3">
+        <div class="tag">QUIZMODUS</div>
+        <div class="slide-title">Toets jezelf</div>
+        <div class="slide-sub">Wat is de hoofdstad van Duitsland?</div>
+        <div class="quiz-opt">Parijs</div>
+        <div class="quiz-opt wrong">München ✗</div>
+        <div class="quiz-opt correct">Berlijn ✓</div>
+        <div class="quiz-opt">Hamburg</div>
+      </div>
+
+      <div class="slide" id="s4">
+        <div class="tag">ONTDEK</div>
+        <div class="slide-title">Publieke bibliotheek</div>
+        <div class="slide-sub">Kopieer decks van andere gebruikers</div>
+        <div class="pub-row">
+          <div class="pub-avatar">L</div>
+          <div class="pub-info"><div class="pub-name">Scheikunde begrippen</div><div class="pub-meta">Lars · 34 kaartjes</div></div>
+          <div class="pub-btn">+ Kopieer</div>
+        </div>
+        <div class="pub-row">
+          <div class="pub-avatar">E</div>
+          <div class="pub-info"><div class="pub-name">Geschiedenis WO2</div><div class="pub-meta">Emma · 52 kaartjes</div></div>
+          <div class="pub-btn">+ Kopieer</div>
+        </div>
+        <div class="pub-row">
+          <div class="pub-avatar">N</div>
+          <div class="pub-info"><div class="pub-name">Wiskunde formules</div><div class="pub-meta">Noah · 18 kaartjes</div></div>
+          <div class="pub-btn">+ Kopieer</div>
+        </div>
+      </div>
+
+      <div class="slide" id="s5">
+        <div class="cta-screen">
+          <div class="cta-glow">⚡</div>
+          <div class="cta-logo">EasyToets</div>
+          <div class="stat-row">
+            <div class="stat-box"><div class="stat-num">100%</div><div class="stat-lbl">gratis</div></div>
+            <div class="stat-box"><div class="stat-num">AI</div><div class="stat-lbl">ingebouwd</div></div>
+            <div class="stat-box"><div class="stat-num">6</div><div class="stat-lbl">talen</div></div>
+          </div>
+          <div class="cta-pill">geen paywall, altijd gratis</div>
+          <div class="cta-url">easytoets.up.railway.app</div>
+        </div>
+      </div>
+
+    </div>
+    <div class="progress-bar" id="dots"></div>
+    <div class="bottombar"><div class="home-indicator"></div></div>
+  </div>
+
+  <div class="caption-row" id="caption">Gratis alternatief voor Quizlet</div>
+  <div class="nav-btns">
+    <button class="nav-btn" onclick="prev()">← vorige</button>
+    <button class="nav-btn" onclick="next()">volgende →</button>
+  </div>
+  <div class="auto-label">wisselt automatisch elke 3 seconden</div>
+</div>
+
+<script>
+const captions = [
+  'Gratis alternatief voor Quizlet',
+  'Maak en beheer je eigen decks',
+  'AI genereert flashcards van elke tekst',
+  'Oefen met quiz — zie meteen of het klopt',
+  'Ontdek en kopieer decks van andere gebruikers',
+  'Helemaal gratis, geen paywall'
+];
+const total = 6;
+let cur = 0, timer;
+const dots = document.getElementById('dots');
+for (let i = 0; i < total; i++) {
+  const d = document.createElement('div');
+  d.className = 'dot' + (i === 0 ? ' active' : '');
+  dots.appendChild(d);
+}
+function go(n) {
+  document.getElementById('s' + cur).classList.remove('active');
+  dots.children[cur].classList.remove('active');
+  cur = (n + total) % total;
+  document.getElementById('s' + cur).classList.add('active');
+  dots.children[cur].classList.add('active');
+  document.getElementById('caption').textContent = captions[cur];
+}
+function next() { go(cur + 1); reset(); }
+function prev() { go(cur - 1); reset(); }
+function reset() { clearInterval(timer); timer = setInterval(() => go(cur + 1), 3000); }
+reset();
+</script>
+</body>
+</html>

@@ -469,6 +469,9 @@
           <button class="mode-tab" id="tab-write" onclick="switchTab('write')">
             <span>✍️</span> <span id="tab-write-label">Schrijven</span>
           </button>
+          <button class="mode-tab" id="tab-match" onclick="switchTab('match')">
+            <span>🎯</span> Match
+          </button>
         </div>
 
         <!-- Tab: kaartjes beheren -->
@@ -526,6 +529,34 @@
             </div>
             <div class="write-next-row hidden" id="write-next-row">
               <button class="btn primary" onclick="nextWriteCard()"><span id="write-next-label">Volgende →</span></button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab: match modus -->
+        <div id="tab-content-match" class="hidden">
+          <div class="empty-state" id="match-empty" style="display:none">
+            <div class="empty-icon">🎯</div>
+            <p>Voeg eerst kaartjes toe om de match modus te spelen.</p>
+          </div>
+          <div id="match-wrapper">
+            <div class="match-header">
+              <div class="match-stat">
+                <span class="match-timer" id="match-timer">00:00</span>
+                <span class="match-timer-label">tijd</span>
+              </div>
+              <div class="match-stat">
+                <span class="match-progress-text" id="match-progress">0 / 0</span>
+                <span class="match-timer-label">gevonden</span>
+              </div>
+              <button class="btn secondary" style="margin-left:auto;padding:0.4rem 0.9rem" onclick="startMatch()">🔄 Opnieuw</button>
+            </div>
+            <div id="match-grid" class="match-grid"></div>
+            <div id="match-win" class="match-win hidden">
+              <div class="match-win-emoji">🎉</div>
+              <h3>Alle paren gevonden!</h3>
+              <p>Tijd: <strong id="match-win-time">00:00</strong> &nbsp;·&nbsp; <span id="match-win-errors">0</span> fouten</p>
+              <button class="btn primary" onclick="startMatch()">Nog een keer →</button>
             </div>
           </div>
         </div>
@@ -616,6 +647,16 @@
           <div id="settings-username-error" class="settings-error hidden"></div>
           <div id="settings-username-success" class="settings-success hidden"></div>
           <button class="btn primary" onclick="changeUsername()" id="btn-change-username">Opslaan</button>
+        </div>
+
+        <div class="settings-card" id="push-settings-card">
+          <h3 class="settings-section-title">🔔 Pushmeldingen</h3>
+          <p style="color:var(--text-muted);font-size:0.9rem;margin-bottom:0.9rem">Ontvang een herinnering als je je streak dreigt te verliezen (elke dag rond 18:00).</p>
+          <div id="push-status-text" style="font-size:0.85rem;color:var(--text-muted);margin-bottom:0.75rem"></div>
+          <div style="display:flex;gap:0.6rem;flex-wrap:wrap">
+            <button class="btn primary" id="btn-push-enable" onclick="subscribeToPush()">🔔 Inschakelen</button>
+            <button class="btn secondary hidden" id="btn-push-disable" onclick="unsubscribePush()">Uitschakelen</button>
+          </div>
         </div>
 
         <div class="settings-card">

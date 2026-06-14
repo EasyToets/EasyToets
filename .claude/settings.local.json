@@ -12,7 +12,25 @@
       "Bash(git --version)",
       "Bash(git init *)",
       "Bash(git add *)",
-      "Bash(git commit *)"
+      "Bash(git commit *)",
+      "Bash(git config *)",
+      "Bash(git remote *)",
+      "Bash(git branch *)",
+      "Bash(git push *)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" https://easytoets-production.up.railway.app)",
+      "Bash(node server.js)",
+      "Bash(curl -s http://localhost:3000/api/me)",
+      "Bash(npm install *)",
+      "PowerShell(Copy-Item \"C:\\\\Users\\\\Joran Kuiperij\\\\Documents\\\\Image-Line\\\\FL Studio\\\\Projects\\\\Project_4\\\\cc\\\\nesh\\\\leersite\\\\easytoets-icon.png\" \"C:\\\\Users\\\\Joran Kuiperij\\\\Documents\\\\Image-Line\\\\FL Studio\\\\Projects\\\\Project_4\\\\cc\\\\nesh\\\\leersite\\\\public\\\\icon-192.png\")",
+      "PowerShell(Copy-Item \"C:\\\\Users\\\\Joran Kuiperij\\\\Documents\\\\Image-Line\\\\FL Studio\\\\Projects\\\\Project_4\\\\cc\\\\nesh\\\\leersite\\\\easytoets-icon.png\" \"C:\\\\Users\\\\Joran Kuiperij\\\\Documents\\\\Image-Line\\\\FL Studio\\\\Projects\\\\Project_4\\\\cc\\\\nesh\\\\leersite\\\\public\\\\icon-512.png\")",
+      "PowerShell(Add-Type -AssemblyName System.Drawing; $img = [System.Drawing.Image]::FromFile\\(\"C:\\\\Users\\\\Joran Kuiperij\\\\Documents\\\\Image-Line\\\\FL Studio\\\\Projects\\\\Project_4\\\\cc\\\\nesh\\\\leersite\\\\easytoets-icon.png\"\\); \"$\\($img.Width\\) x $\\($img.Height\\)\"; $img.Dispose\\(\\))",
+      "Bash(Get-ChildItem \"C:\\\\Users\\\\Joran Kuiperij\\\\Documents\\\\Image-Line\\\\FL Studio\\\\Projects\\\\Project_4\\\\cc\\\\nesh\\\\leersite\" -Exclude node_modules)",
+      "Bash(Select-Object Name)",
+      "mcp__Claude_Preview__preview_start",
+      "Bash(node -e \"const db = require\\('better-sqlite3'\\)\\('data.db'\\); const users = db.prepare\\('SELECT username FROM users LIMIT 5'\\).all\\(\\); console.log\\(JSON.stringify\\(users\\)\\);\")",
+      "Bash(git -C \"C:\\\\Users\\\\Joran Kuiperij\\\\Documents\\\\Image-Line\\\\FL Studio\\\\Projects\\\\Project_4\\\\cc\\\\nesh\\\\leersite\" push origin main)",
+      "Bash(git -C \"C:\\\\Users\\\\Joran Kuiperij\\\\Documents\\\\Image-Line\\\\FL Studio\\\\Projects\\\\Project_4\\\\cc\\\\nesh\\\\leersite\" add public/app.js public/index.html)",
+      "Bash(git -C 'C:\\\\Users\\\\Joran Kuiperij\\\\Documents\\\\Image-Line\\\\FL Studio\\\\Projects\\\\Project_4\\\\cc\\\\nesh\\\\leersite' commit -m 'Fix keyboard shortcuts: pijltjes werken altijd, labels tonen knooptekst *)"
     ]
   }
 }
