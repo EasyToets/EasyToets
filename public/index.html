@@ -149,6 +149,9 @@
       <button class="nav-item" id="nav-ai" onclick="showPage('ai')">
         <span class="nav-icon">✨</span> <span>AI Tools</span>
       </button>
+      <button class="nav-item" id="nav-discover" onclick="showPage('discover')">
+        <span class="nav-icon">🌍</span> <span id="nav-discover-label">Ontdek</span>
+      </button>
       <button class="nav-item" id="nav-leaderboard" onclick="showPage('leaderboard')">
         <span class="nav-icon">🏆</span> <span>Leaderboard</span>
       </button>
@@ -191,6 +194,10 @@
     <button class="bottom-nav-item" id="bnav-stats" onclick="showPage('stats')">
       <span class="bnav-icon">📊</span>
       <span class="bnav-label" id="bnav-stats-label">Stats</span>
+    </button>
+    <button class="bottom-nav-item" id="bnav-discover" onclick="showPage('discover')">
+      <span class="bnav-icon">🌍</span>
+      <span class="bnav-label" id="bnav-discover-label">Ontdek</span>
     </button>
     <button class="bottom-nav-item" id="bnav-leaderboard" onclick="showPage('leaderboard')">
       <span class="bnav-icon">🏆</span>
@@ -542,6 +549,18 @@
             <div id="hard-cards-list"></div>
           </div>
         </div>
+      </section>
+
+      <!-- ONTDEK -->
+      <section id="page-discover" class="hidden">
+        <h2 class="page-title">🌍 <span id="discover-title-label">Ontdek decks</span></h2>
+        <p class="page-sub" id="discover-sub">Bekijk publieke decks van andere gebruikers en kopieer ze naar jouw account.</p>
+        <div class="discover-search-row">
+          <input type="text" id="discover-search-input" class="discover-search-input" placeholder="Zoek op naam of maker..." onkeydown="if(event.key==='Enter')searchDiscover()">
+          <button class="btn primary" onclick="searchDiscover()" id="btn-discover-search">🔍 Zoeken</button>
+        </div>
+        <div id="discover-status" class="discover-status"></div>
+        <div id="discover-grid" class="deck-grid"></div>
       </section>
 
       <section id="page-leaderboard" class="hidden">

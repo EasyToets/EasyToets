@@ -76,6 +76,7 @@ const TR = {
     tab_write:            'Schrijven',
     empty_write:          'Voeg eerst kaartjes toe om te oefenen.',
     nav_settings:         'Instellingen',
+    nav_discover:         'Ontdek',
     nav_ai:               'AI Tools',
     aitool_generate_title:'Kaartjes genereren',
     aitool_generate_sub:  'Plak tekst — AI maakt er flashcards van',
@@ -161,6 +162,7 @@ const TR = {
     tab_write:            'Schreiben',
     empty_write:          'Füge zuerst Karten hinzu.',
     nav_settings:         'Einstellungen',
+    nav_discover:         'Entdecken',
     nav_ai:               'KI-Tools',
     aitool_generate_title:'Karten generieren',
     aitool_generate_sub:  'Text einfügen — KI erstellt Karteikarten',
@@ -246,6 +248,7 @@ const TR = {
     tab_write:            'Écrire',
     empty_write:          'Ajoute des cartes pour commencer.',
     nav_settings:         'Paramètres',
+    nav_discover:         'Découvrir',
     nav_ai:               'Outils IA',
     aitool_generate_title:'Générer des cartes',
     aitool_generate_sub:  'Colle du texte — l\'IA crée des flashcards',
@@ -331,6 +334,7 @@ const TR = {
     tab_write:            'Escribir',
     empty_write:          'Añade tarjetas primero para practicar.',
     nav_settings:         'Ajustes',
+    nav_discover:         'Descubrir',
     nav_ai:               'Herramientas IA',
     aitool_generate_title:'Generar tarjetas',
     aitool_generate_sub:  'Pega texto — la IA crea flashcards',
@@ -416,6 +420,7 @@ const TR = {
     tab_write:            'Escrever',
     empty_write:          'Adicione cartões primeiro para praticar.',
     nav_settings:         'Configurações',
+    nav_discover:         'Descobrir',
     nav_ai:               'Ferramentas IA',
     aitool_generate_title:'Gerar cartões',
     aitool_generate_sub:  'Cole texto — a IA cria flashcards',
@@ -501,6 +506,7 @@ const TR = {
     tab_write:            'Write',
     empty_write:          'Add some cards first to start practising.',
     nav_settings:         'Settings',
+    nav_discover:         'Discover',
     nav_ai:               'AI Tools',
     aitool_generate_title:'Generate cards',
     aitool_generate_sub:  'Paste text — AI creates flashcards',
@@ -660,6 +666,10 @@ function applyLang() {
   if (navHelpLabel) navHelpLabel.textContent = t('nav_help');
   const navStatsLabel = document.getElementById('nav-stats-label');
   if (navStatsLabel) navStatsLabel.textContent = t('nav_stats');
+  const navDiscoverLabel = document.getElementById('nav-discover-label');
+  if (navDiscoverLabel) navDiscoverLabel.textContent = t('nav_discover');
+  const bnavDiscoverLabel = document.getElementById('bnav-discover-label');
+  if (bnavDiscoverLabel) bnavDiscoverLabel.textContent = t('nav_discover');
   const mlh = document.getElementById('menu-label-home');
   if (mlh) mlh.textContent = t('nav_home');
   const mll = document.getElementById('menu-label-lang');
@@ -800,9 +810,15 @@ function showPage(page) {
     setTopbar('⚙️ ' + t('nav_settings'), []);
   }
 
+  if (page === 'discover') {
+    document.getElementById('nav-discover').classList.add('active');
+    setTopbar('🌍 ' + t('nav_discover'), []);
+    loadDiscover();
+  }
+
   // Bottom nav active state
   document.querySelectorAll('.bottom-nav-item').forEach(b => b.classList.remove('active'));
-  const bnavMap = { home: 'bnav-home', ai: 'bnav-ai', stats: 'bnav-stats', leaderboard: 'bnav-leaderboard', settings: 'bnav-settings', deck: 'bnav-home', result: 'bnav-home' };
+  const bnavMap = { home: 'bnav-home', ai: 'bnav-ai', stats: 'bnav-stats', discover: 'bnav-discover', leaderboard: 'bnav-leaderboard', settings: 'bnav-settings', deck: 'bnav-home', result: 'bnav-home' };
   const bnavId = bnavMap[page];
   if (bnavId) { const el = document.getElementById(bnavId); if (el) el.classList.add('active'); }
 }
@@ -1808,6 +1824,79 @@ function copyShareLink() {
   navigator.clipboard.writeText(val).then(() => {
     document.getElementById('share-status').textContent = '✅ Link gekopieerd!';
   });
+}
+
+// ── Publieke deck-bibliotheek ─────────────────────────────────
+let discoverQuery = '';
+
+async function loadDiscover(q = '') {
+  discoverQuery = q;
+  const grid = document.getElementById('discover-grid');
+  const status = document.getElementById('discover-status');
+  grid.innerHTML = '';
+  status.textContent = '⏳ Laden...';
+  try {
+    const url = '/api/public-decks' + (q ? '?q=' + encodeURIComponent(q) : '');
+    const res = await fetch(url);
+    const decks = await res.json();
+    status.textContent = '';
+    if (decks.length === 0) {
+      grid.innerHTML = `<div class="empty-state"><div class="empty-icon">🌍</div><p>${q ? 'Geen decks gevonden voor "' + esc(q) + '".' : 'Nog geen publieke decks. Deel jouw deck als eerste!'}</p></div>`;
+      return;
+    }
+    grid.innerHTML = decks.map(d => `
+      <div class="deck-card discover-deck-card">
+        <div class="discover-deck-author">👤 ${esc(d.username)}</div>
+        <h3>${esc(d.name)}</h3>
+        <p class="meta">${d.card_count} kaartjes</p>
+        <div class="deck-progress"><div class="deck-progress-fill green" style="width:100%"></div></div>
+        <div class="card-actions">
+          <button class="btn primary" onclick="copyPublicDeck('${esc(d.share_token)}', this)">➕ Kopieer deck</button>
+          <button class="btn secondary" onclick="previewPublicDeck('${esc(d.share_token)}', '${esc(d.name)}')">👁 Bekijk</button>
+        </div>
+      </div>`).join('');
+  } catch(e) {
+    status.textContent = 'Fout bij laden.';
+  }
+}
+
+function searchDiscover() {
+  const q = document.getElementById('discover-search-input').value.trim();
+  loadDiscover(q);
+}
+
+async function copyPublicDeck(token, btn) {
+  if (!currentUser) { showAuthModal('register'); return; }
+  btn.disabled = true;
+  btn.textContent = '⏳ Bezig...';
+  try {
+    const res = await fetch(`/api/share/${token}/copy`, { method: 'POST' });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Fout');
+    btn.textContent = '✅ Gekopieerd!';
+    btn.classList.remove('primary');
+    btn.classList.add('success');
+    loadDecks();
+  } catch(e) {
+    btn.textContent = '❌ Mislukt';
+    btn.disabled = false;
+  }
+}
+
+async function previewPublicDeck(token, name) {
+  const res = await fetch(`/api/share/${token}`);
+  if (!res.ok) return;
+  const data = await res.json();
+  const cards = data.cards || [];
+  document.getElementById('shared-deck-info').innerHTML = `
+    <p><strong>${esc(data.name)}</strong> door <em>${esc(data.username)}</em></p>
+    <p class="modal-hint">${cards.length} kaartjes</p>
+    <div class="discover-preview-list">
+      ${cards.slice(0, 5).map(c => `<div class="discover-preview-row"><span class="bulk-q">${esc(c.question)}</span><span class="bulk-a">${esc(c.answer)}</span></div>`).join('')}
+      ${cards.length > 5 ? `<p class="modal-hint" style="margin-top:0.5rem">+ ${cards.length - 5} meer...</p>` : ''}
+    </div>`;
+  document.getElementById('btn-copy-deck').onclick = () => { closeModal('modal-shared-deck'); copyPublicDeck(token, document.getElementById('btn-copy-deck')); };
+  openModal('modal-shared-deck');
 }
 
 // ── Swipe gestures op flashcard ───────────────────────────────

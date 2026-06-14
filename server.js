@@ -633,5 +633,24 @@ app.post('/api/share/:token/copy', requireAuth, async (req, res) => {
   res.json({ ok: true, deck_id: newId });
 });
 
+app.get('/api/public-decks', async (req, res) => {
+  const q = (req.query.q || '').trim();
+  const params = q ? [`%${q}%`] : [];
+  const where = q ? "AND (d.name ILIKE $1 OR u.username ILIKE $1)" : '';
+  const result = await pool.query(`
+    SELECT d.id, d.name, d.share_token, u.username,
+           COUNT(c.id)::int as card_count,
+           d.created_at
+    FROM decks d
+    JOIN users u ON u.id = d.user_id
+    LEFT JOIN cards c ON c.deck_id = d.id
+    WHERE d.is_public = TRUE ${where}
+    GROUP BY d.id, u.username
+    ORDER BY d.created_at DESC
+    LIMIT 60
+  `, params);
+  res.json(result.rows);
+});
+
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Leersite draait op http://localhost:${PORT}`));
