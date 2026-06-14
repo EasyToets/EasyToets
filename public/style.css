@@ -575,19 +575,22 @@ main input, main textarea { cursor: text; user-select: text; }
 .deck-card .card-actions {
   display: flex;
   gap: 0.4rem;
-  margin-top: 1.1rem;
-  flex-wrap: nowrap;
+  margin-top: 1rem;
+  flex-wrap: wrap;
   align-items: center;
 }
 .deck-card .card-actions .btn {
-  flex-shrink: 1;
+  flex: 1 1 auto;
   min-width: 0;
-  padding: 0.55rem 0.85rem;
-  font-size: 0.85rem;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.82rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
-.deck-card .card-actions .btn[title] {
-  flex-shrink: 0;
-  padding: 0.55rem 0.7rem;
+.deck-card .card-actions .btn[title="Deel dit deck"] {
+  flex: 0 0 auto;
+  padding: 0.5rem 0.65rem;
 }
 
 /* ── Deck progress bar ───────────────────────────────────── */
@@ -640,7 +643,7 @@ main input, main textarea { cursor: text; user-select: text; }
 /* ── Cards (deck list) ───────────────────────────────────── */
 .card-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   gap: 1rem;
 }
 
@@ -672,7 +675,19 @@ main input, main textarea { cursor: text; user-select: text; }
   border-bottom: 1px solid var(--border);
   margin-bottom: 0.75rem;
 }
-.learn-card .card-actions { display: flex; gap: 0.5rem; }
+.learn-card .card-actions {
+  display: flex;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+  align-items: center;
+}
+.learn-card .card-actions .btn {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 0.45rem 0.7rem;
+  font-size: 0.82rem;
+  white-space: nowrap;
+}
 
 /* ── Flashcard ───────────────────────────────────────────── */
 .flashcard-wrapper {
@@ -1579,6 +1594,34 @@ main input, main textarea { cursor: text; user-select: text; }
 .share-app-x    { background: #000; color: #fff; }
 .share-app-wa   { background: #25d366; color: #fff; }
 .share-app-copy { background: var(--primary-light); color: var(--primary); border: 1.5px solid rgba(124,58,237,0.2); }
+
+/* ── Share deck modal ────────────────────────────────────────── */
+.share-link-wrap {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+.share-link-input {
+  flex: 1;
+  padding: 0.6rem 0.85rem;
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  font-size: 0.85rem;
+  background: var(--bg);
+  color: var(--text);
+  cursor: text;
+  user-select: text;
+  font-family: 'Courier New', monospace;
+  min-width: 0;
+}
+.share-link-wrap.hidden { display: none !important; }
+.share-status {
+  font-size: 0.88rem;
+  color: var(--text-muted);
+  min-height: 1.2em;
+  margin-bottom: 0.25rem;
+}
 
 /* ── Dark mode ───────────────────────────────────────────────── */
 :root.dark {

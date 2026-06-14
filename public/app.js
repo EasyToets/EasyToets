@@ -1756,10 +1756,25 @@ let shareCurrentDeckId = null;
 
 function openShareModal(deckId) {
   shareCurrentDeckId = deckId;
-  document.getElementById('share-link-wrap').classList.add('hidden');
-  document.getElementById('share-status').textContent = '';
-  document.getElementById('btn-share-enable').classList.remove('hidden');
-  document.getElementById('btn-share-disable').classList.add('hidden');
+  const deck = decks.find(d => d.id === deckId);
+  const linkWrap = document.getElementById('share-link-wrap');
+  const statusEl = document.getElementById('share-status');
+  const btnEnable = document.getElementById('btn-share-enable');
+  const btnDisable = document.getElementById('btn-share-disable');
+
+  if (deck && deck.is_public && deck.share_token) {
+    const link = location.origin + '/share/' + deck.share_token;
+    document.getElementById('share-link-input').value = link;
+    linkWrap.classList.remove('hidden');
+    btnEnable.classList.add('hidden');
+    btnDisable.classList.remove('hidden');
+    statusEl.textContent = '🔓 Dit deck is publiek';
+  } else {
+    linkWrap.classList.add('hidden');
+    btnEnable.classList.remove('hidden');
+    btnDisable.classList.add('hidden');
+    statusEl.textContent = '';
+  }
   openModal('modal-share');
 }
 
@@ -1772,6 +1787,8 @@ async function enableShare() {
   document.getElementById('btn-share-enable').classList.add('hidden');
   document.getElementById('btn-share-disable').classList.remove('hidden');
   document.getElementById('share-status').textContent = '✅ Deck is nu publiek';
+  const deck = decks.find(d => d.id === shareCurrentDeckId);
+  if (deck) { deck.is_public = true; deck.share_token = data.token; }
 }
 
 async function disableShare() {
@@ -1780,6 +1797,8 @@ async function disableShare() {
   document.getElementById('btn-share-enable').classList.remove('hidden');
   document.getElementById('btn-share-disable').classList.add('hidden');
   document.getElementById('share-status').textContent = '🔒 Delen gestopt';
+  const deck = decks.find(d => d.id === shareCurrentDeckId);
+  if (deck) { deck.is_public = false; deck.share_token = null; }
 }
 
 function copyShareLink() {
