@@ -8,6 +8,7 @@ const pdfParse = require('pdf-parse');
 const mammoth = require('mammoth');
 const officeParser = require('officeparser');
 const webpush = require('web-push');
+const { createMollieClient } = require('@mollie/api-client');
 
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 10 * 1024 * 1024 } });
 
@@ -593,7 +594,53 @@ app.get('/api/decks/:id/study-plan', requireAuth, async (req, res) => {
   res.json({ plan: { examDate: row.exam_date, days: JSON.parse(row.plan_json), createdAt: row.created_at } });
 });
 
-// ── Plus upgrade ─────────────────────────────────────────────
+// ── Mollie betaling ───────────────────────────────────────────
+function getMollie() {
+  const key = process.env.MOLLIE_API_KEY;
+  if (!key) return null;
+  return createMollieClient({ apiKey: key });
+}
+
+app.post('/api/upgrade/checkout', requireAuth, async (req, res) => {
+  const mollie = getMollie();
+  if (!mollie) return res.status(500).json({ error: 'Betaling niet geconfigureerd' });
+  const appUrl = process.env.APP_URL || `https://${req.headers.host}`;
+  try {
+    const payment = await mollie.payments.create({
+      amount: { currency: 'EUR', value: '1.99' },
+      description: 'EasyToets Plus — maandabonnement',
+      redirectUrl: `${appUrl}/betaling-gelukt`,
+      webhookUrl: `${appUrl}/api/upgrade/webhook`,
+      metadata: { userId: String(req.session.userId) },
+    });
+    res.json({ checkoutUrl: payment.getCheckoutUrl() });
+  } catch (e) {
+    console.error('Mollie checkout fout:', e.message);
+    res.status(500).json({ error: 'Kon betaling niet starten' });
+  }
+});
+
+app.post('/api/upgrade/webhook', express.urlencoded({ extended: false }), async (req, res) => {
+  const mollie = getMollie();
+  if (!mollie) return res.status(200).send('ok');
+  try {
+    const paymentId = req.body.id;
+    if (!paymentId) return res.status(200).send('ok');
+    const payment = await mollie.payments.get(paymentId);
+    if (payment.status === 'paid') {
+      const userId = payment.metadata?.userId;
+      if (userId) {
+        await pool.query('UPDATE users SET is_plus=TRUE WHERE id=$1', [parseInt(userId)]);
+        console.log(`Gebruiker ${userId} is nu Plus`);
+      }
+    }
+    res.status(200).send('ok');
+  } catch (e) {
+    console.error('Mollie webhook fout:', e.message);
+    res.status(200).send('ok');
+  }
+});
+
 app.get('/api/upgrade/status', requireAuth, async (req, res) => {
   const r = await pool.query('SELECT is_plus FROM users WHERE id=$1', [req.session.userId]);
   res.json({ isPlus: r.rows[0]?.is_plus || false });

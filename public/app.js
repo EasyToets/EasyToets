@@ -3061,15 +3061,23 @@ function showPaywall() {
   openModal('modal-paywall');
 }
 
-function openUpgradeModal() {
-  const link = document.getElementById('upgrade-mail-link');
-  if (link && currentUser) {
-    link.href = `mailto:easytoets@gmail.com?subject=EasyToets Plus upgrade&body=Hallo! Ik wil upgraden naar EasyToets Plus.%0A%0AMijn gebruikersnaam is: ${encodeURIComponent(currentUser.username)}`;
+async function openUpgradeModal() {
+  try {
+    const btn = document.getElementById('upgrade-checkout-btn');
+    if (btn) { btn.disabled = true; btn.textContent = 'Laden...'; }
+    const r = await fetch('/api/upgrade/checkout', { method: 'POST' });
+    const data = await r.json();
+    if (data.checkoutUrl) {
+      window.location.href = data.checkoutUrl;
+    } else {
+      alert('Kon betaling niet starten: ' + (data.error || 'onbekende fout'));
+      if (btn) { btn.disabled = false; btn.textContent = '⚡ Upgraden voor €1,99/maand'; }
+    }
+  } catch (e) {
+    alert('Fout bij verbinden met betaalserver');
   }
-  openModal('modal-upgrade');
 }
 
 function openUpgradeMail() {
-  const user = currentUser ? currentUser.username : '';
-  window.location.href = `mailto:easytoets@gmail.com?subject=EasyToets Plus upgrade&body=Hallo! Ik wil upgraden naar EasyToets Plus.%0A%0AMijn gebruikersnaam is: ${encodeURIComponent(user)}`;
+  openUpgradeModal();
 }
