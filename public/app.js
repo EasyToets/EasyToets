@@ -3063,21 +3063,65 @@ function showPaywall() {
   openModal('modal-paywall');
 }
 
+let upgradeConfig = null;
+
 async function openUpgradeModal() {
+  openModal('modal-upgrade');
+  const msg = document.getElementById('license-msg');
+  if (msg) msg.classList.add('hidden');
   try {
-    const btn = document.getElementById('upgrade-checkout-btn');
-    if (btn) { btn.disabled = true; btn.textContent = 'Laden...'; }
-    const r = await fetch('/api/upgrade/checkout', { method: 'POST' });
+    const r = await fetch('/api/upgrade/config');
+    upgradeConfig = await r.json();
+    if (upgradeConfig && upgradeConfig.price) {
+      const p1 = document.getElementById('upgrade-price');
+      const p2 = document.getElementById('upgrade-buy-price');
+      if (p1) p1.textContent = upgradeConfig.price;
+      if (p2) p2.textContent = upgradeConfig.price;
+    }
+  } catch (e) { /* config niet kritiek */ }
+}
+
+function buyPlusGumroad() {
+  if (upgradeConfig && upgradeConfig.gumroadUrl) {
+    window.open(upgradeConfig.gumroadUrl, '_blank');
+  } else {
+    alert('De Plus-shop is nog niet ingesteld. Probeer het later opnieuw.');
+  }
+}
+
+async function activatePlusLicense() {
+  const input = document.getElementById('license-input');
+  const msg = document.getElementById('license-msg');
+  const btn = document.getElementById('license-activate-btn');
+  const key = (input.value || '').trim();
+  msg.classList.add('hidden');
+  if (!key) { msg.textContent = 'Vul je licentiecode in.'; msg.classList.remove('hidden'); return; }
+  btn.disabled = true;
+  const orig = btn.textContent;
+  btn.textContent = 'Controleren...';
+  try {
+    const r = await fetch('/api/upgrade/verify-license', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ licenseKey: key }),
+    });
     const data = await r.json();
-    if (data.checkoutUrl) {
-      window.location.href = data.checkoutUrl;
+    if (data.ok) {
+      closeModal('modal-upgrade');
+      if (typeof showConfetti === 'function') showConfetti();
+      userIsPlus = true;
+      try { await init(); } catch (e) {}
+      alert('🎉 Gelukt! Je hebt nu EasyToets Plus. Bedankt voor je support! ⚡');
     } else {
-      alert('Kon betaling niet starten: ' + (data.error || 'onbekende fout'));
-      if (btn) { btn.disabled = false; btn.textContent = '⚡ Upgraden voor €1,99/maand'; }
+      msg.textContent = data.error || 'Ongeldige licentiecode.';
+      msg.classList.remove('hidden');
     }
   } catch (e) {
-    alert('Fout bij verbinden met betaalserver');
+    msg.textContent = 'Er ging iets mis. Probeer het later opnieuw.';
+    msg.classList.remove('hidden');
   }
+  btn.disabled = false;
+  btn.textContent = orig;
 }
 
 function openUpgradeMail() {

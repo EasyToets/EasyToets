@@ -793,7 +793,7 @@
                 <li class="feat-yes">✓ Groepen & leaderboard</li>
                 <li class="feat-yes">✓ Streaks & badges</li>
                 <li class="feat-limit">⚡ 15 AI-calls per dag</li>
-                <li class="feat-no">✗ Geen onbeperkte AI</li>
+                <li class="feat-no">✗ Minder AI dan Plus</li>
               </ul>
               <div class="pricing-cta-wrap">
                 <button class="btn pricing-btn-free" disabled>Huidig plan</button>
@@ -805,15 +805,15 @@
               <div class="pricing-badge-popular">Meest gekozen</div>
               <div class="pricing-card-top">
                 <div class="pricing-plan-name">Plus ⚡</div>
-                <div class="pricing-price">€1,99<span>/maand</span></div>
-                <div class="pricing-price-sub">Opzegbaar wanneer je wil</div>
+                <div class="pricing-price">€5<span> eenmalig</span></div>
+                <div class="pricing-price-sub">Voor altijd · geen abonnement</div>
               </div>
               <ul class="pricing-features">
                 <li class="feat-yes">✓ Alles uit Free</li>
-                <li class="feat-yes plus-feat">✓ <strong>Onbeperkte AI-calls</strong></li>
+                <li class="feat-yes plus-feat">✓ <strong>3× meer AI — 50 calls per dag</strong></li>
                 <li class="feat-yes plus-feat">✓ <strong>AI flashcards van bestanden</strong></li>
                 <li class="feat-yes plus-feat">✓ <strong>AI samenvattingen</strong></li>
-                <li class="feat-yes plus-feat">✓ <strong>Onbeperkte studieplanning</strong></li>
+                <li class="feat-yes plus-feat">✓ <strong>Studieplanning inbegrepen</strong></li>
                 <li class="feat-yes plus-feat">✓ <strong>AI hints & uitleg</strong></li>
                 <li class="feat-yes plus-feat">✓ <strong>Plus-badge op je profiel</strong></li>
               </ul>
@@ -821,7 +821,7 @@
                 <button class="btn pricing-btn-plus" id="btn-upgrade-plus" onclick="openUpgradeModal()">
                   ⚡ Upgrade naar Plus
                 </button>
-                <p class="pricing-cta-hint">Veilig betalen via Mollie · Direct actief</p>
+                <p class="pricing-cta-hint">Veilig via Gumroad · eenmalig · direct activeren</p>
               </div>
             </div>
           </div>
@@ -829,16 +829,16 @@
           <div class="pricing-faq">
             <h3>Veelgestelde vragen</h3>
             <div class="faq-item">
-              <strong>Kan ik op elk moment opzeggen?</strong>
-              <p>Ja, je kunt je Plus-abonnement op elk moment opzeggen. Je hebt dan nog toegang tot het einde van je betaalperiode.</p>
+              <strong>Is het een abonnement?</strong>
+              <p>Nee. Je betaalt één keer €5 en hebt daarna voor altijd Plus — geen maandelijkse kosten, niets om op te zeggen.</p>
             </div>
             <div class="faq-item">
               <strong>Wat is een AI-call?</strong>
-              <p>Elke keer dat je de AI gebruikt (kaartjes genereren, hint, uitleg, studieplan, bestand verwerken) telt als één call. Free-gebruikers hebben 15 calls per dag.</p>
+              <p>Elke keer dat je de AI gebruikt (kaartjes genereren, hint, uitleg, studieplan, bestand verwerken) telt als één call. Free-gebruikers hebben 15 per dag, Plus 50 per dag.</p>
             </div>
             <div class="faq-item">
-              <strong>Hoe betaal ik?</strong>
-              <p>Je kunt betalen via iDEAL, creditcard of PayPal via ons veilige betaalportaal.</p>
+              <strong>Hoe betaal ik en hoe activeer ik Plus?</strong>
+              <p>Je betaalt veilig via Gumroad (iDEAL, creditcard, PayPal). Na betaling krijg je een licentiecode — die plak je in de app bij "Upgrade naar Plus" en je bent direct Plus.</p>
             </div>
           </div>
         </div>
@@ -894,7 +894,7 @@
   <div class="modal-box paywall-box">
     <div class="paywall-icon">⚡</div>
     <h3 class="paywall-title">AI-limiet bereikt</h3>
-    <p class="paywall-sub">Je hebt vandaag alle 15 gratis AI-calls gebruikt. Upgrade naar Plus voor onbeperkte toegang.</p>
+    <p class="paywall-sub">Je hebt vandaag alle 15 gratis AI-calls gebruikt. Met Plus krijg je 50 per dag — eenmalig €5, voor altijd.</p>
     <div class="paywall-compare">
       <div class="paywall-col paywall-col-free">
         <div class="paywall-col-name">Free</div>
@@ -903,11 +903,11 @@
       <div class="paywall-arrow">→</div>
       <div class="paywall-col paywall-col-plus">
         <div class="paywall-col-name">Plus ⚡</div>
-        <div class="paywall-col-val">Onbeperkt</div>
+        <div class="paywall-col-val">50 / dag</div>
       </div>
     </div>
     <button class="btn pricing-btn-plus paywall-upgrade-btn" onclick="closeModal('modal-paywall'); showPage('pricing')">
-      ⚡ Bekijk Plus — €1,99/maand
+      ⚡ Bekijk Plus — eenmalig €5
     </button>
     <button class="btn secondary paywall-later-btn" onclick="closeModal('modal-paywall')">Misschien later</button>
   </div>
@@ -921,18 +921,25 @@
       <button class="ai-modal-close" onclick="closeModal('modal-upgrade')">✕</button>
     </div>
     <div class="upgrade-price-row">
-      <span class="upgrade-price">€1,99</span>
-      <span class="upgrade-price-per">/maand</span>
+      <span class="upgrade-price" id="upgrade-price">€5</span>
+      <span class="upgrade-price-per">eenmalig · voor altijd</span>
     </div>
     <ul class="upgrade-features">
-      <li>✓ Onbeperkte AI-calls</li>
+      <li>✓ 50 AI-calls per dag (3× meer)</li>
       <li>✓ AI flashcards van bestanden</li>
       <li>✓ Studieplanning zonder limiet</li>
       <li>✓ AI hints & uitleg</li>
       <li>✓ Plus-badge op je profiel</li>
+      <li>✓ Eenmalig betalen — geen abonnement</li>
     </ul>
-    <button id="upgrade-checkout-btn" class="btn pricing-btn-plus" onclick="openUpgradeModal()">⚡ Upgraden voor €1,99/maand</button>
-    <p class="upgrade-secure">🔒 Veilig betalen via Mollie · Direct actief na betaling</p>
+    <button id="upgrade-buy-btn" class="btn pricing-btn-plus" onclick="buyPlusGumroad()">⚡ Koop Plus — eenmalig <span id="upgrade-buy-price">€5</span></button>
+    <div class="upgrade-license">
+      <p class="modal-hint" style="margin:0.85rem 0 0.4rem">Al gekocht? Plak hier je licentiecode van Gumroad:</p>
+      <input type="text" id="license-input" placeholder="XXXXXXXX-XXXXXXXX-..." autocomplete="off" style="width:100%;text-transform:uppercase">
+      <button class="btn primary" id="license-activate-btn" style="width:100%;margin-top:0.5rem" onclick="activatePlusLicense()">Activeer Plus</button>
+      <div id="license-msg" class="ai-error hidden" style="margin-top:0.5rem"></div>
+    </div>
+    <p class="upgrade-secure">🔒 Veilig via Gumroad · licentie blijft voor altijd geldig</p>
   </div>
 </div>
 

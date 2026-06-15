@@ -152,6 +152,8 @@ async function initDb() {
     `ALTER TABLE users ADD COLUMN IF NOT EXISTS ai_calls_today INTEGER NOT NULL DEFAULT 0`,
     `ALTER TABLE users ADD COLUMN IF NOT EXISTS ai_calls_date TEXT`,
     `ALTER TABLE users ADD COLUMN IF NOT EXISTS is_plus BOOLEAN NOT NULL DEFAULT FALSE`,
+    `ALTER TABLE users ADD COLUMN IF NOT EXISTS gumroad_license TEXT`,
+    `CREATE UNIQUE INDEX IF NOT EXISTS users_gumroad_license_idx ON users (gumroad_license)`,
     `ALTER TABLE decks ADD COLUMN IF NOT EXISTS is_public BOOLEAN NOT NULL DEFAULT FALSE`,
     `ALTER TABLE decks ADD COLUMN IF NOT EXISTS share_token TEXT`,
   ];
@@ -221,20 +223,23 @@ function requireAuth(req, res, next) {
 }
 
 const AI_DAILY_LIMIT = 15;
+const AI_PLUS_DAILY_LIMIT = 50;
 
 async function requireAIQuota(req, res, next) {
   if (!req.session.userId) return res.status(401).json({ error: 'Niet ingelogd' });
   const today = new Date().toISOString().slice(0, 10);
   const r = await pool.query('SELECT ai_calls_today, ai_calls_date, is_plus FROM users WHERE id=$1', [req.session.userId]);
   const { ai_calls_today, ai_calls_date, is_plus } = r.rows[0];
-  if (is_plus) { next(); return; }
+  const limit = is_plus ? AI_PLUS_DAILY_LIMIT : AI_DAILY_LIMIT;
   const callsToday = ai_calls_date === today ? (ai_calls_today || 0) : 0;
-  if (callsToday >= AI_DAILY_LIMIT) {
+  if (callsToday >= limit) {
     return res.status(429).json({
-      error: 'Je hebt het dagelijks AI-limiet bereikt.',
-      limit: AI_DAILY_LIMIT,
+      error: is_plus
+        ? `Je hebt vandaag al je ${limit} AI-calls gebruikt. Morgen staat je tegoed weer klaar.`
+        : 'Je hebt het dagelijks AI-limiet bereikt.',
+      limit,
       used: callsToday,
-      upgrade: true,
+      upgrade: !is_plus,
     });
   }
   if (ai_calls_date === today) {
@@ -264,7 +269,7 @@ app.get('/api/me', async (req, res) => {
   const { xp = 0, ai_calls_today = 0, ai_calls_date, is_plus = false } = row.rows[0] || {};
   const today = new Date().toISOString().slice(0, 10);
   const aiUsed = ai_calls_date === today ? (ai_calls_today || 0) : 0;
-  res.json({ user: { id: req.session.userId, username: req.session.username, streak, xp, aiUsed, aiLimit: AI_DAILY_LIMIT, isPlus: is_plus } });
+  res.json({ user: { id: req.session.userId, username: req.session.username, streak, xp, aiUsed, aiLimit: is_plus ? AI_PLUS_DAILY_LIMIT : AI_DAILY_LIMIT, isPlus: is_plus } });
 });
 
 app.post('/api/register', async (req, res) => {
@@ -671,6 +676,49 @@ app.post('/api/upgrade/webhook', express.urlencoded({ extended: false }), async 
 app.get('/api/upgrade/status', requireAuth, async (req, res) => {
   const r = await pool.query('SELECT is_plus FROM users WHERE id=$1', [req.session.userId]);
   res.json({ isPlus: r.rows[0]?.is_plus || false });
+});
+
+// ── Gumroad (lifetime Plus via licentiecode) ─────────────────
+app.get('/api/upgrade/config', (req, res) => {
+  res.json({
+    gumroadUrl: process.env.GUMROAD_PRODUCT_URL || null,
+    price: process.env.PLUS_PRICE || '€5',
+  });
+});
+
+app.post('/api/upgrade/verify-license', requireAuth, async (req, res) => {
+  const licenseKey = String(req.body.licenseKey || '').trim();
+  if (!licenseKey) return res.status(400).json({ error: 'Vul je licentiecode in.' });
+  const productId = process.env.GUMROAD_PRODUCT_ID;
+  const permalink = process.env.GUMROAD_PRODUCT_PERMALINK;
+  if (!productId && !permalink) return res.status(500).json({ error: 'Betaling niet geconfigureerd' });
+  try {
+    const params = new URLSearchParams();
+    if (productId) params.set('product_id', productId);
+    else params.set('product_permalink', permalink);
+    params.set('license_key', licenseKey);
+    params.set('increment_uses_count', 'false');
+    const gr = await fetch('https://api.gumroad.com/v2/licenses/verify', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: params.toString(),
+    });
+    const data = await gr.json();
+    if (!data.success) return res.status(400).json({ error: 'Ongeldige licentiecode.' });
+    const p = data.purchase || {};
+    if (p.refunded || p.chargebacked || p.disputed) {
+      return res.status(400).json({ error: 'Deze licentie is niet (meer) geldig.' });
+    }
+    const existing = await pool.query('SELECT id FROM users WHERE gumroad_license=$1', [licenseKey]);
+    if (existing.rows.length && existing.rows[0].id !== req.session.userId) {
+      return res.status(400).json({ error: 'Deze licentiecode is al op een ander account gebruikt.' });
+    }
+    await pool.query('UPDATE users SET is_plus=TRUE, gumroad_license=$1 WHERE id=$2', [licenseKey, req.session.userId]);
+    res.json({ ok: true });
+  } catch (e) {
+    console.error('Gumroad verify fout:', e.message);
+    res.status(500).json({ error: 'Kon licentie niet controleren. Probeer het later opnieuw.' });
+  }
 });
 
 // ── Admin stats ──────────────────────────────────────────────
