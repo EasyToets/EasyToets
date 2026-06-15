@@ -30,39 +30,28 @@ app.get('/share/:token', (req, res) => res.sendFile(path.join(__dirname, 'public
 
 // Database setup
 async function initDb() {
-  await pool.query(`
-    CREATE TABLE IF NOT EXISTS study_plans (
-      id SERIAL PRIMARY KEY,
-      user_id INTEGER NOT NULL,
-      deck_id INTEGER NOT NULL REFERENCES decks(id) ON DELETE CASCADE,
-      exam_date TEXT NOT NULL,
-      plan_json TEXT NOT NULL,
-      created_at TIMESTAMPTZ DEFAULT NOW(),
-      UNIQUE(user_id, deck_id)
-    );
-    CREATE TABLE IF NOT EXISTS users (
+  const stmts = [
+    `CREATE TABLE IF NOT EXISTS users (
       id SERIAL PRIMARY KEY,
       username TEXT UNIQUE NOT NULL,
       password_hash TEXT NOT NULL,
       created_at TIMESTAMPTZ DEFAULT NOW(),
       streak INTEGER NOT NULL DEFAULT 0,
       last_login_date TEXT
-    );
-    ALTER TABLE users ADD COLUMN IF NOT EXISTS streak INTEGER NOT NULL DEFAULT 0;
-    ALTER TABLE users ADD COLUMN IF NOT EXISTS last_login_date TEXT;
-    CREATE TABLE IF NOT EXISTS decks (
+    )`,
+    `CREATE TABLE IF NOT EXISTS decks (
       id SERIAL PRIMARY KEY,
       user_id INTEGER NOT NULL DEFAULT 0,
       name TEXT NOT NULL,
       created_at TIMESTAMPTZ DEFAULT NOW()
-    );
-    CREATE TABLE IF NOT EXISTS cards (
+    )`,
+    `CREATE TABLE IF NOT EXISTS cards (
       id SERIAL PRIMARY KEY,
       deck_id INTEGER NOT NULL REFERENCES decks(id) ON DELETE CASCADE,
       question TEXT NOT NULL,
       answer TEXT NOT NULL
-    );
-    CREATE TABLE IF NOT EXISTS card_reviews (
+    )`,
+    `CREATE TABLE IF NOT EXISTS card_reviews (
       id SERIAL PRIMARY KEY,
       user_id INTEGER NOT NULL,
       card_id INTEGER NOT NULL REFERENCES cards(id) ON DELETE CASCADE,
@@ -71,8 +60,8 @@ async function initDb() {
       next_review DATE NOT NULL DEFAULT CURRENT_DATE,
       reps INTEGER NOT NULL DEFAULT 0,
       UNIQUE(user_id, card_id)
-    );
-    CREATE TABLE IF NOT EXISTS quiz_stats (
+    )`,
+    `CREATE TABLE IF NOT EXISTS quiz_stats (
       id SERIAL PRIMARY KEY,
       user_id INTEGER NOT NULL,
       deck_id INTEGER,
@@ -81,52 +70,71 @@ async function initDb() {
       total INTEGER NOT NULL,
       pct INTEGER NOT NULL,
       created_at TIMESTAMPTZ DEFAULT NOW()
-    );
-    ALTER TABLE decks ADD COLUMN IF NOT EXISTS is_public BOOLEAN NOT NULL DEFAULT FALSE;
-    ALTER TABLE decks ADD COLUMN IF NOT EXISTS share_token TEXT;
-    CREATE TABLE IF NOT EXISTS summaries (
+    )`,
+    `CREATE TABLE IF NOT EXISTS summaries (
       id SERIAL PRIMARY KEY,
       user_id INTEGER NOT NULL,
       deck_id INTEGER REFERENCES decks(id) ON DELETE SET NULL,
       filename TEXT NOT NULL,
       content TEXT NOT NULL,
       created_at TIMESTAMPTZ DEFAULT NOW()
-    );
-    CREATE TABLE IF NOT EXISTS groups (
+    )`,
+    `CREATE TABLE IF NOT EXISTS groups (
       id SERIAL PRIMARY KEY,
       name TEXT NOT NULL,
       code TEXT UNIQUE NOT NULL,
       owner_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
       created_at TIMESTAMPTZ DEFAULT NOW()
-    );
-    CREATE TABLE IF NOT EXISTS group_members (
+    )`,
+    `CREATE TABLE IF NOT EXISTS group_members (
       group_id INTEGER NOT NULL REFERENCES groups(id) ON DELETE CASCADE,
       user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
       joined_at TIMESTAMPTZ DEFAULT NOW(),
       PRIMARY KEY (group_id, user_id)
-    );
-    CREATE TABLE IF NOT EXISTS push_subscriptions (
+    )`,
+    `CREATE TABLE IF NOT EXISTS push_subscriptions (
       id SERIAL PRIMARY KEY,
       user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
       subscription_json TEXT NOT NULL,
       created_at TIMESTAMPTZ DEFAULT NOW()
-    );
-    CREATE TABLE IF NOT EXISTS server_settings (
+    )`,
+    `CREATE TABLE IF NOT EXISTS server_settings (
       key TEXT PRIMARY KEY,
       value TEXT NOT NULL
-    );
-    ALTER TABLE users ADD COLUMN IF NOT EXISTS xp INTEGER NOT NULL DEFAULT 0;
-    ALTER TABLE users ADD COLUMN IF NOT EXISTS ai_calls_today INTEGER NOT NULL DEFAULT 0;
-    ALTER TABLE users ADD COLUMN IF NOT EXISTS ai_calls_date TEXT;
-    ALTER TABLE users ADD COLUMN IF NOT EXISTS is_plus BOOLEAN NOT NULL DEFAULT FALSE;
-    CREATE TABLE IF NOT EXISTS user_badges (
+    )`,
+    `CREATE TABLE IF NOT EXISTS user_badges (
       id SERIAL PRIMARY KEY,
       user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
       badge_key TEXT NOT NULL,
       unlocked_at TIMESTAMPTZ DEFAULT NOW(),
       UNIQUE(user_id, badge_key)
-    );
-  `);
+    )`,
+    `CREATE TABLE IF NOT EXISTS study_plans (
+      id SERIAL PRIMARY KEY,
+      user_id INTEGER NOT NULL,
+      deck_id INTEGER NOT NULL REFERENCES decks(id) ON DELETE CASCADE,
+      exam_date TEXT NOT NULL,
+      plan_json TEXT NOT NULL,
+      created_at TIMESTAMPTZ DEFAULT NOW(),
+      UNIQUE(user_id, deck_id)
+    )`,
+    `ALTER TABLE users ADD COLUMN IF NOT EXISTS streak INTEGER NOT NULL DEFAULT 0`,
+    `ALTER TABLE users ADD COLUMN IF NOT EXISTS last_login_date TEXT`,
+    `ALTER TABLE users ADD COLUMN IF NOT EXISTS xp INTEGER NOT NULL DEFAULT 0`,
+    `ALTER TABLE users ADD COLUMN IF NOT EXISTS ai_calls_today INTEGER NOT NULL DEFAULT 0`,
+    `ALTER TABLE users ADD COLUMN IF NOT EXISTS ai_calls_date TEXT`,
+    `ALTER TABLE users ADD COLUMN IF NOT EXISTS is_plus BOOLEAN NOT NULL DEFAULT FALSE`,
+    `ALTER TABLE decks ADD COLUMN IF NOT EXISTS is_public BOOLEAN NOT NULL DEFAULT FALSE`,
+    `ALTER TABLE decks ADD COLUMN IF NOT EXISTS share_token TEXT`,
+  ];
+  for (const sql of stmts) {
+    try {
+      await pool.query(sql);
+    } catch (e) {
+      console.error('initDb stap mislukt:', e.message, '\nSQL:', sql.slice(0, 80));
+    }
+  }
+  console.log('Database klaar');
 }
 initDb().then(initVapid).catch(console.error);
 
