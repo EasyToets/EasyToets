@@ -3308,3 +3308,115 @@ html:not(.dark) .quest-complete-toast {
   .landing-final { margin: 2.5rem 1rem; padding: 2.25rem 1.25rem; }
 }
 
+/* ════════════════════════════════════════════════════════════
+   ✨ PREMIUM INLOGSCHERM
+   ════════════════════════════════════════════════════════════ */
+#modal-auth.modal-lang-overlay {
+  background: #140634;
+  overflow: hidden;
+}
+#modal-auth::before {
+  content: '';
+  position: absolute; inset: -20%; z-index: 0;
+  background:
+    radial-gradient(40% 50% at 18% 22%, rgba(124,58,237,0.6) 0%, transparent 60%),
+    radial-gradient(35% 45% at 82% 18%, rgba(6,182,212,0.4) 0%, transparent 60%),
+    radial-gradient(45% 55% at 75% 85%, rgba(168,85,247,0.5) 0%, transparent 60%),
+    radial-gradient(40% 50% at 22% 88%, rgba(79,70,229,0.45) 0%, transparent 60%);
+  filter: blur(30px);
+  animation: aurora 18s ease-in-out infinite alternate;
+}
+#modal-auth .modal-auth-box {
+  position: relative; z-index: 1;
+  background: rgba(255,255,255,0.97);
+  border: 1px solid rgba(255,255,255,0.6);
+  border-radius: 24px;
+  padding: 2.25rem 2rem 2rem;
+  box-shadow: 0 30px 80px -24px rgba(20,6,52,0.85), 0 0 0 1px rgba(124,58,237,0.08);
+  animation: modal-pop .4s var(--ease-spring) both;
+}
+:root.dark #modal-auth .modal-auth-box {
+  background: rgba(20,16,38,0.97);
+  border-color: rgba(255,255,255,0.08);
+}
+#modal-auth .modal-lang-logo {
+  font-size: 1.7rem;
+  background: var(--grad-brand-2);
+  -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+  margin-bottom: .35rem;
+}
+.auth-subtitle {
+  color: var(--text-muted);
+  font-size: .9rem;
+  line-height: 1.5;
+  margin-bottom: 1.4rem;
+}
+#modal-auth .modal-auth-box input {
+  padding: 0.85rem 1rem;
+  border-radius: 12px;
+  font-size: 1rem;
+  margin-bottom: 0.85rem;
+}
+#modal-auth .auth-submit-btn {
+  width: 100%;
+  padding: 0.9rem;
+  font-size: 1rem;
+  margin-top: 0.3rem;
+}
+.auth-lang-switch {
+  margin-top: 1rem;
+}
+
+/* ════════════════════════════════════════════════════════════
+   ✨ IN-APP POLISH — minder "basic", meer premium
+   ════════════════════════════════════════════════════════════ */
+/* Tab-balk binnen een deck: actieve tab met gradient + gloed */
+.mode-tabs { backdrop-filter: blur(6px); }
+.mode-tab { transition: background .18s, color .18s, transform .15s var(--ease-spring); }
+.mode-tab:active { transform: scale(.96); }
+.mode-tab.active {
+  background: var(--grad-brand-2);
+  box-shadow: 0 4px 16px -4px rgba(124,58,237,0.6), inset 0 1px 0 rgba(255,255,255,0.2);
+}
+
+/* Zachte pagina-overgang bij navigeren */
+#app > section:not(.hidden) {
+  animation: page-in .32s ease both;
+}
+@keyframes page-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Iconen van snelle acties in een merk-tegel */
+.quick-action-btn .qa-icon {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 40px; height: 40px; border-radius: 12px;
+  background: linear-gradient(135deg, rgba(124,58,237,0.14), rgba(6,182,212,0.12));
+  font-size: 1.2rem;
+}
+:root.dark .quick-action-btn .qa-icon {
+  background: linear-gradient(135deg, rgba(124,58,237,0.28), rgba(6,182,212,0.18));
+}
+
+/* Topbar-titel met subtiel gradient-accent */
+.topbar-title { position: relative; }
+
+/* Page-titels (Groepen, Ontdek, etc.) met merk-accentstreep */
+.page-title {
+  position: relative;
+  padding-left: 0.9rem;
+}
+.page-title::before {
+  content: '';
+  position: absolute; left: 0; top: 50%; transform: translateY(-50%);
+  width: 4px; height: 1.4rem; border-radius: 99px;
+  background: var(--grad-brand-2);
+}
+
+/* Stats-kaarten / lege staten net iets rijker */
+.empty-state {
+  border-radius: var(--radius);
+}
+.empty-icon { filter: drop-shadow(0 4px 12px rgba(124,58,237,0.25)); }
+

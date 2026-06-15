@@ -1636,12 +1636,12 @@ function esc(str) {
 let authLang = 'en';
 
 const AUTH_TR = {
-  en: { login: 'Log in', register: 'Create account', username: 'Username', password: 'Password', empty: 'Please fill in all fields.', switch: '🌐 Change language' },
-  nl: { login: 'Inloggen', register: 'Account aanmaken', username: 'Gebruikersnaam', password: 'Wachtwoord', empty: 'Vul alle velden in.', switch: '🌐 Taal wisselen' },
-  de: { login: 'Anmelden', register: 'Konto erstellen', username: 'Benutzername', password: 'Passwort', empty: 'Bitte alle Felder ausfüllen.', switch: '🌐 Sprache wechseln' },
-  fr: { login: 'Se connecter', register: 'Créer un compte', username: 'Nom d\'utilisateur', password: 'Mot de passe', empty: 'Veuillez remplir tous les champs.', switch: '🌐 Changer de langue' },
-  es: { login: 'Iniciar sesión', register: 'Crear cuenta', username: 'Usuario', password: 'Contraseña', empty: 'Por favor rellena todos los campos.', switch: '🌐 Cambiar idioma' },
-  pt: { login: 'Entrar', register: 'Criar conta', username: 'Usuário', password: 'Senha', empty: 'Por favor preencha todos os campos.', switch: '🌐 Mudar idioma' },
+  en: { login: 'Log in', register: 'Create account', username: 'Username', password: 'Password', empty: 'Please fill in all fields.', switch: '🌐 Change language', subLogin: 'Welcome back — pick up where you left off.', subRegister: 'Create a free account and start learning smarter.' },
+  nl: { login: 'Inloggen', register: 'Account aanmaken', username: 'Gebruikersnaam', password: 'Wachtwoord', empty: 'Vul alle velden in.', switch: '🌐 Taal wisselen', subLogin: 'Welkom terug — ga verder waar je gebleven was.', subRegister: 'Maak gratis een account en leer slimmer.' },
+  de: { login: 'Anmelden', register: 'Konto erstellen', username: 'Benutzername', password: 'Passwort', empty: 'Bitte alle Felder ausfüllen.', switch: '🌐 Sprache wechseln', subLogin: 'Willkommen zurück — mach weiter, wo du aufgehört hast.', subRegister: 'Erstelle ein kostenloses Konto und lerne smarter.' },
+  fr: { login: 'Se connecter', register: 'Créer un compte', username: 'Nom d\'utilisateur', password: 'Mot de passe', empty: 'Veuillez remplir tous les champs.', switch: '🌐 Changer de langue', subLogin: 'Bon retour — reprends où tu t\'es arrêté.', subRegister: 'Crée un compte gratuit et apprends plus intelligemment.' },
+  es: { login: 'Iniciar sesión', register: 'Crear cuenta', username: 'Usuario', password: 'Contraseña', empty: 'Por favor rellena todos los campos.', switch: '🌐 Cambiar idioma', subLogin: 'Bienvenido de nuevo — continúa donde lo dejaste.', subRegister: 'Crea una cuenta gratis y aprende de forma más inteligente.' },
+  pt: { login: 'Entrar', register: 'Criar conta', username: 'Usuário', password: 'Senha', empty: 'Por favor preencha todos os campos.', switch: '🌐 Mudar idioma', subLogin: 'Bem-vindo de volta — continue de onde parou.', subRegister: 'Crie uma conta grátis e aprenda de forma mais inteligente.' },
 };
 
 function toggleAuthLang() {
@@ -1657,6 +1657,8 @@ function applyAuthLang() {
   document.getElementById('auth-password').placeholder = tr.password;
   document.getElementById('auth-submit-btn').textContent = isLogin ? tr.login : tr.register;
   document.getElementById('auth-lang-switch').textContent = tr.switch;
+  const subEl = document.getElementById('auth-subtitle');
+  if (subEl) subEl.textContent = isLogin ? tr.subLogin : tr.subRegister;
 }
 
 function showAuthModal(mode) {
