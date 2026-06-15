@@ -71,8 +71,8 @@
           <span class="lp-score">84%</span>
         </div>
         <div class="lp-card lp-card-4">
-          <span class="lp-card-tag">✨ AI hint</span>
-          <span class="lp-card-q" style="font-size:0.82rem;font-weight:500">Denk aan het verschil tussen kern en schil...</span>
+          <span class="lp-card-tag">✍️ Schrijfmodus</span>
+          <span class="lp-card-q" style="font-size:0.82rem;font-weight:500">Typ je antwoord en check meteen of het klopt.</span>
         </div>
         <div class="lp-card lp-card-5">
           <span class="lp-label">🏆 Leaderboard</span>
@@ -97,7 +97,7 @@
     <div class="landing-section-head">
       <span class="landing-eyebrow">Alles-in-één</span>
       <h2>Alles wat je nodig hebt om te slagen</h2>
-      <p>Van flashcards tot AI-studieplannen — EasyToets brengt je hele leerproces samen op één plek.</p>
+      <p>Van flashcards tot slimme oefenmodi — EasyToets brengt je hele leerproces samen op één plek.</p>
     </div>
   <div class="landing-features">
     <div class="landing-feature">
@@ -116,9 +116,9 @@
       <p>Kaartjes die je moeilijk vindt komen automatisch vaker terug — zoals Anki.</p>
     </div>
     <div class="landing-feature">
-      <div class="lf-icon">✨</div>
-      <h3>AI Tools</h3>
-      <p>Laat AI flashcards genereren, uitleg geven, hints geven en een studieplan maken.</p>
+      <div class="lf-icon">✍️</div>
+      <h3>Schrijfmodus</h3>
+      <p>Typ je antwoord uit en krijg meteen te zien of het klopt — perfect voor begrippen.</p>
     </div>
     <div class="landing-feature">
       <div class="lf-icon">🔗</div>
@@ -154,7 +154,7 @@
       <div class="landing-step">
         <div class="landing-step-num">1</div>
         <h3>Maak een deck</h3>
-        <p>Typ je kaartjes in, plak een lijst via bulk import of laat de AI ze maken uit je samenvatting of PDF.</p>
+        <p>Typ je kaartjes in of plak in één keer een hele lijst met begrippen via bulk import.</p>
       </div>
       <div class="landing-step">
         <div class="landing-step-num">2</div>
@@ -178,7 +178,7 @@
     <div class="landing-testimonials">
       <div class="testimonial">
         <div class="testimonial-stars">★★★★★</div>
-        <p class="testimonial-quote">"Ik ging van een 5,5 naar een 7,8 voor biologie. De AI maakte in seconden flashcards van mijn samenvatting."</p>
+        <p class="testimonial-quote">"Ik ging van een 5,5 naar een 7,8 voor biologie. De toetsmodus liet me precies zien wat ik nog niet kende."</p>
         <div class="testimonial-author">
           <div class="testimonial-avatar">E</div>
           <div><div class="testimonial-name">Emma</div><div class="testimonial-role">5 vwo</div></div>
@@ -381,6 +381,7 @@
             <p>Beantwoord meerkeuzevragen op basis van je kaartjes. Je hebt minimaal <strong>2 kaartjes</strong> nodig. Aan het einde zie je je score.</p>
           </div>
 
+          <div id="help-ai-nl">
           <h2 style="margin-top:2rem">✨ AI Functies</h2>
           <div class="help-card">
             <h3>✨ AI kaartjes genereren</h3>
@@ -401,6 +402,7 @@
           <div class="help-card">
             <h3>📅 Studieplan</h3>
             <p>Vul je toetsdatum in en de AI maakt een persoonlijk dagelijks studieplan op basis van jouw deck. Ga naar <strong>AI Tools → Studieplan</strong>. Het plan wordt opgeslagen en is altijd terug te vinden in het linkermenu onder <strong>Planningen</strong>.</p>
+          </div>
           </div>
         </div>
         <div class="help-content hidden" id="help-en">
@@ -539,11 +541,11 @@
             <span class="qa-icon">📚</span>
             <span class="qa-label" id="qa-new-deck">Nieuw deck</span>
           </button>
-          <button class="quick-action-btn" onclick="showPage('ai')">
+          <button class="quick-action-btn" id="qa-ai-btn" onclick="showPage('ai')">
             <span class="qa-icon">✨</span>
             <span class="qa-label">AI Tools</span>
           </button>
-          <button class="quick-action-btn" onclick="requireDeckThen('file')">
+          <button class="quick-action-btn" id="qa-import-btn" onclick="requireDeckThen('file')">
             <span class="qa-icon">📄</span>
             <span class="qa-label" id="qa-import">Importeren</span>
           </button>

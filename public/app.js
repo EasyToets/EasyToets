@@ -1,3 +1,21 @@
+// ── Feature flags ────────────────────────────────────────────
+// AI-functies en de Plus/betaalmuur staan tijdelijk uit.
+// AI kost API-geld; EasyToets is voorlopig 100% gratis.
+// Zet een vlag op true om die functie weer in te schakelen.
+const AI_ENABLED = false;
+const PLUS_ENABLED = false;
+
+function applyFeatureFlags() {
+  const hide = id => { const el = document.getElementById(id); if (el) el.style.display = 'none'; };
+  if (!AI_ENABLED) {
+    ['nav-ai', 'bnav-ai', 'page-ai', 'sidebar-plans', 'btn-hint', 'ai-quota-bar',
+     'qa-ai-btn', 'qa-import-btn', 'help-ai-nl'].forEach(hide);
+  }
+  if (!PLUS_ENABLED) {
+    ['nav-pricing', 'page-pricing', 'modal-paywall', 'modal-upgrade'].forEach(hide);
+  }
+}
+
 // ── Auth state ───────────────────────────────────────────────
 let currentUser = null;
 let authMode = 'login';
@@ -949,6 +967,8 @@ const qzSession  = { cards: [], index: 0, correct: 0, deckId: null };
 
 // ── Navigation ──────────────────────────────────────────────
 function showPage(page) {
+  if (page === 'ai' && !AI_ENABLED) page = 'home';
+  if (page === 'pricing' && !PLUS_ENABLED) page = 'home';
   document.querySelectorAll('main > section').forEach(s => s.classList.add('hidden'));
   document.getElementById('page-' + page).classList.remove('hidden');
   document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
@@ -1213,7 +1233,7 @@ async function loadCards() {
       <p class="card-q">${esc(c.question)}</p>
       <p class="card-a">${esc(c.answer)}</p>
       <div class="card-actions">
-        <button class="btn ai-btn-small" data-explain-id="${c.id}">✨ Uitleg</button>
+        ${AI_ENABLED ? `<button class="btn ai-btn-small" data-explain-id="${c.id}">✨ Uitleg</button>` : ''}
         <button class="btn secondary" data-edit-id="${c.id}">${t('btn_edit')}</button>
         <button class="btn danger" data-delete-id="${c.id}">${t('btn_delete')}</button>
       </div>
@@ -1818,6 +1838,7 @@ async function init() {
     currentUser = meData.user;
 
     applyLang();
+    applyFeatureFlags();
     if (currentUser) {
       userXP = meData.user.xp || 0;
       userAiUsed = meData.user.aiUsed || 0;
@@ -1828,7 +1849,7 @@ async function init() {
       const darkBtn = document.getElementById('dark-toggle');
       if (darkBtn) darkBtn.textContent = document.documentElement.classList.contains('dark') ? '☀️' : '🌙';
       showPage('home');
-      if (typeof loadSidebarPlans === 'function') loadSidebarPlans();
+      if (AI_ENABLED && typeof loadSidebarPlans === 'function') loadSidebarPlans();
       loadBadges();
     } else {
       showLanding();
@@ -3037,6 +3058,7 @@ function showQuestComplete(quest) {
 
 // ── AI quota balk ─────────────────────────────────────────────
 function updateAIQuotaBar() {
+  if (!AI_ENABLED) return;
   const bar = document.getElementById('ai-quota-bar');
   const label = document.getElementById('ai-quota-label');
   const fill = document.getElementById('ai-quota-fill');
