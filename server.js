@@ -29,6 +29,33 @@ app.use(session({
 app.use(express.static(path.join(__dirname, 'public')));
 app.get('/share/:token', (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
 
+// Betaling gelukt — landingspagina na Mollie-redirect
+app.get('/betaling-gelukt', (req, res) => {
+  res.send(`<!doctype html><html lang="nl"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Betaling gelukt — EasyToets</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Inter',-apple-system,Segoe UI,sans-serif;min-height:100vh;display:flex;align-items:center;justify-content:center;
+       background:#140634;background-image:radial-gradient(40% 50% at 20% 20%,rgba(124,58,237,.55),transparent 60%),radial-gradient(35% 45% at 80% 80%,rgba(6,182,212,.4),transparent 60%);color:#fff;padding:1.5rem}
+  .card{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.15);border-radius:24px;padding:2.5rem 2rem;max-width:420px;width:100%;text-align:center;
+        box-shadow:0 30px 80px -24px rgba(0,0,0,.6);backdrop-filter:blur(10px)}
+  .check{width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,#10b981,#059669);display:flex;align-items:center;justify-content:center;
+         font-size:2.2rem;margin:0 auto 1.25rem;box-shadow:0 8px 24px -6px rgba(16,185,129,.7)}
+  h1{font-size:1.5rem;font-weight:800;margin-bottom:.6rem}
+  p{color:rgba(255,255,255,.7);line-height:1.6;margin-bottom:1.75rem}
+  a{display:inline-block;background:linear-gradient(135deg,#a855f7,#7c3aed);color:#fff;text-decoration:none;font-weight:700;
+    padding:.9rem 2rem;border-radius:99px;box-shadow:0 8px 24px -6px rgba(124,58,237,.7)}
+</style></head><body>
+  <div class="card">
+    <div class="check">✓</div>
+    <h1>Betaling gelukt! ⚡</h1>
+    <p>Bedankt voor je support. Je EasyToets Plus wordt binnen enkele seconden geactiveerd — onbeperkte AI staat voor je klaar.</p>
+    <a href="/">Naar EasyToets →</a>
+  </div>
+</body></html>`);
+});
+
 // Database setup
 async function initDb() {
   const stmts = [

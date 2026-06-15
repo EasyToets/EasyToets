@@ -3437,3 +3437,10 @@ html:not(.dark) .quest-complete-toast {
 /* logo-icon was een emoji-span; als SVG geen font-size nodig */
 .sidebar-logo .logo-icon.brand-mark { font-size: 0; }
 
+/* ── Sidebar overflow: donatieknop altijd zichtbaar ──────── */
+.sidebar { overflow: hidden; }
+.sidebar-nav { overflow-y: auto; min-height: 0; }
+.sidebar-nav::-webkit-scrollbar { width: 6px; }
+.sidebar-nav::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.18); border-radius: 99px; }
+.sidebar-footer { flex-shrink: 0; }
+
