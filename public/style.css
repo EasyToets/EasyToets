@@ -3420,3 +3420,20 @@ html:not(.dark) .quest-complete-toast {
 }
 .empty-icon { filter: drop-shadow(0 4px 12px rgba(124,58,237,0.25)); }
 
+/* ── Merk-mark (Spark Card logo) in lockups ──────────────── */
+.brand-mark {
+  display: inline-block;
+  width: 1.5em; height: 1.5em;
+  vertical-align: middle;
+  flex-shrink: 0;
+}
+.sidebar-logo .brand-mark { width: 32px; height: 32px; filter: drop-shadow(0 3px 8px rgba(0,0,0,0.3)); }
+.landing-logo { display: inline-flex; align-items: center; gap: 0.5rem; }
+.landing-logo .brand-mark { width: 30px; height: 30px; }
+.modal-lang-logo {
+  display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+}
+.modal-lang-logo .brand-mark { width: 30px; height: 30px; }
+/* logo-icon was een emoji-span; als SVG geen font-size nodig */
+.sidebar-logo .logo-icon.brand-mark { font-size: 0; }
+
