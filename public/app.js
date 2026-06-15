@@ -1810,27 +1810,32 @@ function showAuthFromLanding(mode) {
 
 // ── Init ─────────────────────────────────────────────────────
 async function init() {
-  const meRes = await fetch('/api/me');
-  const meData = await meRes.json();
-  currentUser = meData.user;
+  try {
+    const meRes = await fetch('/api/me');
+    const meData = await meRes.json();
+    currentUser = meData.user;
 
-  applyLang();
-  if (currentUser) {
-    userXP = meData.user.xp || 0;
-    userAiUsed = meData.user.aiUsed || 0;
-    userAiLimit = meData.user.aiLimit || 15;
-    userIsPlus = meData.user.isPlus || false;
-    updateUserDisplay();
-    renderStreak(meData.user.streak);
-    const darkBtn = document.getElementById('dark-toggle');
-    if (darkBtn) darkBtn.textContent = document.documentElement.classList.contains('dark') ? '☀️' : '🌙';
-    showPage('home');
-    if (typeof loadSidebarPlans === 'function') loadSidebarPlans();
-    loadBadges();
-  } else {
+    applyLang();
+    if (currentUser) {
+      userXP = meData.user.xp || 0;
+      userAiUsed = meData.user.aiUsed || 0;
+      userAiLimit = meData.user.aiLimit || 15;
+      userIsPlus = meData.user.isPlus || false;
+      updateUserDisplay();
+      renderStreak(meData.user.streak);
+      const darkBtn = document.getElementById('dark-toggle');
+      if (darkBtn) darkBtn.textContent = document.documentElement.classList.contains('dark') ? '☀️' : '🌙';
+      showPage('home');
+      if (typeof loadSidebarPlans === 'function') loadSidebarPlans();
+      loadBadges();
+    } else {
+      showLanding();
+    }
+    checkShareUrl();
+  } catch (e) {
+    console.error('Init fout:', e);
     showLanding();
   }
-  checkShareUrl();
 }
 
 init();
