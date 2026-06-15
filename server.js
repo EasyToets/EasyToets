@@ -118,6 +118,7 @@ async function initDb() {
     ALTER TABLE users ADD COLUMN IF NOT EXISTS xp INTEGER NOT NULL DEFAULT 0;
     ALTER TABLE users ADD COLUMN IF NOT EXISTS ai_calls_today INTEGER NOT NULL DEFAULT 0;
     ALTER TABLE users ADD COLUMN IF NOT EXISTS ai_calls_date TEXT;
+    ALTER TABLE users ADD COLUMN IF NOT EXISTS is_plus BOOLEAN NOT NULL DEFAULT FALSE;
     CREATE TABLE IF NOT EXISTS user_badges (
       id SERIAL PRIMARY KEY,
       user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
@@ -188,14 +189,16 @@ const AI_DAILY_LIMIT = 15;
 async function requireAIQuota(req, res, next) {
   if (!req.session.userId) return res.status(401).json({ error: 'Niet ingelogd' });
   const today = new Date().toISOString().slice(0, 10);
-  const r = await pool.query('SELECT ai_calls_today, ai_calls_date FROM users WHERE id=$1', [req.session.userId]);
-  const { ai_calls_today, ai_calls_date } = r.rows[0];
+  const r = await pool.query('SELECT ai_calls_today, ai_calls_date, is_plus FROM users WHERE id=$1', [req.session.userId]);
+  const { ai_calls_today, ai_calls_date, is_plus } = r.rows[0];
+  if (is_plus) { next(); return; }
   const callsToday = ai_calls_date === today ? (ai_calls_today || 0) : 0;
   if (callsToday >= AI_DAILY_LIMIT) {
     return res.status(429).json({
       error: 'Je hebt het dagelijks AI-limiet bereikt.',
       limit: AI_DAILY_LIMIT,
       used: callsToday,
+      upgrade: true,
     });
   }
   if (ai_calls_date === today) {
@@ -221,11 +224,11 @@ async function checkinStreak(userId) {
 app.get('/api/me', async (req, res) => {
   if (!req.session.userId) return res.json({ user: null });
   const streak = await checkinStreak(req.session.userId);
-  const row = await pool.query('SELECT xp, ai_calls_today, ai_calls_date FROM users WHERE id=$1', [req.session.userId]);
-  const { xp = 0, ai_calls_today = 0, ai_calls_date } = row.rows[0] || {};
+  const row = await pool.query('SELECT xp, ai_calls_today, ai_calls_date, is_plus FROM users WHERE id=$1', [req.session.userId]);
+  const { xp = 0, ai_calls_today = 0, ai_calls_date, is_plus = false } = row.rows[0] || {};
   const today = new Date().toISOString().slice(0, 10);
   const aiUsed = ai_calls_date === today ? (ai_calls_today || 0) : 0;
-  res.json({ user: { id: req.session.userId, username: req.session.username, streak, xp, aiUsed, aiLimit: AI_DAILY_LIMIT } });
+  res.json({ user: { id: req.session.userId, username: req.session.username, streak, xp, aiUsed, aiLimit: AI_DAILY_LIMIT, isPlus: is_plus } });
 });
 
 app.post('/api/register', async (req, res) => {
@@ -582,6 +585,12 @@ app.get('/api/decks/:id/study-plan', requireAuth, async (req, res) => {
   res.json({ plan: { examDate: row.exam_date, days: JSON.parse(row.plan_json), createdAt: row.created_at } });
 });
 
+// ── Plus upgrade ─────────────────────────────────────────────
+app.get('/api/upgrade/status', requireAuth, async (req, res) => {
+  const r = await pool.query('SELECT is_plus FROM users WHERE id=$1', [req.session.userId]);
+  res.json({ isPlus: r.rows[0]?.is_plus || false });
+});
+
 // ── Admin stats ──────────────────────────────────────────────
 app.get('/api/admin/stats', async (req, res) => {
   const adminKey = process.env.ADMIN_KEY;
@@ -592,7 +601,9 @@ app.get('/api/admin/stats', async (req, res) => {
   const recent = await pool.query('SELECT username, created_at FROM users ORDER BY created_at DESC LIMIT 10');
   const decks = await pool.query('SELECT COUNT(*)::int as total FROM decks');
   const cards = await pool.query('SELECT COUNT(*)::int as total FROM cards');
+  const plusCount = await pool.query('SELECT COUNT(*)::int as total FROM users WHERE is_plus=TRUE');
   res.json({
+    plus_gebruikers: plusCount.rows[0].total,
     gebruikers: users.rows[0].total,
     eerste_registratie: users.rows[0].eerste,
     laatste_registratie: users.rows[0].laatste,
@@ -600,6 +611,16 @@ app.get('/api/admin/stats', async (req, res) => {
     kaartjes: cards.rows[0].total,
     recente_gebruikers: recent.rows
   });
+});
+
+// ── Admin: plus toggle ───────────────────────────────────────
+app.post('/api/admin/set-plus', async (req, res) => {
+  const adminKey = process.env.ADMIN_KEY;
+  if (!adminKey || req.headers['x-admin-key'] !== adminKey) return res.status(401).json({ error: 'Geen toegang' });
+  const { username, is_plus } = req.body;
+  const r = await pool.query('UPDATE users SET is_plus=$1 WHERE LOWER(username)=LOWER($2) RETURNING id, username, is_plus', [!!is_plus, username]);
+  if (!r.rows.length) return res.status(404).json({ error: 'Gebruiker niet gevonden' });
+  res.json({ ok: true, user: r.rows[0] });
 });
 
 // ── Spaced repetition ────────────────────────────────────────

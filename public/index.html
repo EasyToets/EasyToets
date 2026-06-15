@@ -158,6 +158,9 @@
       <button class="nav-item" id="nav-leaderboard" onclick="showPage('leaderboard')">
         <span class="nav-icon">🏆</span> <span>Leaderboard</span>
       </button>
+      <button class="nav-item" id="nav-pricing" onclick="showPage('pricing')">
+        <span class="nav-icon">⚡</span> <span id="nav-pricing-label">Plus upgraden</span>
+      </button>
       <button class="nav-item" id="nav-settings" onclick="showPage('settings')">
         <span class="nav-icon">⚙️</span> <span id="nav-settings-label">Instellingen</span>
       </button>
@@ -665,6 +668,84 @@
         <div id="leaderboard-list" class="leaderboard-list"></div>
       </section>
 
+      <!-- PRICING -->
+      <section id="page-pricing" class="hidden">
+        <div class="pricing-page">
+          <div class="pricing-header">
+            <h2 class="pricing-title">⚡ Kies jouw plan</h2>
+            <p class="pricing-sub">Gratis blijven of upgraden naar Plus — jij bepaalt.</p>
+            <div id="pricing-plus-badge" class="pricing-plus-active hidden">
+              ✅ Je hebt al EasyToets Plus — bedankt voor je support!
+            </div>
+          </div>
+
+          <div class="pricing-cards">
+            <!-- FREE -->
+            <div class="pricing-card pricing-card-free">
+              <div class="pricing-card-top">
+                <div class="pricing-plan-name">Free</div>
+                <div class="pricing-price">€0<span>/maand</span></div>
+                <div class="pricing-price-sub">Voor altijd gratis</div>
+              </div>
+              <ul class="pricing-features">
+                <li class="feat-yes">✓ Onbeperkt flashcard decks</li>
+                <li class="feat-yes">✓ Alle oefenmodi (flip, schrijven, toets, match)</li>
+                <li class="feat-yes">✓ Spaced repetition</li>
+                <li class="feat-yes">✓ Decks delen & ontdekken</li>
+                <li class="feat-yes">✓ Groepen & leaderboard</li>
+                <li class="feat-yes">✓ Streaks & badges</li>
+                <li class="feat-limit">⚡ 15 AI-calls per dag</li>
+                <li class="feat-no">✗ Geen onbeperkte AI</li>
+              </ul>
+              <div class="pricing-cta-wrap">
+                <button class="btn pricing-btn-free" disabled>Huidig plan</button>
+              </div>
+            </div>
+
+            <!-- PLUS -->
+            <div class="pricing-card pricing-card-plus">
+              <div class="pricing-badge-popular">Meest gekozen</div>
+              <div class="pricing-card-top">
+                <div class="pricing-plan-name">Plus ⚡</div>
+                <div class="pricing-price">€1,99<span>/maand</span></div>
+                <div class="pricing-price-sub">Opzegbaar wanneer je wil</div>
+              </div>
+              <ul class="pricing-features">
+                <li class="feat-yes">✓ Alles uit Free</li>
+                <li class="feat-yes plus-feat">✓ <strong>Onbeperkte AI-calls</strong></li>
+                <li class="feat-yes plus-feat">✓ <strong>AI flashcards van bestanden</strong></li>
+                <li class="feat-yes plus-feat">✓ <strong>AI samenvattingen</strong></li>
+                <li class="feat-yes plus-feat">✓ <strong>Onbeperkte studieplanning</strong></li>
+                <li class="feat-yes plus-feat">✓ <strong>AI hints & uitleg</strong></li>
+                <li class="feat-yes plus-feat">✓ <strong>Plus-badge op je profiel</strong></li>
+              </ul>
+              <div class="pricing-cta-wrap">
+                <button class="btn pricing-btn-plus" id="btn-upgrade-plus" onclick="openUpgradeModal()">
+                  ⚡ Upgrade naar Plus
+                </button>
+                <p class="pricing-cta-hint">Veilig betalen via Mollie · Direct actief</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="pricing-faq">
+            <h3>Veelgestelde vragen</h3>
+            <div class="faq-item">
+              <strong>Kan ik op elk moment opzeggen?</strong>
+              <p>Ja, je kunt je Plus-abonnement op elk moment opzeggen. Je hebt dan nog toegang tot het einde van je betaalperiode.</p>
+            </div>
+            <div class="faq-item">
+              <strong>Wat is een AI-call?</strong>
+              <p>Elke keer dat je de AI gebruikt (kaartjes genereren, hint, uitleg, studieplan, bestand verwerken) telt als één call. Free-gebruikers hebben 15 calls per dag.</p>
+            </div>
+            <div class="faq-item">
+              <strong>Hoe betaal ik?</strong>
+              <p>Je kunt betalen via iDEAL, creditcard of PayPal via ons veilige betaalportaal.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <!-- SETTINGS -->
       <section id="page-settings" class="hidden">
         <h2 class="page-title">⚙️ <span id="settings-title-label">Instellingen</span></h2>
@@ -707,6 +788,54 @@
       </section>
 
     </main>
+  </div>
+</div>
+
+<!-- MODAL: Paywall (AI limiet bereikt) -->
+<div id="modal-paywall" class="modal hidden">
+  <div class="modal-box paywall-box">
+    <div class="paywall-icon">⚡</div>
+    <h3 class="paywall-title">AI-limiet bereikt</h3>
+    <p class="paywall-sub">Je hebt vandaag alle 15 gratis AI-calls gebruikt. Upgrade naar Plus voor onbeperkte toegang.</p>
+    <div class="paywall-compare">
+      <div class="paywall-col paywall-col-free">
+        <div class="paywall-col-name">Free</div>
+        <div class="paywall-col-val">15 / dag</div>
+      </div>
+      <div class="paywall-arrow">→</div>
+      <div class="paywall-col paywall-col-plus">
+        <div class="paywall-col-name">Plus ⚡</div>
+        <div class="paywall-col-val">Onbeperkt</div>
+      </div>
+    </div>
+    <button class="btn pricing-btn-plus paywall-upgrade-btn" onclick="closeModal('modal-paywall'); showPage('pricing')">
+      ⚡ Bekijk Plus — €1,99/maand
+    </button>
+    <button class="btn secondary paywall-later-btn" onclick="closeModal('modal-paywall')">Misschien later</button>
+  </div>
+</div>
+
+<!-- MODAL: Upgrade flow -->
+<div id="modal-upgrade" class="modal hidden">
+  <div class="modal-box upgrade-box">
+    <div class="upgrade-header">
+      <span class="upgrade-logo">⚡ EasyToets Plus</span>
+      <button class="ai-modal-close" onclick="closeModal('modal-upgrade')">✕</button>
+    </div>
+    <div class="upgrade-price-row">
+      <span class="upgrade-price">€1,99</span>
+      <span class="upgrade-price-per">/maand</span>
+    </div>
+    <ul class="upgrade-features">
+      <li>✓ Onbeperkte AI-calls</li>
+      <li>✓ AI flashcards van bestanden</li>
+      <li>✓ Studieplanning zonder limiet</li>
+      <li>✓ AI hints & uitleg</li>
+      <li>✓ Plus-badge op je profiel</li>
+    </ul>
+    <p class="upgrade-contact-hint">Stuur een e-mail naar <a href="mailto:easytoets@gmail.com?subject=EasyToets Plus upgrade&body=Hallo! Ik wil upgraden naar EasyToets Plus. Mijn gebruikersnaam is: " id="upgrade-mail-link">easytoets@gmail.com</a> om je account te upgraden. Je ontvangt binnen 24 uur een betaallink.</p>
+    <button class="btn pricing-btn-plus" onclick="openUpgradeMail()">📧 Stuur upgrade-aanvraag</button>
+    <p class="upgrade-secure">🔒 Veilig · Opzegbaar · Direct actief na betaling</p>
   </div>
 </div>
 
@@ -1051,7 +1180,7 @@
         body: JSON.stringify({ text })
       });
       var data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Fout');
+      if (!res.ok) { if (res.status === 429 && data.upgrade) { showPaywall(); } else { throw new Error(data.error || 'Fout'); } return; }
       aiCards = data.cards;
       preview.innerHTML = aiCards.map((c, i) =>
         `<div class="bulk-row"><span class="bulk-q">${i+1}. ${c.question}</span><span class="bulk-a">${c.answer}</span></div>`
@@ -1124,7 +1253,7 @@
       if (currentDeckId) form.append('deckId', currentDeckId);
       const res = await fetch('/api/process-file', { method: 'POST', body: form });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Fout');
+      if (!res.ok) { if (res.status === 429 && data.upgrade) { showPaywall(); } else { error.textContent = 'Fout: ' + (data.error || 'Fout'); error.classList.remove('hidden'); } return; }
       if (action === 'flashcards') {
         result.innerHTML = `
           <div class="file-result-cards">
@@ -1212,7 +1341,10 @@
         body: JSON.stringify({ question: card.question, answer: card.answer, deckCards: allCards })
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Fout');
+      if (!res.ok) {
+        if (res.status === 429 && data.upgrade) { closeModal('modal-explain'); showPaywall(); return; }
+        throw new Error(data.error || 'Fout');
+      }
       document.getElementById('explain-content').innerHTML = mdToHtml(data.explanation);
     } catch(e) {
       document.getElementById('explain-content').innerHTML = `<p class="ai-error">Fout: ${e.message}</p>`;
@@ -1235,7 +1367,10 @@
         body: JSON.stringify({ question: card.question, answer: card.answer })
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Fout');
+      if (!res.ok) {
+        if (res.status === 429 && data.upgrade) { showPaywall(); return; }
+        throw new Error(data.error || 'Fout');
+      }
       box.textContent = '💡 ' + data.hint;
       box.classList.remove('hidden');
     } catch(e) {
@@ -1326,7 +1461,10 @@
         body: JSON.stringify({ examDate, deckName: currentDeckName, cardCount: cards.length, deckId: currentDeckId })
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Fout');
+      if (!res.ok) {
+        if (res.status === 429 && data.upgrade) { closeModal('modal-studyplan'); showPaywall(); return; }
+        throw new Error(data.error || 'Fout');
+      }
       renderPlanDays(data.days, examDate);
       loadSidebarPlans();
     } catch(e) {

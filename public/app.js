@@ -990,6 +990,18 @@ function showPage(page) {
     updateAIQuotaBar();
   }
 
+  if (page === 'pricing') {
+    document.getElementById('nav-pricing').classList.add('active');
+    setTopbar('⚡ Plus upgraden', []);
+    const badge = document.getElementById('pricing-plus-badge');
+    const upgradeBtn = document.getElementById('btn-upgrade-plus');
+    if (badge) badge.classList.toggle('hidden', !userIsPlus);
+    if (upgradeBtn) {
+      upgradeBtn.disabled = userIsPlus;
+      upgradeBtn.textContent = userIsPlus ? '✅ Je hebt Plus' : '⚡ Upgrade naar Plus';
+    }
+  }
+
   if (page === 'home') {
     document.getElementById('nav-home').classList.add('active');
     document.getElementById('nav-deck').style.display = 'none';
@@ -1109,6 +1121,7 @@ let userXP = 0;
 let unlockedBadges = new Set();
 let userAiUsed = 0;
 let userAiLimit = 15;
+let userIsPlus = false;
 
 async function loadDecks() {
   const res = await fetch('/api/decks');
@@ -1701,6 +1714,7 @@ async function submitAuth() {
   userXP = data.xp || 0;
   userAiUsed = data.aiUsed || 0;
   userAiLimit = data.aiLimit || 15;
+  userIsPlus = data.isPlus || false;
   document.getElementById('auth-password').value = '';
   document.getElementById('auth-username').value = '';
   hideAuthModal();
@@ -1805,6 +1819,7 @@ async function init() {
     userXP = meData.user.xp || 0;
     userAiUsed = meData.user.aiUsed || 0;
     userAiLimit = meData.user.aiLimit || 15;
+    userIsPlus = meData.user.isPlus || false;
     updateUserDisplay();
     renderStreak(meData.user.streak);
     const darkBtn = document.getElementById('dark-toggle');
@@ -3019,9 +3034,37 @@ function updateAIQuotaBar() {
   const label = document.getElementById('ai-quota-label');
   const fill = document.getElementById('ai-quota-fill');
   if (!bar || !currentUser) return;
+  if (userIsPlus) {
+    bar.style.display = 'block';
+    fill.style.width = '100%';
+    fill.style.background = 'linear-gradient(90deg,#7c3aed,#06b6d4)';
+    label.innerHTML = '⚡ <strong>Plus</strong> — onbeperkte AI-calls';
+    return;
+  }
   bar.style.display = 'block';
   const pct = Math.round(userAiUsed / userAiLimit * 100);
   fill.style.width = pct + '%';
   fill.style.background = pct >= 100 ? '#ef4444' : pct >= 80 ? '#f59e0b' : '#8b5cf6';
-  label.textContent = userAiUsed + ' / ' + userAiLimit + ' AI-calls vandaag gebruikt';
+  if (pct >= 100) {
+    label.innerHTML = userAiUsed + ' / ' + userAiLimit + ' AI-calls gebruikt · <a href="#" onclick="showPage(\'pricing\');return false;" style="color:#7c3aed;font-weight:600">Upgrade naar Plus →</a>';
+  } else {
+    label.textContent = userAiUsed + ' / ' + userAiLimit + ' AI-calls vandaag gebruikt';
+  }
+}
+
+function showPaywall() {
+  openModal('modal-paywall');
+}
+
+function openUpgradeModal() {
+  const link = document.getElementById('upgrade-mail-link');
+  if (link && currentUser) {
+    link.href = `mailto:easytoets@gmail.com?subject=EasyToets Plus upgrade&body=Hallo! Ik wil upgraden naar EasyToets Plus.%0A%0AMijn gebruikersnaam is: ${encodeURIComponent(currentUser.username)}`;
+  }
+  openModal('modal-upgrade');
+}
+
+function openUpgradeMail() {
+  const user = currentUser ? currentUser.username : '';
+  window.location.href = `mailto:easytoets@gmail.com?subject=EasyToets Plus upgrade&body=Hallo! Ik wil upgraden naar EasyToets Plus.%0A%0AMijn gebruikersnaam is: ${encodeURIComponent(user)}`;
 }
