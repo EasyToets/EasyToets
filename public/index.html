@@ -12,11 +12,24 @@
   <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
   <meta name="theme-color" content="#7c3aed">
-  <!-- Google tag (gtag.js) -->
+  <!-- Google tag (gtag.js) met consent mode -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-FJM2N2BYGN"></script>
   <script>
     window.dataLayer = window.dataLayer || [];
     function gtag(){dataLayer.push(arguments);}
+    // Standaard geen analytische/advertentiecookies tot de bezoeker toestemming geeft (AVG)
+    gtag('consent', 'default', {
+      'analytics_storage': 'denied',
+      'ad_storage': 'denied',
+      'ad_user_data': 'denied',
+      'ad_personalization': 'denied'
+    });
+    // Eerdere keuze opnieuw toepassen
+    try {
+      if (localStorage.getItem('et-cookie-consent') === 'accepted') {
+        gtag('consent', 'update', { 'analytics_storage': 'granted' });
+      }
+    } catch(e){}
     gtag('js', new Date());
     gtag('config', 'G-FJM2N2BYGN');
   </script>
@@ -212,7 +225,12 @@
   </div>
 
   <div class="landing-footer">
-    <p>© 2025 EasyToets · Leer slimmer, niet harder · Gratis te gebruiken</p>
+    <nav class="landing-footer-links">
+      <a href="/privacy.html">Privacybeleid</a>
+      <a href="/voorwaarden.html">Voorwaarden</a>
+      <a href="/contact.html">Contact</a>
+    </nav>
+    <p>© 2026 EasyToets · Leer slimmer, niet harder · Gratis te gebruiken</p>
   </div>
 </div>
 
@@ -1260,6 +1278,34 @@
 </div>
 
 
+<!-- COOKIE-TOESTEMMING -->
+<div id="cookie-banner" class="cookie-banner hidden">
+  <div class="cookie-banner-text">
+    🍪 We gebruiken een noodzakelijke cookie om je ingelogd te houden, en analytische cookies om de site te verbeteren. Lees meer in ons <a href="/privacy.html">privacybeleid</a>.
+  </div>
+  <div class="cookie-banner-btns">
+    <button class="cookie-btn cookie-btn-ghost" onclick="cookieConsent(false)">Alleen noodzakelijk</button>
+    <button class="cookie-btn cookie-btn-primary" onclick="cookieConsent(true)">Accepteren</button>
+  </div>
+</div>
+<script>
+  (function(){
+    try {
+      if (!localStorage.getItem('et-cookie-consent')) {
+        var b = document.getElementById('cookie-banner');
+        if (b) b.classList.remove('hidden');
+      }
+    } catch(e){}
+  })();
+  function cookieConsent(accept){
+    try { localStorage.setItem('et-cookie-consent', accept ? 'accepted' : 'declined'); } catch(e){}
+    if (accept && typeof gtag === 'function') {
+      gtag('consent', 'update', { 'analytics_storage': 'granted' });
+    }
+    var b = document.getElementById('cookie-banner');
+    if (b) b.classList.add('hidden');
+  }
+</script>
 <script src="app.js"></script>
 <script>
   if ('serviceWorker' in navigator) {

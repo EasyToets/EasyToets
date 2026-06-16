@@ -1458,12 +1458,62 @@ main input, main textarea { cursor: text; user-select: text; }
 .landing-feature h3 { font-size: 1rem; font-weight: 700; margin-bottom: 0.4rem; }
 .landing-feature p { font-size: 0.85rem; color: rgba(255,255,255,0.65); line-height: 1.6; }
 
+.cookie-banner {
+  position: fixed;
+  left: 1rem;
+  right: 1rem;
+  bottom: 1rem;
+  z-index: 9999;
+  max-width: 720px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  padding: 1rem 1.25rem;
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-lg);
+}
+.cookie-banner.hidden { display: none; }
+.cookie-banner-text { flex: 1 1 240px; font-size: 0.85rem; line-height: 1.5; }
+.cookie-banner-text a { color: var(--primary); font-weight: 600; }
+.cookie-banner-btns { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+.cookie-btn {
+  padding: 0.55rem 1rem;
+  border-radius: 10px;
+  font-weight: 700;
+  font-size: 0.85rem;
+  border: none;
+  cursor: pointer;
+}
+.cookie-btn-ghost { background: var(--primary-light); color: var(--primary-dark); }
+.cookie-btn-primary { background: linear-gradient(135deg,#a855f7,#7c3aed 55%,#06b6d4); color: #fff; }
+
 .landing-footer {
   text-align: center;
   padding: 1.25rem;
   font-size: 0.8rem;
   color: rgba(255,255,255,0.35);
   border-top: 1px solid rgba(255,255,255,0.08);
+}
+.landing-footer-links {
+  display: flex;
+  gap: 1.25rem;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-bottom: 0.75rem;
+}
+.landing-footer-links a {
+  color: rgba(255,255,255,0.6);
+  text-decoration: none;
+  font-weight: 600;
+}
+.landing-footer-links a:hover {
+  color: #fff;
+  text-decoration: underline;
 }
 
 /* ── Mobile ──────────────────────────────────────────────── */
